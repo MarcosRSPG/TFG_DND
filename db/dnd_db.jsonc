@@ -1,0 +1,1546 @@
+{
+  // Metadata y endpoints base de la API oficial
+  "meta": {
+    "source_api": "https://www.dnd5eapi.co/api/2014/",
+    "notes": "BD auxiliar para homebrew y PJs. Los campos pueden variar por documento.",
+    "schema_version": "1.0",
+    "collections": ["items", "spells", "monsters", "backgrounds", "characters"],
+    "api_endpoints": {
+      "ability-scores": "https://www.dnd5eapi.co/api/2014/ability-scores",
+      "skills": "https://www.dnd5eapi.co/api/2014/skills",
+      "proficiencies": "https://www.dnd5eapi.co/api/2014/proficiencies",
+      "languages": "https://www.dnd5eapi.co/api/2014/languages",
+      "traits": "https://www.dnd5eapi.co/api/2014/traits",
+      "classes": "https://www.dnd5eapi.co/api/2014/classes",
+      "subclasses": "https://www.dnd5eapi.co/api/2014/subclasses",
+      "races": "https://www.dnd5eapi.co/api/2014/races",
+      "subraces": "https://www.dnd5eapi.co/api/2014/subraces",
+      "backgrounds": "https://www.dnd5eapi.co/api/2014/backgrounds",
+      "rules": "https://www.dnd5eapi.co/api/2014/rules",
+      "rule-sections": "https://www.dnd5eapi.co/api/2014/rule-sections",
+      "alignments": "https://www.dnd5eapi.co/api/2014/alignments",
+      "conditions": "https://www.dnd5eapi.co/api/2014/conditions",
+      "damage-types": "https://www.dnd5eapi.co/api/2014/damage-types",
+      "weapon-properties": "https://www.dnd5eapi.co/api/2014/weapon-properties",
+      "spells": "https://www.dnd5eapi.co/api/2014/spells",
+      "magic-schools": "https://www.dnd5eapi.co/api/2014/magic-schools",
+      "features": "https://www.dnd5eapi.co/api/2014/features",
+      "feats": "https://www.dnd5eapi.co/api/2014/feats",
+      "equipment": "https://www.dnd5eapi.co/api/2014/equipment",
+      "equipment-categories": "https://www.dnd5eapi.co/api/2014/equipment-categories",
+      "magic-items": "https://www.dnd5eapi.co/api/2014/magic-items",
+      "monsters": "https://www.dnd5eapi.co/api/2014/monsters",
+    },
+  },
+  // Coleccion: items (armas, armaduras, equipo y consumibles)
+  "items": [
+    //Arma
+    {
+      "desc": [],
+      "special": [],
+      "index": "battleaxe",
+      "name": "Battleaxe",
+      "equipment_category": {
+        "index": "weapon",
+        "name": "Weapon",
+        "url": "https://www.dnd5eapi.co/api/2014/equipment-categories/weapon",
+      },
+      "weapon_category": "Martial",
+      "weapon_range": "Melee",
+      "category_range": "Martial Melee",
+      "cost": {
+        "quantity": 10,
+        "unit": "gp",
+      },
+      "damage": {
+        "damage_dice": "1d8",
+        "damage_type": {
+          "index": "slashing",
+          "name": "Slashing",
+          "url": "https://www.dnd5eapi.co/api/2014/damage-types/slashing",
+        },
+      },
+      "range": {
+        "normal": 5,
+      },
+      "weight": 4,
+      "properties": [
+        {
+          "index": "versatile",
+          "name": "Versatile",
+          "url": "https://www.dnd5eapi.co/api/2014/weapon-properties/versatile",
+        },
+      ],
+      "two_handed_damage": {
+        "damage_dice": "1d10",
+        "damage_type": {
+          "index": "slashing",
+          "name": "Slashing",
+          "url": "https://www.dnd5eapi.co/api/2014/damage-types/slashing",
+        },
+      },
+      "url": "https://www.dnd5eapi.co/api/2014/equipment/battleaxe",
+      "updated_at": "2025-10-24T20:42:12.926Z",
+      "contents": [],
+    },
+    //Escudo
+    {
+      "desc": [],
+      "special": [],
+      "index": "shield",
+      "name": "Shield",
+      "equipment_category": {
+        "index": "armor",
+        "name": "Armor",
+        "url": "https://www.dnd5eapi.co/api/2014/equipment-categories/armor",
+      },
+      "armor_category": "Shield",
+      "armor_class": {
+        "base": 2,
+        "dex_bonus": false,
+      },
+      "str_minimum": 0,
+      "stealth_disadvantage": false,
+      "weight": 6,
+      "cost": {
+        "quantity": 10,
+        "unit": "gp",
+      },
+      "url": "https://www.dnd5eapi.co/api/2014/equipment/shield",
+      "updated_at": "2025-10-24T20:42:12.926Z",
+      "contents": [],
+      "properties": [],
+    },
+    //Armadura
+    {
+      "desc": [],
+      "special": [],
+      "index": "half-plate-armor",
+      "name": "Half Plate Armor",
+      "equipment_category": {
+        "index": "armor",
+        "name": "Armor",
+        "url": "https://www.dnd5eapi.co/api/2014/equipment-categories/armor",
+      },
+      "armor_category": "Medium",
+      "armor_class": {
+        "base": 15,
+        "dex_bonus": true,
+        "max_bonus": 2,
+      },
+      "str_minimum": 0,
+      "stealth_disadvantage": true,
+      "weight": 40,
+      "cost": {
+        "quantity": 750,
+        "unit": "gp",
+      },
+      "url": "https://www.dnd5eapi.co/api/2014/equipment/half-plate-armor",
+      "updated_at": "2025-10-24T20:42:12.926Z",
+      "contents": [],
+      "properties": [],
+    },
+    //Equipo de aventura
+    {
+      "desc": [],
+      "special": [],
+      "index": "bell",
+      "name": "Bell",
+      "equipment_category": {
+        "index": "adventuring-gear",
+        "name": "Adventuring Gear",
+        "url": "https://www.dnd5eapi.co/api/2014/equipment-categories/adventuring-gear",
+      },
+      "gear_category": {
+        "index": "standard-gear",
+        "name": "Standard Gear",
+        "url": "https://www.dnd5eapi.co/api/2014/equipment-categories/standard-gear",
+      },
+      "cost": {
+        "quantity": 1,
+        "unit": "gp",
+      },
+      "weight": 0,
+      "url": "https://www.dnd5eapi.co/api/2014/equipment/bell",
+      "updated_at": "2025-10-24T20:42:12.926Z",
+      "contents": [],
+      "properties": [],
+    },
+  ],
+  // Coleccion: spells (escuela y clases referencian la API)
+  "spells": [
+    {
+      "index": "acid-arrow",
+      "name": "Acid Arrow",
+      "desc": [
+        "A shimmering green arrow streaks toward a target within range and bursts in a spray of acid. Make a ranged spell attack against the target. On a hit, the target takes 4d4 acid damage immediately and 2d4 acid damage at the end of its next turn. On a miss, the arrow splashes the target with acid for half as much of the initial damage and no damage at the end of its next turn.",
+      ],
+      "higher_level": [
+        "When you cast this spell using a spell slot of 3rd level or higher, the damage (both initial and later) increases by 1d4 for each slot level above 2nd.",
+      ],
+      "range": "90 feet",
+      "components": ["V", "S", "M"],
+      "material": "Powdered rhubarb leaf and an adder's stomach.",
+      "ritual": false,
+      "duration": "Instantaneous",
+      "concentration": false,
+      "casting_time": "1 action",
+      "level": 2,
+      "attack_type": "ranged",
+      "damage": {
+        "damage_type": {
+          "index": "acid",
+          "name": "Acid",
+          "url": "https://www.dnd5eapi.co/api/2014/damage-types/acid",
+        },
+        "damage_at_slot_level": {
+          "2": "4d4",
+          "3": "5d4",
+          "4": "6d4",
+          "5": "7d4",
+          "6": "8d4",
+          "7": "9d4",
+          "8": "10d4",
+          "9": "11d4",
+        },
+      },
+      "school": {
+        "index": "evocation",
+        "name": "Evocation",
+        "url": "https://www.dnd5eapi.co/api/2014/magic-schools/evocation",
+      },
+      "classes": [
+        {
+          "index": "wizard",
+          "name": "Wizard",
+          "url": "https://www.dnd5eapi.co/api/2014/classes/wizard",
+        },
+      ],
+      "subclasses": [
+        {
+          "index": "lore",
+          "name": "Lore",
+          "url": "https://www.dnd5eapi.co/api/2014/subclasses/lore",
+        },
+        {
+          "index": "land",
+          "name": "Land",
+          "url": "https://www.dnd5eapi.co/api/2014/subclasses/land",
+        },
+      ],
+      "url": "https://www.dnd5eapi.co/api/2014/spells/acid-arrow",
+      "updated_at": "2025-10-24T20:42:14.618Z",
+    },
+    {
+      "higher_level": [],
+      "index": "alarm",
+      "name": "Alarm",
+      "desc": [
+        "You set an alarm against unwanted intrusion. Choose a door, a window, or an area within range that is no larger than a 20-foot cube. Until the spell ends, an alarm alerts you whenever a Tiny or larger creature touches or enters the warded area. When you cast the spell, you can designate creatures that won't set off the alarm. You also choose whether the alarm is mental or audible.",
+        "A mental alarm alerts you with a ping in your mind if you are within 1 mile of the warded area. This ping awakens you if you are sleeping.",
+        "An audible alarm produces the sound of a hand bell for 10 seconds within 60 feet.",
+      ],
+      "range": "30 feet",
+      "components": ["V", "S", "M"],
+      "material": "A tiny bell and a piece of fine silver wire.",
+      "ritual": true,
+      "duration": "8 hours",
+      "concentration": false,
+      "casting_time": "1 minute",
+      "level": 1,
+      "area_of_effect": {
+        "type": "cube",
+        "size": 20,
+      },
+      "school": {
+        "index": "abjuration",
+        "name": "Abjuration",
+        "url": "https://www.dnd5eapi.co/api/2014/magic-schools/abjuration",
+      },
+      "classes": [
+        {
+          "index": "ranger",
+          "name": "Ranger",
+          "url": "https://www.dnd5eapi.co/api/2014/classes/ranger",
+        },
+        {
+          "index": "wizard",
+          "name": "Wizard",
+          "url": "https://www.dnd5eapi.co/api/2014/classes/wizard",
+        },
+      ],
+      "subclasses": [
+        {
+          "index": "lore",
+          "name": "Lore",
+          "url": "https://www.dnd5eapi.co/api/2014/subclasses/lore",
+        },
+      ],
+      "url": "https://www.dnd5eapi.co/api/2014/spells/alarm",
+      "updated_at": "2025-10-24T20:42:14.619Z",
+    },
+    {
+      "higher_level": [],
+      "index": "mage-armor",
+      "name": "Mage Armor",
+      "desc": [
+        "You touch a willing creature who isn't wearing armor, and a protective magical force surrounds it until the spell ends. The target's base AC becomes 13 + its Dexterity modifier. The spell ends if the target dons armor or if you dismiss the spell as an action.",
+      ],
+      "range": "Touch",
+      "components": ["V", "S", "M"],
+      "material": "A piece of cured leather.",
+      "ritual": false,
+      "duration": "8 hours",
+      "concentration": false,
+      "casting_time": "1 action",
+      "level": 1,
+      "school": {
+        "index": "abjuration",
+        "name": "Abjuration",
+        "url": "https://www.dnd5eapi.co/api/2014/magic-schools/abjuration",
+      },
+      "classes": [
+        {
+          "index": "sorcerer",
+          "name": "Sorcerer",
+          "url": "https://www.dnd5eapi.co/api/2014/classes/sorcerer",
+        },
+        {
+          "index": "wizard",
+          "name": "Wizard",
+          "url": "https://www.dnd5eapi.co/api/2014/classes/wizard",
+        },
+      ],
+      "subclasses": [
+        {
+          "index": "lore",
+          "name": "Lore",
+          "url": "https://www.dnd5eapi.co/api/2014/subclasses/lore",
+        },
+      ],
+      "url": "https://www.dnd5eapi.co/api/2014/spells/mage-armor",
+      "updated_at": "2025-10-24T20:42:14.619Z",
+    },
+  ],
+  "monsters": [
+    {
+      "index": "adult-blue-dragon",
+      "name": "Adult Blue Dragon",
+      "size": "Huge",
+      "type": "dragon",
+      "alignment": "lawful evil",
+      "armor_class": [
+        {
+          "type": "natural",
+          "value": 19,
+        },
+      ],
+      "hit_points": 225,
+      "hit_dice": "18d12",
+      "hit_points_roll": "18d12+108",
+      "speed": {
+        "walk": "40 ft.",
+        "burrow": "30 ft.",
+        "fly": "80 ft.",
+      },
+      "strength": 25,
+      "dexterity": 10,
+      "constitution": 23,
+      "intelligence": 16,
+      "wisdom": 15,
+      "charisma": 19,
+      "proficiencies": [
+        {
+          "value": 5,
+          "proficiency": {
+            "index": "saving-throw-dex",
+            "name": "Saving Throw: DEX",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/saving-throw-dex",
+          },
+        },
+        {
+          "value": 11,
+          "proficiency": {
+            "index": "saving-throw-con",
+            "name": "Saving Throw: CON",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/saving-throw-con",
+          },
+        },
+        {
+          "value": 7,
+          "proficiency": {
+            "index": "saving-throw-wis",
+            "name": "Saving Throw: WIS",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/saving-throw-wis",
+          },
+        },
+        {
+          "value": 9,
+          "proficiency": {
+            "index": "saving-throw-cha",
+            "name": "Saving Throw: CHA",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/saving-throw-cha",
+          },
+        },
+        {
+          "value": 12,
+          "proficiency": {
+            "index": "skill-perception",
+            "name": "Skill: Perception",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-perception",
+          },
+        },
+        {
+          "value": 5,
+          "proficiency": {
+            "index": "skill-stealth",
+            "name": "Skill: Stealth",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-stealth",
+          },
+        },
+      ],
+      "damage_vulnerabilities": [],
+      "damage_resistances": [],
+      "damage_immunities": ["lightning"],
+      "condition_immunities": [],
+      "senses": {
+        "blindsight": "60 ft.",
+        "darkvision": "120 ft.",
+        "passive_perception": 22,
+      },
+      "languages": "Common, Draconic",
+      "challenge_rating": 16,
+      "proficiency_bonus": 5,
+      "xp": 15000,
+      "special_abilities": [
+        {
+          "name": "Legendary Resistance",
+          "desc": "If the dragon fails a saving throw, it can choose to succeed instead.",
+          "usage": {
+            "type": "per day",
+            "times": 3,
+            "rest_types": [],
+          },
+          "damage": [],
+        },
+      ],
+      "actions": [
+        {
+          "damage": [],
+          "name": "Multiattack",
+          "multiattack_type": "actions",
+          "desc": "The dragon can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws.",
+          "actions": [
+            {
+              "action_name": "Frightful Presence",
+              "count": "1",
+              "type": "ability",
+            },
+            {
+              "action_name": "Bite",
+              "count": "1",
+              "type": "melee",
+            },
+            {
+              "action_name": "Claw",
+              "count": "2",
+              "type": "melee",
+            },
+          ],
+        },
+        {
+          "name": "Bite",
+          "desc": "Melee Weapon Attack: +12 to hit, reach 10 ft., one target. Hit: 18 (2d10 + 7) piercing damage plus 5 (1d10) lightning damage.",
+          "attack_bonus": 12,
+          "damage": [
+            {
+              "damage_type": {
+                "index": "piercing",
+                "name": "Piercing",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/piercing",
+              },
+              "damage_dice": "2d10+7",
+            },
+            {
+              "damage_type": {
+                "index": "lightning",
+                "name": "Lightning",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/lightning",
+              },
+              "damage_dice": "1d10",
+            },
+          ],
+          "actions": [],
+        },
+        {
+          "name": "Claw",
+          "desc": "Melee Weapon Attack: +12 to hit, reach 5 ft., one target. Hit: 14 (2d6 + 7) slashing damage.",
+          "attack_bonus": 12,
+          "damage": [
+            {
+              "damage_type": {
+                "index": "slashing",
+                "name": "Slashing",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/slashing",
+              },
+              "damage_dice": "2d6+7",
+            },
+          ],
+          "actions": [],
+        },
+        {
+          "name": "Tail",
+          "desc": "Melee Weapon Attack: +12 to hit, reach 15 ft., one target. Hit: 16 (2d8 + 7) bludgeoning damage.",
+          "attack_bonus": 12,
+          "damage": [
+            {
+              "damage_type": {
+                "index": "bludgeoning",
+                "name": "Bludgeoning",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/bludgeoning",
+              },
+              "damage_dice": "2d8+7",
+            },
+          ],
+          "actions": [],
+        },
+        {
+          "damage": [],
+          "name": "Frightful Presence",
+          "desc": "Each creature of the dragon's choice that is within 120 ft. of the dragon and aware of it must succeed on a DC 17 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature's saving throw is successful or the effect ends for it, the creature is immune to the dragon's Frightful Presence for the next 24 hours.",
+          "dc": {
+            "dc_type": {
+              "index": "wis",
+              "name": "WIS",
+              "url": "https://www.dnd5eapi.co/api/2014/ability-scores/wis",
+            },
+            "dc_value": 17,
+            "success_type": "none",
+          },
+          "actions": [],
+        },
+        {
+          "name": "Lightning Breath",
+          "desc": "The dragon exhales lightning in a 90-foot line that is 5 ft. wide. Each creature in that line must make a DC 19 Dexterity saving throw, taking 66 (12d10) lightning damage on a failed save, or half as much damage on a successful one.",
+          "usage": {
+            "type": "recharge on roll",
+            "dice": "1d6",
+            "min_value": 5,
+          },
+          "dc": {
+            "dc_type": {
+              "index": "dex",
+              "name": "DEX",
+              "url": "https://www.dnd5eapi.co/api/2014/ability-scores/dex",
+            },
+            "dc_value": 19,
+            "success_type": "half",
+          },
+          "damage": [
+            {
+              "damage_type": {
+                "index": "lightning",
+                "name": "Lightning",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/lightning",
+              },
+              "damage_dice": "12d10",
+            },
+          ],
+          "actions": [],
+        },
+      ],
+      "legendary_actions": [
+        {
+          "name": "Detect",
+          "desc": "The dragon makes a Wisdom (Perception) check.",
+          "damage": [],
+        },
+        {
+          "name": "Tail Attack",
+          "desc": "The dragon makes a tail attack.",
+          "damage": [],
+        },
+        {
+          "name": "Wing Attack (Costs 2 Actions)",
+          "desc": "The dragon beats its wings. Each creature within 10 ft. of the dragon must succeed on a DC 20 Dexterity saving throw or take 14 (2d6 + 7) bludgeoning damage and be knocked prone. The dragon can then fly up to half its flying speed.",
+          "dc": {
+            "dc_type": {
+              "index": "dex",
+              "name": "DEX",
+              "url": "https://www.dnd5eapi.co/api/2014/ability-scores/dex",
+            },
+            "dc_value": 20,
+            "success_type": "none",
+          },
+          "damage": [
+            {
+              "damage_type": {
+                "index": "bludgeoning",
+                "name": "Bludgeoning",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/bludgeoning",
+              },
+              "damage_dice": "2d6+6",
+            },
+          ],
+        },
+      ],
+      "image": "/api/images/monsters/adult-blue-dragon.png",
+      "url": "https://www.dnd5eapi.co/api/2014/monsters/adult-blue-dragon",
+      "updated_at": "2025-10-24T20:42:13.741Z",
+      "forms": [],
+      "reactions": [],
+    },
+    {
+      "index": "goblin",
+      "name": "Goblin",
+      "size": "Small",
+      "type": "humanoid",
+      "subtype": "goblinoid",
+      "alignment": "neutral evil",
+      "armor_class": [
+        {
+          "type": "armor",
+          "value": 15,
+          "armor": [
+            {
+              "index": "leather-armor",
+              "name": "Leather Armor",
+              "url": "https://www.dnd5eapi.co/api/2014/equipment/leather-armor",
+            },
+            {
+              "index": "shield",
+              "name": "Shield",
+              "url": "https://www.dnd5eapi.co/api/2014/equipment/shield",
+            },
+          ],
+        },
+      ],
+      "hit_points": 7,
+      "hit_dice": "2d6",
+      "hit_points_roll": "2d6",
+      "speed": {
+        "walk": "30 ft.",
+      },
+      "strength": 8,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 8,
+      "charisma": 8,
+      "proficiencies": [
+        {
+          "value": 6,
+          "proficiency": {
+            "index": "skill-stealth",
+            "name": "Skill: Stealth",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-stealth",
+          },
+        },
+      ],
+      "damage_vulnerabilities": [],
+      "damage_resistances": [],
+      "damage_immunities": [],
+      "condition_immunities": [],
+      "senses": {
+        "darkvision": "60 ft.",
+        "passive_perception": 9,
+      },
+      "languages": "Common, Goblin",
+      "challenge_rating": 0.25,
+      "proficiency_bonus": 2,
+      "xp": 50,
+      "special_abilities": [
+        {
+          "name": "Nimble Escape",
+          "desc": "The goblin can take the Disengage or Hide action as a bonus action on each of its turns.",
+          "damage": [],
+        },
+      ],
+      "actions": [
+        {
+          "name": "Scimitar",
+          "desc": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) slashing damage.",
+          "attack_bonus": 4,
+          "damage": [
+            {
+              "damage_type": {
+                "index": "slashing",
+                "name": "Slashing",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/slashing",
+              },
+              "damage_dice": "1d6+2",
+            },
+          ],
+          "actions": [],
+        },
+        {
+          "name": "Shortbow",
+          "desc": "Ranged Weapon Attack: +4 to hit, range 80/320 ft., one target. Hit: 5 (1d6 + 2) piercing damage.",
+          "attack_bonus": 4,
+          "damage": [
+            {
+              "damage_type": {
+                "index": "piercing",
+                "name": "Piercing",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/piercing",
+              },
+              "damage_dice": "1d6+2",
+            },
+          ],
+          "actions": [],
+        },
+      ],
+      "image": "/api/images/monsters/goblin.png",
+      "url": "https://www.dnd5eapi.co/api/2014/monsters/goblin",
+      "updated_at": "2025-10-24T20:42:13.741Z",
+      "forms": [],
+      "legendary_actions": [],
+      "reactions": [],
+    },
+    {
+      "index": "archmage",
+      "name": "Archmage",
+      "desc": "Archmages are powerful (and usually quite old) spellcasters dedicated to the study of the arcane arts. Benevolent ones counsel kings and queens, while evil ones rule as tyrants and pursue lichdom. Those who are neither good nor evil sequester themselves in remote towers to practice their magic without interruption. \n\nAn archmage typically has one or more apprentice mages, and an archmage’s abode has numerous magical wards and guardians to discourage interlopers.",
+      "size": "Medium",
+      "type": "humanoid",
+      "subtype": "any race",
+      "alignment": "any alignment",
+      "armor_class": [
+        {
+          "type": "dex",
+          "value": 12,
+        },
+        {
+          "type": "spell",
+          "value": 15,
+          "spell": {
+            "index": "mage-armor",
+            "name": "Mage Armor",
+            "url": "https://www.dnd5eapi.co/api/2014/spells/mage-armor",
+          },
+        },
+      ],
+      "hit_points": 99,
+      "hit_dice": "18d8",
+      "hit_points_roll": "18d8+18",
+      "speed": {
+        "walk": "30 ft.",
+      },
+      "strength": 10,
+      "dexterity": 14,
+      "constitution": 12,
+      "intelligence": 20,
+      "wisdom": 15,
+      "charisma": 16,
+      "proficiencies": [
+        {
+          "value": 9,
+          "proficiency": {
+            "index": "saving-throw-int",
+            "name": "Saving Throw: INT",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/saving-throw-int",
+          },
+        },
+        {
+          "value": 6,
+          "proficiency": {
+            "index": "saving-throw-wis",
+            "name": "Saving Throw: WIS",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/saving-throw-wis",
+          },
+        },
+        {
+          "value": 13,
+          "proficiency": {
+            "index": "skill-arcana",
+            "name": "Skill: Arcana",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-arcana",
+          },
+        },
+        {
+          "value": 13,
+          "proficiency": {
+            "index": "skill-history",
+            "name": "Skill: History",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-history",
+          },
+        },
+      ],
+      "damage_vulnerabilities": [],
+      "damage_resistances": [
+        "damage from spells",
+        "bludgeoning, piercing, and slashing from nonmagical attacks (from stoneskin)",
+      ],
+      "damage_immunities": [],
+      "condition_immunities": [],
+      "senses": {
+        "passive_perception": 12,
+      },
+      "languages": "any six languages",
+      "challenge_rating": 12,
+      "proficiency_bonus": 4,
+      "xp": 8400,
+      "special_abilities": [
+        {
+          "name": "Magic Resistance",
+          "desc": "The archmage has advantage on saving throws against spells and other magical effects.",
+          "damage": [],
+        },
+        {
+          "name": "Spellcasting",
+          "desc": "The archmage is an 18th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 17, +9 to hit with spell attacks). The archmage can cast disguise self and invisibility at will and has the following wizard spells prepared:\n\n- Cantrips (at will): fire bolt, light, mage hand, prestidigitation, shocking grasp\n- 1st level (4 slots): detect magic, identify, mage armor*, magic missile\n- 2nd level (3 slots): detect thoughts, mirror image, misty step\n- 3rd level (3 slots): counterspell, fly, lightning bolt\n- 4th level (3 slots): banishment, fire shield, stoneskin*\n- 5th level (3 slots): cone of cold, scrying, wall of force\n- 6th level (1 slot): globe of invulnerability\n- 7th level (1 slot): teleport\n- 8th level (1 slot): mind blank*\n- 9th level (1 slot): time stop\n* The archmage casts these spells on itself before combat.",
+          "spellcasting": {
+            "level": 18,
+            "ability": {
+              "index": "int",
+              "name": "INT",
+              "url": "https://www.dnd5eapi.co/api/2014/ability-scores/int",
+            },
+            "dc": 17,
+            "modifier": 9,
+            "components_required": ["V", "S", "M"],
+            "school": "wizard",
+            "slots": {
+              "1": 4,
+              "2": 3,
+              "3": 3,
+              "4": 3,
+              "5": 3,
+              "6": 1,
+              "7": 1,
+              "8": 1,
+              "9": 1,
+            },
+            "spells": [
+              {
+                "name": "Disguise Self",
+                "level": 1,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/disguise-self",
+                "usage": {
+                  "type": "at will",
+                  "rest_types": [],
+                },
+              },
+              {
+                "name": "Invisibility",
+                "level": 2,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/invisibility",
+                "usage": {
+                  "type": "at will",
+                  "rest_types": [],
+                },
+              },
+              {
+                "name": "Fire Bolt",
+                "level": 0,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/fire-bolt",
+              },
+              {
+                "name": "Light",
+                "level": 0,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/light",
+              },
+              {
+                "name": "Mage Hand",
+                "level": 0,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/mage-hand",
+              },
+              {
+                "name": "Prestidigitation",
+                "level": 0,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/prestidigitation",
+              },
+              {
+                "name": "Shocking Grasp",
+                "level": 0,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/shocking-grasp",
+              },
+              {
+                "name": "Detect Magic",
+                "level": 1,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/detect-magic",
+              },
+              {
+                "name": "Identify",
+                "level": 1,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/identify",
+              },
+              {
+                "name": "Mage Armor",
+                "level": 1,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/mage-armor",
+                "notes": "Cast on self before combat",
+              },
+              {
+                "name": "Magic Missile",
+                "level": 1,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/magic-missile",
+              },
+              {
+                "name": "Detect Thoughts",
+                "level": 2,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/detect-thoughts",
+              },
+              {
+                "name": "Mirror Image",
+                "level": 2,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/mirror-image",
+              },
+              {
+                "name": "Misty Step",
+                "level": 2,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/misty-step",
+              },
+              {
+                "name": "Counterspell",
+                "level": 3,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/counterspell",
+              },
+              {
+                "name": "Fly",
+                "level": 3,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/fly",
+              },
+              {
+                "name": "Lightning Bolt",
+                "level": 3,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/lightning-bolt",
+              },
+              {
+                "name": "Banishment",
+                "level": 4,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/banishment",
+              },
+              {
+                "name": "Fire Shield",
+                "level": 4,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/fire-shield",
+              },
+              {
+                "name": "Stoneskin",
+                "level": 4,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/stoneskin",
+                "notes": "Cast on self before combat",
+              },
+              {
+                "name": "Cone of Cold",
+                "level": 5,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/cone-of-cold",
+              },
+              {
+                "name": "Scrying",
+                "level": 5,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/scrying",
+              },
+              {
+                "name": "Wall of Force",
+                "level": 5,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/wall-of-force",
+              },
+              {
+                "name": "Globe of Invulnerability",
+                "level": 6,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/globe-of-invulnerability",
+              },
+              {
+                "name": "Teleport",
+                "level": 7,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/teleport",
+              },
+              {
+                "name": "Mind Blank",
+                "level": 8,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/mind-blank",
+                "notes": "Cast on self before combat",
+              },
+              {
+                "name": "Time Stop",
+                "level": 9,
+                "url": "https://www.dnd5eapi.co/api/2014/spells/time-stop",
+              },
+            ],
+          },
+          "damage": [],
+        },
+      ],
+      "actions": [
+        {
+          "name": "Dagger",
+          "desc": "Melee or Ranged Weapon Attack: +6 to hit, reach 5 ft. or range 20/60 ft., one target. Hit: 4 (1d4 + 2) piercing damage.",
+          "attack_bonus": 6,
+          "damage": [
+            {
+              "damage_type": {
+                "index": "piercing",
+                "name": "Piercing",
+                "url": "https://www.dnd5eapi.co/api/2014/damage-types/piercing",
+              },
+              "damage_dice": "1d4+2",
+            },
+          ],
+          "actions": [],
+        },
+      ],
+      "image": "/api/images/monsters/archmage.png",
+      "url": "https://www.dnd5eapi.co/api/2014/monsters/archmage",
+      "updated_at": "2025-10-24T20:42:13.741Z",
+      "forms": [],
+      "legendary_actions": [],
+      "reactions": [],
+    },
+  ],
+  // Coleccion: backgrounds (skills, tools, idiomas y equipo referencian la API)
+  "backgrounds": [
+    {
+      "index": "acolyte",
+      "name": "Acolyte",
+      "starting_proficiencies": [
+        {
+          "index": "skill-insight",
+          "name": "Skill: Insight",
+          "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-insight",
+        },
+        {
+          "index": "skill-religion",
+          "name": "Skill: Religion",
+          "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-religion",
+        },
+      ],
+      "language_options": {
+        "choose": 2,
+        "type": "languages",
+        "from": {
+          "option_set_type": "resource_list",
+          "resource_list_url": "https://www.dnd5eapi.co/api/2014/languages",
+        },
+      },
+      "starting_equipment": [
+        {
+          "equipment": {
+            "index": "clothes-common",
+            "name": "Clothes, common",
+            "url": "https://www.dnd5eapi.co/api/2014/equipment/clothes-common",
+          },
+          "quantity": 1,
+        },
+        {
+          "equipment": {
+            "index": "pouch",
+            "name": "Pouch",
+            "url": "https://www.dnd5eapi.co/api/2014/equipment/pouch",
+          },
+          "quantity": 1,
+        },
+      ],
+      "starting_equipment_options": [
+        {
+          "choose": 1,
+          "type": "equipment",
+          "from": {
+            "option_set_type": "equipment_category",
+            "equipment_category": {
+              "index": "holy-symbols",
+              "name": "Holy Symbols",
+              "url": "https://www.dnd5eapi.co/api/2014/equipment-categories/holy-symbols",
+            },
+          },
+        },
+      ],
+      "feature": {
+        "name": "Shelter of the Faithful",
+        "desc": [
+          "As an acolyte, you command the respect of those who share your faith, and you can perform the religious ceremonies of your deity. You and your adventuring companions can expect to receive free healing and care at a temple, shrine, or other established presence of your faith, though you must provide any material components needed for spells. Those who share your religion will support you (but only you) at a modest lifestyle.",
+          "You might also have ties to a specific temple dedicated to your chosen deity or pantheon, and you have a residence there. This could be the temple where you used to serve, if you remain on good terms with it, or a temple where you have found a new home. While near your temple, you can call upon the priests for assistance, provided the assistance you ask for is not hazardous and you remain in good standing with your temple.",
+        ],
+      },
+      "personality_traits": {
+        "choose": 2,
+        "type": "personality_traits",
+        "from": {
+          "option_set_type": "options_array",
+          "options": [
+            {
+              "option_type": "string",
+              "string": "I idolize a particular hero of my faith, and constantly refer to that person's deeds and example.",
+            },
+            {
+              "option_type": "string",
+              "string": "I can find common ground between the fiercest enemies, empathizing with them and always working toward peace.",
+            },
+            {
+              "option_type": "string",
+              "string": "I see omens in every event and action. The gods try to speak to us, we just need to listen.",
+            },
+            {
+              "option_type": "string",
+              "string": "Nothing can shake my optimistic attitude.",
+            },
+            {
+              "option_type": "string",
+              "string": "I quote (or misquote) sacred texts and proverbs in almost every situation.",
+            },
+            {
+              "option_type": "string",
+              "string": "I am tolerant (or intolerant) of other faiths and respect (or condemn) the worship of other gods.",
+            },
+            {
+              "option_type": "string",
+              "string": "I've enjoyed fine food, drink, and high society among my temple's elite. Rough living grates on me.",
+            },
+            {
+              "option_type": "string",
+              "string": "I've spent so long in the temple that I have little practical experience dealing with people in the outside world.",
+            },
+          ],
+        },
+      },
+      "ideals": {
+        "choose": 1,
+        "type": "ideals",
+        "from": {
+          "option_set_type": "options_array",
+          "options": [
+            {
+              "option_type": "ideal",
+              "desc": "Tradition. The ancient traditions of worship and sacrifice must be preserved and upheld.",
+              "alignments": [
+                {
+                  "index": "lawful-good",
+                  "name": "Lawful Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-good",
+                },
+                {
+                  "index": "lawful-neutral",
+                  "name": "Lawful Neutral",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-neutral",
+                },
+                {
+                  "index": "lawful-evil",
+                  "name": "Lawful Evil",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-evil",
+                },
+              ],
+            },
+            {
+              "option_type": "ideal",
+              "desc": "Charity. I always try to help those in need, no matter what the personal cost.",
+              "alignments": [
+                {
+                  "index": "lawful-good",
+                  "name": "Lawful Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-good",
+                },
+                {
+                  "index": "neutral-good",
+                  "name": "Neutral Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/neutral-good",
+                },
+                {
+                  "index": "chaotic-good",
+                  "name": "Chaotic Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/chaotic-good",
+                },
+              ],
+            },
+            {
+              "option_type": "ideal",
+              "desc": "Change. We must help bring about the changes the gods are constantly working in the world.",
+              "alignments": [
+                {
+                  "index": "chaotic-good",
+                  "name": "Chaotic Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/chaotic-good",
+                },
+                {
+                  "index": "chaotic-neutral",
+                  "name": "Chaotic Neutral",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/chaotic-neutral",
+                },
+                {
+                  "index": "chaotic-evil",
+                  "name": "Chaotic Evil",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/chaotic-evil",
+                },
+              ],
+            },
+            {
+              "option_type": "ideal",
+              "desc": "Power. I hope to one day rise to the top of my faith's religious hierarchy.",
+              "alignments": [
+                {
+                  "index": "lawful-good",
+                  "name": "Lawful Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-good",
+                },
+                {
+                  "index": "lawful-neutral",
+                  "name": "Lawful Neutral",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-neutral",
+                },
+                {
+                  "index": "lawful-evil",
+                  "name": "Lawful Evil",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-evil",
+                },
+              ],
+            },
+            {
+              "option_type": "ideal",
+              "desc": "Faith. I trust that my deity will guide my actions. I have faith that if I work hard, things will go well.",
+              "alignments": [
+                {
+                  "index": "lawful-good",
+                  "name": "Lawful Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-good",
+                },
+                {
+                  "index": "lawful-neutral",
+                  "name": "Lawful Neutral",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-neutral",
+                },
+                {
+                  "index": "lawful-evil",
+                  "name": "Lawful Evil",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-evil",
+                },
+              ],
+            },
+            {
+              "option_type": "ideal",
+              "desc": "Aspiration. I seek to prove myself worthy of my god's favor by matching my actions against his or her teachings.",
+              "alignments": [
+                {
+                  "index": "lawful-good",
+                  "name": "Lawful Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-good",
+                },
+                {
+                  "index": "neutral-good",
+                  "name": "Neutral Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/neutral-good",
+                },
+                {
+                  "index": "chaotic-good",
+                  "name": "Chaotic Good",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/chaotic-good",
+                },
+                {
+                  "index": "lawful-neutral",
+                  "name": "Lawful Neutral",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-neutral",
+                },
+                {
+                  "index": "neutral",
+                  "name": "Neutral",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/neutral",
+                },
+                {
+                  "index": "chaotic-neutral",
+                  "name": "Chaotic Neutral",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/chaotic-neutral",
+                },
+                {
+                  "index": "lawful-evil",
+                  "name": "Lawful Evil",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/lawful-evil",
+                },
+                {
+                  "index": "neutral-evil",
+                  "name": "Neutral Evil",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/neutral-evil",
+                },
+                {
+                  "index": "chaotic-evil",
+                  "name": "Chaotic Evil",
+                  "url": "https://www.dnd5eapi.co/api/2014/alignments/chaotic-evil",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      "bonds": {
+        "choose": 1,
+        "type": "bonds",
+        "from": {
+          "option_set_type": "options_array",
+          "options": [
+            {
+              "option_type": "string",
+              "string": "I would die to recover an ancient relic of my faith that was lost long ago.",
+            },
+            {
+              "option_type": "string",
+              "string": "I will someday get revenge on the corrupt temple hierarchy who branded me a heretic.",
+            },
+            {
+              "option_type": "string",
+              "string": "I owe my life to the priest who took me in when my parents died.",
+            },
+            {
+              "option_type": "string",
+              "string": "Everything I do is for the common people.",
+            },
+            {
+              "option_type": "string",
+              "string": "I will do anything to protect the temple where I served.",
+            },
+            {
+              "option_type": "string",
+              "string": "I seek to preserve a sacred text that my enemies consider heretical and seek to destroy.",
+            },
+          ],
+        },
+      },
+      "flaws": {
+        "choose": 1,
+        "type": "flaws",
+        "from": {
+          "option_set_type": "options_array",
+          "options": [
+            {
+              "option_type": "string",
+              "string": "I judge others harshly, and myself even more severely.",
+            },
+            {
+              "option_type": "string",
+              "string": "I put too much trust in those who wield power within my temple's hierarchy.",
+            },
+            {
+              "option_type": "string",
+              "string": "My piety sometimes leads me to blindly trust those that profess faith in my god.",
+            },
+            {
+              "option_type": "string",
+              "string": "I am inflexible in my thinking.",
+            },
+            {
+              "option_type": "string",
+              "string": "I am suspicious of strangers and expect the worst of them.",
+            },
+            {
+              "option_type": "string",
+              "string": "Once I pick a goal, I become obsessed with it to the detriment of everything else in my life.",
+            },
+          ],
+        },
+      },
+      "url": "https://www.dnd5eapi.co/api/2014/backgrounds/acolyte",
+      "updated_at": "2025-10-24T20:42:12.352Z",
+    },
+  ],
+  "characters": [
+    {
+      "name": "Liora",
+      "player": "Ana_id",
+      "level": 5,
+      "class": {
+        "index": "cleric",
+        "url": "https://www.dnd5eapi.co/api/2014/classes/cleric",
+      },
+      "subclass": {
+        "index": "light-domain",
+        "url": "https://www.dnd5eapi.co/api/2014/subclasses/light-domain",
+      },
+      "race": {
+        "index": "human",
+        "url": "https://www.dnd5eapi.co/api/2014/races/human",
+      },
+      "subrace": {
+        "index": "variant",
+        "url": "https://www.dnd5eapi.co/api/2014/subraces/variant-human",
+      },
+      "alignment": "neutral-good",
+
+      "background": {
+        "index": "acolyte",
+        "url": "https://mi_dominio.com/api/acolyte",
+      },
+      "created_at": "2026-02-01",
+      "updated_at": "2026-02-14",
+      "hit_points": 7,
+      "hit_dice": "2d6",
+      "hit_points_roll": "1d6",
+      "speed": {
+        "walk": "30 ft.",
+      },
+      "strength": 8,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 8,
+      "charisma": 8,
+      "proficiencies": [
+        {
+          "proficiency": {
+            "index": "skill-insight",
+            "name": "Skill: insight",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-insight",
+          },
+        },
+        {
+          "proficiency": {
+            "index": "skill-religion",
+            "name": "Skill: religion",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-religion",
+          },
+        },
+      ],
+      "proficiency_bonus": 3,
+      "saving_throws": ["wis", "cha"],
+
+      "inventory": {
+        "items": [
+          "https://mi_dominio.com/api/item_hb_001",
+          "https://mi_dominio.com/api/item_hb_002",
+          "https://www.dnd5eapi.co/api/2014/equipment/healer-s-kit",
+        ],
+        "cash": { "cp": 0, "sp": 4, "gp": 12, "pp": 0 },
+      },
+      "spellcasting": {
+        "spell_slots": { "1": 4, "2": 3, "3": 2 },
+        "known_spells": [
+          "https://mi_dominio.com/api/spell_hb_001",
+          "https://www.dnd5eapi.co/api/2014/spells/guiding-bolt",
+        ],
+        "prepared_spells": ["https://mi_dominio.com/api/spell_hb_001"],
+        "spell_save_dc": 15,
+        "spell_attack_bonus": 7,
+      },
+      "notes": "Seguidora de la Aguja del Alba.",
+      "campaings": ["SombraDragon2026_id"],
+      "tags": ["pj", "clerigo"],
+    },
+    {
+      "name": "Mara",
+      "player": "Luis_id",
+      "level": 3,
+      "class": {
+        "index": "ranger",
+        "url": "https://www.dnd5eapi.co/api/2014/classes/ranger",
+      },
+      "subclass": {
+        "index": "hunter",
+        "url": "https://www.dnd5eapi.co/api/2014/subclasses/hunter",
+      },
+      "race": {
+        "index": "half-elf",
+        "url": "https://www.dnd5eapi.co/api/2014/races/half-elf",
+      },
+      "subrace": null,
+      "alignment": "chaotic-good",
+      "background": {
+        "index": "outlander",
+        "url": "https://www.dnd5eapi.co/api/2014/backgrounds/outlander",
+      },
+      "created_at": "2026-02-05",
+      "updated_at": "2026-02-15",
+      "hit_points": 26,
+      "hit_dice": "3d10",
+      "hit_points_roll": "3d10+3",
+      "speed": {
+        "walk": "30 ft.",
+      },
+      "strength": 13,
+      "dexterity": 16,
+      "constitution": 12,
+      "intelligence": 10,
+      "wisdom": 14,
+      "charisma": 9,
+      "proficiencies": [
+        {
+          "proficiency": {
+            "index": "skill-perception",
+            "name": "Skill: Perception",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-perception",
+          },
+        },
+        {
+          "proficiency": {
+            "index": "skill-survival",
+            "name": "Skill: Survival",
+            "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-survival",
+          },
+        },
+      ],
+      "proficiency_bonus": 2,
+      "saving_throws": ["str", "dex"],
+      "inventory": {
+        "items": [
+          "https://mi_dominio.com/api/item_hb_004",
+          "https://www.dnd5eapi.co/api/2014/equipment/longbow",
+        ],
+        "cash": { "cp": 2, "sp": 0, "gp": 7, "pp": 0 },
+      },
+      "spellcasting": {
+        "spell_slots": { "1": 3 },
+        "known_spells": [
+          "https://www.dnd5eapi.co/api/2014/spells/hail-of-thorns",
+        ],
+        "prepared_spells": [],
+        "spell_save_dc": 12,
+        "spell_attack_bonus": 4,
+      },
+      "notes": "Exploradora de los bosques fronterizos.",
+      "campaings": ["SombraDragon2026_id"],
+      "tags": ["pj", "explorador"],
+    },
+  ],
+  "users": [
+    {
+      "username": "Oraxiel",
+      "email": "marcosrs5775@gmail.com",
+      "password": "hashed_password_admin",
+      "created_at": "2026-01-10T08:00:00Z",
+      "updated_at": "2026-02-10T09:30:00Z",
+      "role": "admin",
+    },
+    {
+      "username": "Ana",
+      "email": "ana@mi_dominio.com",
+      "password": "hashed_password_ana",
+      "created_at": "2026-01-15T10:00:00Z",
+      "updated_at": "2026-02-14T12:00:00Z",
+      "role": "user",
+    },
+    {
+      "username": "Luis",
+      "email": "luis@mi_dominio.com",
+      "password": "hashed_password_luis",
+      "created_at": "2026-01-20T14:30:00Z",
+      "updated_at": "2026-02-15T16:45:00Z",
+      "role": "user",
+    },
+  ],
+  "campaings": [
+    {
+      "name": "La Sombra del Dragón",
+      "description": "Una campaña épica donde los héroes deben enfrentarse a un antiguo dragón que amenaza con destruir el reino.",
+      "created_at": "2026-02-01T12:00:00Z",
+      "updated_at": "2026-02-20T18:00:00Z",
+      "dm": "Oraxiel_id",
+      "players": ["ana_id", "luis_id"],
+      "code": "SombraDragon2026",
+      "notes": [
+        {
+          "author": "Oraxiel_id",
+          "path": "/multi/notes/note1.md",
+          "created_at": "2026-02-05T15:00:00Z",
+          "visibility": "private",
+        },
+        {
+          "author": "Ana_id",
+          "path": "/multi/notes/note2.md",
+          "created_at": "2026-02-10T10:30:00Z",
+          "visibility": "public",
+        },
+        {
+          "author": "Luis_id",
+          "path": "/multi/notes/note3.md",
+          "created_at": "2026-02-12T14:45:00Z",
+          "visibility": "private",
+        },
+      ],
+    },
+  ],
+}
