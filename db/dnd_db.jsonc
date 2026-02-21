@@ -1,6 +1,6 @@
 {
   // Metadata y endpoints base de la API oficial
-  "meta": {
+  /*"meta": {
     "source_api": "https://www.dnd5eapi.co/api/2014/",
     "notes": "BD auxiliar para homebrew y PJs. Los campos pueden variar por documento.",
     "schema_version": "1.0",
@@ -31,7 +31,7 @@
       "magic-items": "https://www.dnd5eapi.co/api/2014/magic-items",
       "monsters": "https://www.dnd5eapi.co/api/2014/monsters",
     },
-  },
+  },*/
   // Coleccion: items (armas, armaduras, equipo y consumibles)
   "items": [
     //Arma
