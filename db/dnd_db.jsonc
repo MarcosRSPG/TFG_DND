@@ -80,8 +80,14 @@
         },
       },
       "url": "https://www.dnd5eapi.co/api/2014/equipment/battleaxe",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:12.926Z",
       "updated_at": "2025-10-24T20:42:12.926Z",
       "contents": [],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": null,
+      },
     },
     //Escudo
     {
@@ -107,9 +113,15 @@
         "unit": "gp",
       },
       "url": "https://www.dnd5eapi.co/api/2014/equipment/shield",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:12.926Z",
       "updated_at": "2025-10-24T20:42:12.926Z",
       "contents": [],
       "properties": [],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": null,
+      },
     },
     //Armadura
     {
@@ -136,9 +148,15 @@
         "unit": "gp",
       },
       "url": "https://www.dnd5eapi.co/api/2014/equipment/half-plate-armor",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:12.926Z",
       "updated_at": "2025-10-24T20:42:12.926Z",
       "contents": [],
       "properties": [],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": null,
+      },
     },
     //Equipo de aventura
     {
@@ -162,9 +180,15 @@
       },
       "weight": 0,
       "url": "https://www.dnd5eapi.co/api/2014/equipment/bell",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:12.926Z",
       "updated_at": "2025-10-24T20:42:12.926Z",
       "contents": [],
       "properties": [],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": null,
+      },
     },
   ],
   // Coleccion: spells (escuela y clases referencian la API)
@@ -229,7 +253,13 @@
         },
       ],
       "url": "https://www.dnd5eapi.co/api/2014/spells/acid-arrow",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:14.618Z",
       "updated_at": "2025-10-24T20:42:14.618Z",
+      "_meta": {
+        "is_deleted": false,
+        "image_url": null,
+      },
     },
     {
       "higher_level": [],
@@ -277,7 +307,13 @@
         },
       ],
       "url": "https://www.dnd5eapi.co/api/2014/spells/alarm",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:14.619Z",
       "updated_at": "2025-10-24T20:42:14.619Z",
+      "_meta": {
+        "is_deleted": false,
+        "image_url": null,
+      },
     },
     {
       "higher_level": [],
@@ -319,7 +355,13 @@
         },
       ],
       "url": "https://www.dnd5eapi.co/api/2014/spells/mage-armor",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:14.619Z",
       "updated_at": "2025-10-24T20:42:14.619Z",
+      "_meta": {
+        "is_deleted": false,
+        "image_url": null,
+      },
     },
   ],
   "monsters": [
@@ -586,9 +628,16 @@
       ],
       "image": "/api/images/monsters/adult-blue-dragon.png",
       "url": "https://www.dnd5eapi.co/api/2014/monsters/adult-blue-dragon",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:13.741Z",
       "updated_at": "2025-10-24T20:42:13.741Z",
       "forms": [],
       "reactions": [],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": "/api/images/monsters/adult-blue-dragon.png",
+        "token_url": "/api/tokens/monsters/adult-blue-dragon-token.png",
+      },
     },
     {
       "index": "goblin",
@@ -692,10 +741,17 @@
       ],
       "image": "/api/images/monsters/goblin.png",
       "url": "https://www.dnd5eapi.co/api/2014/monsters/goblin",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:13.741Z",
       "updated_at": "2025-10-24T20:42:13.741Z",
       "forms": [],
       "legendary_actions": [],
       "reactions": [],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": "/api/images/monsters/goblin.png",
+        "token_url": "/api/tokens/monsters/goblin-token.png",
+      },
     },
     {
       "index": "archmage",
@@ -983,10 +1039,17 @@
       ],
       "image": "/api/images/monsters/archmage.png",
       "url": "https://www.dnd5eapi.co/api/2014/monsters/archmage",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:13.741Z",
       "updated_at": "2025-10-24T20:42:13.741Z",
       "forms": [],
       "legendary_actions": [],
       "reactions": [],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": "/api/images/monsters/archmage.png",
+        "token_url": "/api/tokens/monsters/archmage-token.png",
+      },
     },
   ],
   // Coleccion: backgrounds (skills, tools, idiomas y equipo referencian la API)
@@ -1326,7 +1389,12 @@
         },
       },
       "url": "https://www.dnd5eapi.co/api/2014/backgrounds/acolyte",
+      "created_by": "system_seed",
+      "created_at": "2025-10-24T20:42:12.352Z",
       "updated_at": "2025-10-24T20:42:12.352Z",
+      "_meta": {
+        "is_deleted": false,
+      },
     },
   ],
   "characters": [
@@ -1356,6 +1424,7 @@
         "index": "acolyte",
         "url": "https://mi_dominio.com/api/acolyte",
       },
+      "created_by": "Ana_id",
       "created_at": "2026-02-01",
       "updated_at": "2026-02-14",
       "hit_points": 7,
@@ -1410,6 +1479,11 @@
       "notes": "Seguidora de la Aguja del Alba.",
       "campaings": ["SombraDragon2026_id"],
       "tags": ["pj", "clerigo"],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": "/api/images/characters/liora.png",
+        "token_url": "/api/tokens/characters/liora-token.png",
+      },
     },
     {
       "name": "Mara",
@@ -1433,6 +1507,7 @@
         "index": "outlander",
         "url": "https://www.dnd5eapi.co/api/2014/backgrounds/outlander",
       },
+      "created_by": "Luis_id",
       "created_at": "2026-02-05",
       "updated_at": "2026-02-15",
       "hit_points": 26,
@@ -1484,6 +1559,11 @@
       "notes": "Exploradora de los bosques fronterizos.",
       "campaings": ["SombraDragon2026_id"],
       "tags": ["pj", "explorador"],
+      "_meta": {
+        "is_deleted": false,
+        "image_url": "/api/images/characters/mara.png",
+        "token_url": "/api/tokens/characters/mara-token.png",
+      },
     },
   ],
   "users": [
@@ -1491,6 +1571,7 @@
       "username": "Oraxiel",
       "email": "marcosrs5775@gmail.com",
       "password": "hashed_password_admin",
+      "created_by": "system_seed",
       "created_at": "2026-01-10T08:00:00Z",
       "updated_at": "2026-02-10T09:30:00Z",
       "role": "admin",
@@ -1499,6 +1580,7 @@
       "username": "Ana",
       "email": "ana@mi_dominio.com",
       "password": "hashed_password_ana",
+      "created_by": "system_seed",
       "created_at": "2026-01-15T10:00:00Z",
       "updated_at": "2026-02-14T12:00:00Z",
       "role": "user",
@@ -1507,6 +1589,7 @@
       "username": "Luis",
       "email": "luis@mi_dominio.com",
       "password": "hashed_password_luis",
+      "created_by": "system_seed",
       "created_at": "2026-01-20T14:30:00Z",
       "updated_at": "2026-02-15T16:45:00Z",
       "role": "user",
@@ -1516,6 +1599,7 @@
     {
       "name": "La Sombra del Dragón",
       "description": "Una campaña épica donde los héroes deben enfrentarse a un antiguo dragón que amenaza con destruir el reino.",
+      "created_by": "Oraxiel_id",
       "created_at": "2026-02-01T12:00:00Z",
       "updated_at": "2026-02-20T18:00:00Z",
       "dm": "Oraxiel_id",
@@ -1541,6 +1625,142 @@
           "visibility": "private",
         },
       ],
+    },
+  ],
+  "predefined_battles": [
+    {
+      "id": "battle_def_001",
+      "campaign_id": "SombraDragon2026_id",
+      "name": "Emboscada en el puente",
+      "description": "Encuentro predefinido con monstruos y PJs semilla para inicializar combate automatico.",
+      "initiative_order": [
+        "Liora",
+        "Goblin 1",
+        "Mara",
+        "Krix el Tuerto",
+      ],
+      "participants": {
+        "characters": [
+          {
+            "character_name": "Liora",
+            "character_player": "Ana_id",
+          },
+          {
+            "character_name": "Mara",
+            "character_player": "Luis_id",
+          },
+        ],
+        "monsters": [
+          {
+            "name": "Goblin 1",
+            "monster_ref": "https://www.dnd5eapi.co/api/2014/monsters/goblin",
+          },
+          {
+            "name": "Krix el Tuerto",
+            "monster_ref": "https://www.dnd5eapi.co/api/2014/monsters/goblin",
+          },
+        ],
+      },
+      "created_by": "Oraxiel_id",
+      "created_at": "2026-02-16T18:00:00Z",
+      "updated_at": "2026-02-16T18:00:00Z",
+      "status": "active",
+    },
+  ],
+  "campaign_combat_trackers": [
+    {
+      "id": "camp_tracker_001",
+      "campaign_id": "SombraDragon2026_id",
+      "character_name": "Liora",
+      "character_player": "Ana_id",
+      "hp": {
+        "max": 32,
+        "current": 24,
+        "temp": 0,
+      },
+      "spell_slots": {
+        "1": { "max": 4, "used": 1 },
+        "2": { "max": 3, "used": 0 },
+        "3": { "max": 2, "used": 0 },
+      },
+      "custom_slots": [
+        {
+          "name": "Canalizar Divinidad",
+          "max": 1,
+          "used": 0,
+        },
+      ],
+      "notes": "Tracker editable por el jugador durante la campaña.",
+      "created_by": "Ana_id",
+      "created_at": "2026-02-20T19:18:00Z",
+      "updated_at": "2026-02-20T19:18:00Z",
+    },
+    {
+      "id": "camp_tracker_002",
+      "campaign_id": "SombraDragon2026_id",
+      "character_name": "Mara",
+      "character_player": "Luis_id",
+      "hp": {
+        "max": 28,
+        "current": 28,
+        "temp": 0,
+      },
+      "spell_slots": {
+        "1": { "max": 3, "used": 0 },
+      },
+      "custom_slots": [
+        {
+          "name": "Dados de golpe",
+          "max": 3,
+          "used": 1,
+        },
+      ],
+      "notes": "Slots personalizados para cualquier recurso del PJ.",
+      "created_by": "Luis_id",
+      "created_at": "2026-02-20T19:18:00Z",
+      "updated_at": "2026-02-20T19:18:00Z",
+    },
+    {
+      "id": "camp_tracker_003",
+      "campaign_id": "SombraDragon2026_id",
+      "monster_name": "Goblin 1",
+      "monster_ref": "https://www.dnd5eapi.co/api/2014/monsters/goblin",
+      "hp": {
+        "max": 7,
+        "current": 7,
+        "temp": 0,
+      },
+      "quick_stats": {
+        "ac": 15,
+        "speed": "30 ft.",
+        "passive_perception": 9,
+      },
+      "actions": ["Scimitar", "Shortbow"],
+      "notes": "Tracker de monstruo para ajuste de vida y consulta rapida del DM.",
+      "created_by": "Oraxiel_id",
+      "created_at": "2026-02-20T19:18:00Z",
+      "updated_at": "2026-02-20T19:18:00Z",
+    },
+    {
+      "id": "camp_tracker_004",
+      "campaign_id": "SombraDragon2026_id",
+      "monster_name": "Krix el Tuerto",
+      "monster_ref": "https://www.dnd5eapi.co/api/2014/monsters/goblin",
+      "hp": {
+        "max": 7,
+        "current": 7,
+        "temp": 0,
+      },
+      "quick_stats": {
+        "ac": 15,
+        "speed": "30 ft.",
+        "passive_perception": 9,
+      },
+      "actions": ["Scimitar", "Shortbow"],
+      "notes": "Tracker de monstruo para ajuste de vida y consulta rapida del DM.",
+      "created_by": "Oraxiel_id",
+      "created_at": "2026-02-20T19:18:00Z",
+      "updated_at": "2026-02-20T19:18:00Z",
     },
   ],
 }
