@@ -1,0 +1,40 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+
+API_USERNAME = os.getenv("API_USERNAME")
+API_PASSWORD = os.getenv("API_PASSWORD")
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+
+
+@app.get("/")
+def read_root():
+    return {"message": "API running"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+from routes import login, users
+
+app.include_router(users.router)
+app.include_router(login.router)

@@ -1,0 +1,45 @@
+services:
+  backend:
+    build:
+      context: ./API
+    container_name: tfg_backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - tfg_network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7-jammy
+    container_name: tfg_mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo_root
+      - MONGO_INITDB_ROOT_PASSWORD=mongo_root_pass
+      - MONGO_INITDB_DATABASE=db_grimledger
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - tfg_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+networks:
+  tfg_network:
+    driver: bridge
