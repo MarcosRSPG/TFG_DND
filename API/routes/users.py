@@ -1,39 +1,17 @@
 import fastapi
-from fastapi import Depends, HTTPException, status
-from dotenv import load_dotenv
+from fastapi import Depends, HTTPException
 from services import users_service
-from main import oauth2_scheme
-from jose import jwt, JWTError
+from services.auth_service import get_current_user
 from models.User import UserSchema
-import os
-
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 router = fastapi.APIRouter()
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if not payload.get("email"):
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    return payload
-
 @router.get("/users", response_model_exclude_none=True)
-def get_users() -> list[UserSchema]:
+def get_users(current_user: dict = Depends(get_current_user)) -> list[UserSchema]:
     return users_service.get_all_users()
 
 @router.get("/users/{id}", response_model_exclude_none=True)
-def get_user(id: str) -> UserSchema:
+def get_user(id: str, current_user: dict = Depends(get_current_user)) -> UserSchema:
     return users_service.get_user_by_id(id)
 
 @router.post("/users", response_model_exclude_none=True)

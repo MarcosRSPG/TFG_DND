@@ -2,10 +2,10 @@
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
 import os
 from services.api_token_service import require_api_token_hash
+from services.auth_service import oauth2_scheme
 
 load_dotenv()
 
@@ -25,9 +25,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
-
 
 @app.get("/")
 def read_root():
