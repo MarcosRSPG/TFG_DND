@@ -12,9 +12,9 @@ from services import users_service
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
 def _verify_password(plain_password: str, stored_password: str | None) -> bool:
@@ -47,7 +47,11 @@ def _build_login_response(user, token: str) -> LoginResponse:
 
 
 def authenticate_login(request: LoginRequest) -> LoginResponse:
-    user = users_service.get_user_by_email(request.email, include_password=True)
+    identifier = request.email or request.username
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Debes enviar email o username")
+
+    user = users_service.get_user_by_login(identifier, include_password=True)
     if not user or not _verify_password(request.password, user.password):
         raise HTTPException(status_code=401, detail="Credenciales invalidas")
 

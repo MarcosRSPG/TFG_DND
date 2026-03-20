@@ -3,7 +3,7 @@ services:
   backend:
     volumes:
       - ./API:/app
-    command: ["/bin/sh", "-c", "pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --no-cache-dir -r requirements.txt 2>/dev/null; uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]
+    command: ["sleep", "infinity"]
 
   mongodb:
     volumes:

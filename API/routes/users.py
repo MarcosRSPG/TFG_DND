@@ -28,27 +28,25 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return payload
 
-@router.get("/api/users")
+@router.get("/users", response_model_exclude_none=True)
 def get_users() -> list[UserSchema]:
     return users_service.get_all_users()
 
-@router.get("/api/users/{id}")
+@router.get("/users/{id}", response_model_exclude_none=True)
 def get_user(id: str) -> UserSchema:
     return users_service.get_user_by_id(id)
 
-@router.post("/api/users")
-def create_user(user: UserSchema, current_user: dict = Depends(get_current_user)) -> UserSchema:
-    if not current_user.get("isAdmin"):
-        raise HTTPException(status_code=403, detail="No tienes permisos de administrador.")
+@router.post("/users", response_model_exclude_none=True)
+def create_user(user: UserSchema) -> UserSchema:
     return users_service.create_user(user)
 
-@router.put("/api/users/{id}")
+@router.put("/users/{id}", response_model_exclude_none=True)
 def update_user(id: str, user: UserSchema, current_user: dict = Depends(get_current_user)) -> UserSchema:
     if not current_user.get("isAdmin"):
         raise HTTPException(status_code=403, detail="No tienes permisos de administrador.")
     return users_service.update_user(id, user)
 
-@router.delete("/api/users/{id}")
+@router.delete("/users/{id}")
 def delete_user(id: str, current_user: dict = Depends(get_current_user)):
     if not current_user.get("isAdmin"):
         raise HTTPException(status_code=403, detail="No tienes permisos de administrador.")

@@ -1,10 +1,10 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict
 
 
 class UserSchema(BaseModel):
     id: str | None = None
     username: str
-    email: EmailStr
+    email: str
     password: str | None = None
     role: str = "user"
     created_by: str | None = None

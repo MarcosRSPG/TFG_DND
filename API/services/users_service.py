@@ -12,11 +12,13 @@ from models.User import UserSchema
 
 load_dotenv()
 
-MONGODB_URI = os.getenv(
-    "MONGODB_URI",
-    "mongodb://mongo_root:mongo_root_pass@mongodb:27017/db_grimledger?authSource=admin",
-)
-MONGODB_DATABASE = os.getenv("MONGODB_DATABASE", "db_grimledger")
+MONGODB_DATABASE = os.getenv("MONGODB_DATABASE")
+MONGODB_PORT = os.getenv("MONGODB_PORT")
+MONGODB_PASSWORD = os.getenv("MONGODB_PASSWORD")
+MONGODB_USERNAME = os.getenv("MONGODB_USERNAME")
+
+MONGODB_URI = F"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
+
 
 _client = MongoClient(MONGODB_URI)
 _db = _client[MONGODB_DATABASE]
@@ -95,6 +97,7 @@ def create_user(user_schema: UserSchema) -> UserSchema:
     try:
         result = _users.insert_one(doc)
         created = _users.find_one({"_id": result.inserted_id})
+        
         return _to_schema(created)
     except PyMongoError as exc:
         raise HTTPException(status_code=500, detail=f"Error creating user: {exc}") from exc

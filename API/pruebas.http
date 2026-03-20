@@ -1,0 +1,28 @@
+
+###
+@token = pega_aqui_tu_jwt
+@api_token_hash = a5f6669472645c3daeb70e84666a029fc1b17a97ea67e2dd4565761a153b66a0
+
+POST http://localhost:8000/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
+X-API-Token: {{api_token_hash}}
+
+{
+    "username": "Oraxiel",
+    "email": "marcosrs5775@gmail.com",
+    "password": "admin",
+    "created_by": "system_seed",
+    "role": "admin"
+}
+
+### 
+
+POST http://localhost:8000/login
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+
+{
+    "username": "Oraxiel",
+    "password": "admin"
+}

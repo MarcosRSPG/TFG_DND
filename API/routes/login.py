@@ -6,14 +6,14 @@ from services.login_service import authenticate_login, authenticate_login_form, 
 
 router = fastapi.APIRouter()
 
-@router.post('/api/login', response_model=LoginResponse)
+@router.post('/login', response_model=LoginResponse)
 def login(request: LoginRequest):
     return authenticate_login(request)
 
-@router.post('/api/token', response_model=LoginResponse)
+@router.post('/token', response_model=LoginResponse)
 def login_token(form_data: OAuth2PasswordRequestForm = Depends()):
     return authenticate_login_form(form_data)
 
-@router.post('/api/logout')
+@router.post('/logout')
 def logout():
     return logout_service()
