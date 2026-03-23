@@ -1,12 +1,10 @@
 import hmac
 import hashlib
-import os
-
 from fastapi import Header, HTTPException, status
-
+from config import API_TOKEN
 
 def require_api_token_hash(x_api_token: str | None = Header(default=None, alias="X-API-Token")) -> None:
-    plain_token = os.getenv("API_TOKEN")
+    plain_token = API_TOKEN
     if not plain_token:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -5,7 +5,7 @@ from services.auth_service import get_current_user
 from models.Login import LoginRequest, LoginResponse
 from services.login_service import authenticate_login, authenticate_login_form, logout_service
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post('/login', response_model=LoginResponse)
 def login(request: LoginRequest):

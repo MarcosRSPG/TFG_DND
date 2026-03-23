@@ -33,7 +33,7 @@ X-API-Token: {{api_token_hash}}
 
 ### 4) Login: solo token general
 # @name login
-POST {{host}}/login
+POST {{host}}/auth/login
 Content-Type: application/json
 X-API-Token: {{api_token_hash}}
 
@@ -45,7 +45,7 @@ X-API-Token: {{api_token_hash}}
 ### 5) Negativo: con token general pero sin JWT de usuario debe fallar (401)
 GET {{host}}/users
 X-API-Token: {{api_token_hash}}
-
+Authorization: Bearer {{login.response.body.$.access_token}}
 ### 6) Listar usuarios: token general + JWT de usuario
 GET {{host}}/users
 X-API-Token: {{api_token_hash}}
@@ -68,6 +68,6 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 }
 
 ### 9) Logout: token general + JWT de usuario
-POST {{host}}/logout
+POST {{host}}/auth/logout
 X-API-Token: {{api_token_hash}}
 Authorization: Bearer {{login.response.body.$.access_token}}

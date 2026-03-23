@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-import os
 
 import bcrypt
 from bson import ObjectId
@@ -9,13 +8,7 @@ from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
 from models.User import UserSchema
-
-load_dotenv()
-
-MONGODB_DATABASE = os.getenv("MONGODB_DATABASE")
-MONGODB_PORT = os.getenv("MONGODB_PORT")
-MONGODB_PASSWORD = os.getenv("MONGODB_PASSWORD")
-MONGODB_USERNAME = os.getenv("MONGODB_USERNAME")
+from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
 
 MONGODB_URI = F"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
@@ -107,7 +100,7 @@ def update_user(user_id: str, user: UserSchema) -> UserSchema:
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user id")
 
-    updates = user.model_dump(exclude_none=True, exclude={"id", "created_by", "created_at"})
+    updates = user.model_dump(exclude_none=True, exclude={"_id", "created_by", "created_at"})
 
     if "password" in updates:
         updates["password"] = bcrypt.hashpw(
