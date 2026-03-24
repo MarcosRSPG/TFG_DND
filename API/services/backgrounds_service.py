@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 import bcrypt
+from models.Background import BackgroundSchema
 from bson import ObjectId
 from fastapi import HTTPException
 from pymongo import MongoClient
@@ -18,7 +19,7 @@ _db = _client[MONGODB_DATABASE]
 _backgrounds = _db["backgrounds"]
 
 
-def get_all_backgrounds() -> list[dict]:
+def get_all_backgrounds() -> list[BackgroundSchema]:
     try:
         docs = list(_backgrounds.find({}))
         try:
@@ -28,12 +29,12 @@ def get_all_backgrounds() -> list[dict]:
                 docs.append({**background_real, "_id": background_real.get("index")})
         except requests.RequestException as exc:
             raise HTTPException(status_code=500, detail=f"Error retrieving backgrounds from external API: {exc}") from exc
-        return [doc for doc in docs]
+        return [BackgroundSchema(**doc) for doc in docs]
     except PyMongoError as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving backgrounds: {exc}") from exc
 
 
-def get_background_by_id(background_id: str):
+def get_background_by_id(background_id: str) -> BackgroundSchema:
     if not ObjectId.is_valid(background_id):
         raise HTTPException(status_code=400, detail="Invalid background id")
 
@@ -44,15 +45,15 @@ def get_background_by_id(background_id: str):
             background_real = requests.get(API_DND5E + f"backgrounds/{background_id}").json()
             if background_real.get("error"):
                 raise HTTPException(status_code=404, detail="Background not found")
-            return background_real
+            return BackgroundSchema(**background_real)
         except requests.RequestException as exc:
             raise HTTPException(status_code=500, detail=f"Error retrieving background from external API: {exc}") from exc
     if not doc:
         raise HTTPException(status_code=404, detail="Background not found")
-    return doc
+    return BackgroundSchema(**doc)
 
 
-def create_background(background_schema, created_by: str):
+def create_background(background_schema: BackgroundSchema, created_by: str) -> BackgroundSchema:
     background_data = background_schema.model_dump(exclude_none=True)
     background_data["meta"]["created_by"] = created_by
     background_data["meta"]["created_at"] = datetime.now(timezone.utc).isoformat()
@@ -60,13 +61,12 @@ def create_background(background_schema, created_by: str):
     try:
         result = _backgrounds.insert_one(background_data)
         created = _backgrounds.find_one({"_id": result.inserted_id})
-        
-        return created
+        return BackgroundSchema(**created)
     except PyMongoError as exc:
         raise HTTPException(status_code=500, detail=f"Error creating background: {exc}") from exc
 
 
-def update_background(background_id: str, background):
+def update_background(background_id: str, background: BackgroundSchema) -> BackgroundSchema:
     if not ObjectId.is_valid(background_id):
         raise HTTPException(status_code=400, detail="Invalid background id")
 
@@ -82,7 +82,7 @@ def update_background(background_id: str, background):
         raise HTTPException(status_code=404, detail="Background not found")
 
     updated = _backgrounds.find_one({"_id": ObjectId(background_id)})
-    return updated
+    return BackgroundSchema(**updated)
 
 
 def delete_background(background_id: str) -> dict:

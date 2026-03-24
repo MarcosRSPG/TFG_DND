@@ -1,4 +1,5 @@
 # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+#python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
