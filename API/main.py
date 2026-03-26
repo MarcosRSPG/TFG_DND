@@ -1,5 +1,5 @@
 # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-#python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+# python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +24,8 @@ def read_root():
 def health():
     return {"status": "ok"}
 
-from routes import login, users
+from routes import login, users, backgrounds
 
 app.include_router(users.router)
 app.include_router(login.router)
+app.include_router(backgrounds.router)

@@ -2,7 +2,7 @@ import fastapi
 from fastapi import Depends
 from services.auth_service import get_current_user
 from models.Background import BackgroundSchema
-from API.services import backgrounds_service
+from services import backgrounds_service
 router = fastapi.APIRouter(prefix="/backgrounds", tags=["backgrounds"])
 
 @router.get("", response_model_exclude_none=True)
@@ -15,7 +15,8 @@ def get_background(id: str):
 
 @router.post("", response_model_exclude_none=True)
 def create_background(background: BackgroundSchema, current_user: dict = Depends(get_current_user)) -> BackgroundSchema:
-    return backgrounds_service.create_background(background, current_user.get("_id"))
+    actor_id = current_user.get("user_id") or current_user.get("_id") or current_user.get("email")
+    return backgrounds_service.create_background(background, actor_id)
 
 @router.put("/{id}", response_model_exclude_none=True)
 def update_background(id: str, background: BackgroundSchema):

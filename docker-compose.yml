@@ -5,6 +5,7 @@ services:
     container_name: tfg_backend
     ports:
       - "8000:8000"
+      - "5678:5678"
     depends_on:
       mongodb:
         condition: service_healthy
