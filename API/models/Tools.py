@@ -1,0 +1,23 @@
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, Field
+from Generico import BaseSchema, ResourceReference, CostSchema
+
+
+class ToolSchema(BaseSchema):
+	index: str
+	name: str
+	equipment_category: ResourceReference = ResourceReference({
+        "index": "tools",
+        "name": "Tools",
+        "url": "/api/2014/equipment-categories/tools"
+    })
+	tool_category: str
+	cost: CostSchema
+	weight: Optional[float] = None
+	desc: List[str] = Field(default_factory=list)
+	special: List[str] = Field(default_factory=list)
+	url: str
+	contents: List[Dict[str, Any]] = Field(default_factory=list)
+	properties: List[Dict[str, Any]] = Field(default_factory=list)
+
+	model_config = ConfigDict(extra="allow")
