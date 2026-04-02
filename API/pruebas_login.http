@@ -1,0 +1,34 @@
+### Variables base
+@host = http://localhost:8000
+@api_token_hash = 32e469f398b2dd6e89892d33012ae447e046070c18c9f6c5f1a2430a039e5db7
+
+### Usuario de prueba
+@username = Oraxiel
+@password = admin
+
+### Variables que se rellenan automaticamente tras login
+@token =
+@user_id =
+
+### Login normal
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### Obtener token con form-data OAuth2
+POST {{host}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+X-API-Token: {{api_token_hash}}
+
+username={{username}}&password={{password}}
+
+### Logout
+POST {{host}}/auth/logout
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}

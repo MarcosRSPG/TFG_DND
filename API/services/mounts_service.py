@@ -5,12 +5,12 @@ from bson import ObjectId
 from fastapi import HTTPException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
-import requests
+
+from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
 
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME, API_DND5E
-
-MONGODB_URI = F"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
+MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
 
 _client = MongoClient(MONGODB_URI)
@@ -26,41 +26,27 @@ def _to_schema(doc: dict) -> MountSchema:
     return MountSchema(**payload)
 
 
-def get_all_mounts() -> list[MountSchema]:
-    try:
-        docs = list(_mounts.find({'equipment_category.index': 'mount'}))
-        try:
-            mounts_originales = requests.get(API_DND5E + "mounts").json().get("results", [])
-            for mount in mounts_originales:
-                mount_real = requests.get(API_DND5E + f"mounts/{mount['index']}").json()
-                docs.append({**mount_real, "_id": mount_real.get("index")})
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving mounts from external API: {exc}") from exc
-        return [_to_schema(doc) for doc in docs]
-    except PyMongoError as exc:
-        raise HTTPException(status_code=500, detail=f"Error retrieving mounts: {exc}") from exc
+def get_all() -> list[MountSchema]:
+    docs = merge_docs("mount")
+    return [_to_schema(doc) for doc in docs]
 
 
-def get_mount_by_id(mount_id: str) -> MountSchema:
-    if not ObjectId.is_valid(mount_id):
-        raise HTTPException(status_code=400, detail="Invalid mount id")
+def get_by_id(mount_id: str) -> MountSchema:
+    doc = get_local_doc_by_id(mount_id)
+    if doc is not None:
+        if doc.get("equipment_category", {}).get("index") != "mount":
+            raise HTTPException(status_code=404, detail="Mount not found")
+        return _to_schema(doc)
 
-    doc = _mounts.find_one({"_id": ObjectId(mount_id)})
-    if not doc:
-        # Try to find in external API
-        try:
-            mount_real = requests.get(API_DND5E + f"mounts/{mount_id}").json()
-            if mount_real.get("error"):
-                raise HTTPException(status_code=404, detail="Mount not found")
-            return MountSchema(**mount_real)
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving mount from external API: {exc}") from exc
-    if not doc:
+    mount_real = get_remote_doc_by_id(mount_id)
+    if mount_real is None:
         raise HTTPException(status_code=404, detail="Mount not found")
-    return _to_schema(doc)
+    if mount_real.get("equipment_category", {}).get("index") != "mount":
+        raise HTTPException(status_code=404, detail="Mount not found")
+    return MountSchema(**mount_real)
 
 
-def create_mount(mount_schema: MountSchema, created_by: str | None) -> MountSchema:
+def create(mount_schema: MountSchema, created_by: str | None) -> MountSchema:
     mount_data = mount_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -86,7 +72,7 @@ def create_mount(mount_schema: MountSchema, created_by: str | None) -> MountSche
         raise HTTPException(status_code=500, detail=f"Error creating mount: {exc}") from exc
 
 
-def update_mount(mount_id: str, mount: MountSchema) -> MountSchema:
+def update(mount_id: str, mount: MountSchema) -> MountSchema:
     if not ObjectId.is_valid(mount_id):
         raise HTTPException(status_code=400, detail="Invalid mount id")
 
@@ -109,6 +95,22 @@ def update_mount(mount_id: str, mount: MountSchema) -> MountSchema:
 
     updated = _mounts.find_one({"_id": ObjectId(mount_id)})
     return _to_schema(updated)
+
+
+def get_all_mounts() -> list[MountSchema]:
+    return get_all()
+
+
+def get_mount_by_id(mount_id: str) -> MountSchema:
+    return get_by_id(mount_id)
+
+
+def create_mount(mount: MountSchema, created_by: str | None) -> MountSchema:
+    return create(mount, created_by)
+
+
+def update_mount(mount_id: str, mount: MountSchema) -> MountSchema:
+    return update(mount_id, mount)
 
 
 def delete_mount(mount_id: str) -> dict:

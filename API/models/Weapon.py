@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
-from Generico import BaseSchema, CostSchema, ResourceReference
+from models.Generico import BaseSchema, CostSchema, ResourceReference
 
 
 class WeaponDamageSchema(BaseModel):
@@ -22,16 +22,18 @@ class WeaponSchema(BaseSchema):
     name: str
     desc: List[str] = Field(default_factory=list)
     special: List[str] = Field(default_factory=list)
-    equipment_category: ResourceReference = ResourceReference({
-        "index": "weapons",
-        "name": "Weapons",
-        "url": "/api/2014/equipment-categories/weapons"
-    })
+    equipment_category: ResourceReference = Field(
+        default_factory=lambda: ResourceReference(
+            index="weapons",
+            name="Weapons",
+            url="/api/2014/equipment-categories/weapons",
+        )
+    )
     weapon_category: str
     weapon_range: str
     category_range: str
     cost: CostSchema
-    damage: WeaponDamageSchema
+    damage: Optional[WeaponDamageSchema] = None
     range: WeaponRangeSchema
     weight: Optional[float] = None
     properties: List[ResourceReference] = Field(default_factory=list)

@@ -5,12 +5,12 @@ from bson import ObjectId
 from fastapi import HTTPException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
-import requests
+
+from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
 
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME, API_DND5E
-
-MONGODB_URI = F"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
+MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
 
 _client = MongoClient(MONGODB_URI)
@@ -26,41 +26,27 @@ def _to_schema(doc: dict) -> AdventuringGearSchema:
     return AdventuringGearSchema(**payload)
 
 
-def get_all_adventuringgears() -> list[AdventuringGearSchema]:
-    try:
-        docs = list(_adventuringgears.find({'equipment_category.index': 'adventuring-gear'}))
-        try:
-            adventuringgears_originales = requests.get(API_DND5E + "adventuringgears").json().get("results", [])
-            for adventuringgear in adventuringgears_originales:
-                adventuringgear_real = requests.get(API_DND5E + f"adventuringgears/{adventuringgear['index']}").json()
-                docs.append({**adventuringgear_real, "_id": adventuringgear_real.get("index")})
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving adventuring gears from external API: {exc}") from exc
-        return [_to_schema(doc) for doc in docs]
-    except PyMongoError as exc:
-        raise HTTPException(status_code=500, detail=f"Error retrieving adventuring gears: {exc}") from exc
+def get_all() -> list[AdventuringGearSchema]:
+    docs = merge_docs("adventuring-gear")
+    return [_to_schema(doc) for doc in docs]
 
 
-def get_adventuringgear_by_id(adventuringgear_id: str) -> AdventuringGearSchema:
-    if not ObjectId.is_valid(adventuringgear_id):
-        raise HTTPException(status_code=400, detail="Invalid adventuring gear id")
+def get_by_id(adventuringgear_id: str) -> AdventuringGearSchema:
+    doc = get_local_doc_by_id(adventuringgear_id)
+    if doc is not None:
+        if doc.get("equipment_category", {}).get("index") != "adventuring-gear":
+            raise HTTPException(status_code=404, detail="Adventuring Gear not found")
+        return _to_schema(doc)
 
-    doc = _adventuringgears.find_one({"_id": ObjectId(adventuringgear_id)})
-    if not doc:
-        # Try to find in external API
-        try:
-            adventuringgear_real = requests.get(API_DND5E + f"adventuringgears/{adventuringgear_id}").json()
-            if adventuringgear_real.get("error"):
-                raise HTTPException(status_code=404, detail="Adventuring Gear not found")
-            return AdventuringGearSchema(**adventuringgear_real)
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving adventuring gear from external API: {exc}") from exc
-    if not doc:
+    adventuringgear_real = get_remote_doc_by_id(adventuringgear_id)
+    if adventuringgear_real is None:
         raise HTTPException(status_code=404, detail="Adventuring Gear not found")
-    return _to_schema(doc)
+    if adventuringgear_real.get("equipment_category", {}).get("index") != "adventuring-gear":
+        raise HTTPException(status_code=404, detail="Adventuring Gear not found")
+    return AdventuringGearSchema(**adventuringgear_real)
 
 
-def create_adventuringgear(adventuringgear_schema: AdventuringGearSchema, created_by: str | None) -> AdventuringGearSchema:
+def create(adventuringgear_schema: AdventuringGearSchema, created_by: str | None) -> AdventuringGearSchema:
     adventuringgear_data = adventuringgear_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -86,7 +72,7 @@ def create_adventuringgear(adventuringgear_schema: AdventuringGearSchema, create
         raise HTTPException(status_code=500, detail=f"Error creating adventuring gear: {exc}") from exc
 
 
-def update_adventuringgear(adventuringgear_id: str, adventuringgear: AdventuringGearSchema) -> AdventuringGearSchema:
+def update(adventuringgear_id: str, adventuringgear: AdventuringGearSchema) -> AdventuringGearSchema:
     if not ObjectId.is_valid(adventuringgear_id):
         raise HTTPException(status_code=400, detail="Invalid adventuring gear id")
 
@@ -111,9 +97,25 @@ def update_adventuringgear(adventuringgear_id: str, adventuringgear: Adventuring
     return _to_schema(updated)
 
 
+def get_all_adventuringgears() -> list[AdventuringGearSchema]:
+    return get_all()
+
+
+def get_adventuringgear_by_id(adventuringgear_id: str) -> AdventuringGearSchema:
+    return get_by_id(adventuringgear_id)
+
+
+def create_adventuringgear(adventuringgear_schema: AdventuringGearSchema, created_by: str | None) -> AdventuringGearSchema:
+    return create(adventuringgear_schema, created_by)
+
+
+def update_adventuringgear(adventuringgear_id: str, adventuringgear: AdventuringGearSchema) -> AdventuringGearSchema:
+    return update(adventuringgear_id, adventuringgear)
+
+
 def delete_adventuringgear(adventuringgear_id: str) -> dict:
     if not ObjectId.is_valid(adventuringgear_id):
-        raise HTTPException(status_code=400, detail="Invalid adventuringgear id")
+        raise HTTPException(status_code=400, detail="Invalid adventuring gear id")
 
     result = _adventuringgears.delete_one({"_id": ObjectId(adventuringgear_id)})
     if result.deleted_count == 0:

@@ -1,0 +1,91 @@
+### Variables base
+@host = http://localhost:8000
+@api_token_hash = 32e469f398b2dd6e89892d33012ae447e046070c18c9f6c5f1a2430a039e5db7
+
+### Login previo
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+
+{
+  "username": "Oraxiel",
+  "password": "admin"
+}
+
+### Listar items
+GET {{host}}/items
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+### Listar items por tipo: weapon
+GET {{host}}/items/type/weapon
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+### Listar items por tipo: armor
+GET {{host}}/items/type/armor
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+### Obtener item por id y tipo
+GET {{host}}/items/66c8f1c2b1a2c3d4e5f67890?type=weapon
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+### Crear item weapon
+POST {{host}}/items?type=weapon
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+{
+  "index": "test-weapon",
+  "name": "Test Weapon",
+  "desc": [],
+  "special": [],
+  "weapon_category": "Martial",
+  "weapon_range": "Melee",
+  "category_range": "Martial Melee",
+  "cost": {
+    "quantity": 1,
+    "unit": "gp"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weight": 2,
+  "properties": [],
+  "url": "https://example.com/items/test-weapon"
+}
+
+### Actualizar item weapon
+PUT {{host}}/items/66c8f1c2b1a2c3d4e5f67890?type=weapon
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+{
+  "index": "test-weapon",
+  "name": "Test Weapon Updated",
+  "desc": [],
+  "special": [],
+  "weapon_category": "Martial",
+  "weapon_range": "Melee",
+  "category_range": "Martial Melee",
+  "cost": {
+    "quantity": 2,
+    "unit": "gp"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weight": 3,
+  "properties": [],
+  "url": "https://example.com/items/test-weapon"
+}
+
+### Eliminar item
+DELETE {{host}}/items/66c8f1c2b1a2c3d4e5f67890
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}

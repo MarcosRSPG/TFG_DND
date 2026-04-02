@@ -26,7 +26,7 @@ def _to_schema(doc: dict) -> BackgroundSchema:
     return BackgroundSchema(**payload)
 
 
-def get_all_backgrounds() -> list[BackgroundSchema]:
+def get_all() -> list[BackgroundSchema]:
     try:
         docs = list(_backgrounds.find({}))
         try:
@@ -41,7 +41,7 @@ def get_all_backgrounds() -> list[BackgroundSchema]:
         raise HTTPException(status_code=500, detail=f"Error retrieving backgrounds: {exc}") from exc
 
 
-def get_background_by_id(background_id: str) -> BackgroundSchema:
+def get_by_id(background_id: str) -> BackgroundSchema:
     if not ObjectId.is_valid(background_id):
         raise HTTPException(status_code=400, detail="Invalid background id")
 
@@ -60,7 +60,7 @@ def get_background_by_id(background_id: str) -> BackgroundSchema:
     return _to_schema(doc)
 
 
-def create_background(background_schema: BackgroundSchema, created_by: str | None) -> BackgroundSchema:
+def create(background_schema: BackgroundSchema, created_by: str | None) -> BackgroundSchema:
     background_data = background_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -86,7 +86,7 @@ def create_background(background_schema: BackgroundSchema, created_by: str | Non
         raise HTTPException(status_code=500, detail=f"Error creating background: {exc}") from exc
 
 
-def update_background(background_id: str, background: BackgroundSchema) -> BackgroundSchema:
+def update(background_id: str, background: BackgroundSchema) -> BackgroundSchema:
     if not ObjectId.is_valid(background_id):
         raise HTTPException(status_code=400, detail="Invalid background id")
 
@@ -111,7 +111,7 @@ def update_background(background_id: str, background: BackgroundSchema) -> Backg
     return _to_schema(updated)
 
 
-def delete_background(background_id: str) -> dict:
+def delete(background_id: str) -> dict:
     if not ObjectId.is_valid(background_id):
         raise HTTPException(status_code=400, detail="Invalid background id")
 

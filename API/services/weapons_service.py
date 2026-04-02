@@ -5,12 +5,12 @@ from bson import ObjectId
 from fastapi import HTTPException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
-import requests
+
+from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
 
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME, API_DND5E
-
-MONGODB_URI = F"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
+MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
 
 _client = MongoClient(MONGODB_URI)
@@ -26,41 +26,27 @@ def _to_schema(doc: dict) -> WeaponSchema:
     return WeaponSchema(**payload)
 
 
-def get_all_weapons() -> list[WeaponSchema]:
-    try:
-        docs = list(_weapons.find({'equipment_category.index': 'weapon'}))
-        try:
-            weapons_originales = requests.get(API_DND5E + "weapons").json().get("results", [])
-            for weapon in weapons_originales:
-                weapon_real = requests.get(API_DND5E + f"weapons/{weapon['index']}").json()
-                docs.append({**weapon_real, "_id": weapon_real.get("index")})
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving weapons from external API: {exc}") from exc
-        return [_to_schema(doc) for doc in docs]
-    except PyMongoError as exc:
-        raise HTTPException(status_code=500, detail=f"Error retrieving weapons: {exc}") from exc
+def get_all() -> list[WeaponSchema]:
+    docs = merge_docs("weapon")
+    return [_to_schema(doc) for doc in docs]
 
 
-def get_weapon_by_id(weapon_id: str) -> WeaponSchema:
-    if not ObjectId.is_valid(weapon_id):
-        raise HTTPException(status_code=400, detail="Invalid weapon id")
+def get_by_id(weapon_id: str) -> WeaponSchema:
+    doc = get_local_doc_by_id(weapon_id)
+    if doc is not None:
+        if doc.get("equipment_category", {}).get("index") != "weapon":
+            raise HTTPException(status_code=404, detail="Weapon not found")
+        return _to_schema(doc)
 
-    doc = _weapons.find_one({"_id": ObjectId(weapon_id)})
-    if not doc:
-        # Try to find in external API
-        try:
-            weapon_real = requests.get(API_DND5E + f"weapons/{weapon_id}").json()
-            if weapon_real.get("error"):
-                raise HTTPException(status_code=404, detail="Weapon not found")
-            return WeaponSchema(**weapon_real)
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving weapon from external API: {exc}") from exc
-    if not doc:
+    weapon_real = get_remote_doc_by_id(weapon_id)
+    if weapon_real is None:
         raise HTTPException(status_code=404, detail="Weapon not found")
-    return _to_schema(doc)
+    if weapon_real.get("equipment_category", {}).get("index") != "weapon":
+        raise HTTPException(status_code=404, detail="Weapon not found")
+    return WeaponSchema(**weapon_real)
 
 
-def create_weapon(weapon_schema: WeaponSchema, created_by: str | None) -> WeaponSchema:
+def create(weapon_schema: WeaponSchema, created_by: str | None) -> WeaponSchema:
     weapon_data = weapon_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -86,7 +72,7 @@ def create_weapon(weapon_schema: WeaponSchema, created_by: str | None) -> Weapon
         raise HTTPException(status_code=500, detail=f"Error creating weapon: {exc}") from exc
 
 
-def update_weapon(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
+def update(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
     if not ObjectId.is_valid(weapon_id):
         raise HTTPException(status_code=400, detail="Invalid weapon id")
 
@@ -111,7 +97,27 @@ def update_weapon(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
     return _to_schema(updated)
 
 
+def get_all_weapons() -> list[WeaponSchema]:
+    return get_all()
+
+
+def get_weapon_by_id(weapon_id: str) -> WeaponSchema:
+    return get_by_id(weapon_id)
+
+
+def create_weapon(weapon: WeaponSchema, created_by: str | None) -> WeaponSchema:
+    return create(weapon, created_by)
+
+
+def update_weapon(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
+    return update(weapon_id, weapon)
+
+
 def delete_weapon(weapon_id: str) -> dict:
+    return delete(weapon_id)
+
+
+def delete(weapon_id: str) -> dict:
     if not ObjectId.is_valid(weapon_id):
         raise HTTPException(status_code=400, detail="Invalid weapon id")
 

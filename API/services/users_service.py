@@ -32,7 +32,7 @@ def _to_schema(doc: dict, include_password: bool = False) -> UserSchema:
     return UserSchema(**payload)
 
 
-def get_all_users() -> list[UserSchema]:
+def get_all() -> list[UserSchema]:
     try:
         docs = list(_users.find({}))
         return [_to_schema(doc) for doc in docs]
@@ -40,7 +40,7 @@ def get_all_users() -> list[UserSchema]:
         raise HTTPException(status_code=500, detail=f"Error retrieving users: {exc}") from exc
 
 
-def get_user_by_id(user_id: str) -> UserSchema:
+def get_by_id(user_id: str) -> UserSchema:
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user id")
 
@@ -50,21 +50,21 @@ def get_user_by_id(user_id: str) -> UserSchema:
     return _to_schema(doc)
 
 
-def get_user_by_email(email: str, include_password: bool = False) -> UserSchema | None:
+def get_by_email(email: str, include_password: bool = False) -> UserSchema | None:
     doc = _users.find_one({"email": email})
     if not doc:
         return None
     return _to_schema(doc, include_password=include_password)
 
 
-def get_user_by_login(identifier: str, include_password: bool = False) -> UserSchema | None:
+def get_by_login(identifier: str, include_password: bool = False) -> UserSchema | None:
     doc = _users.find_one({"$or": [{"email": identifier}, {"username": identifier}]})
     if not doc:
         return None
     return _to_schema(doc, include_password=include_password)
 
 
-def create_user(user_schema: UserSchema) -> UserSchema:
+def create(user_schema: UserSchema) -> UserSchema:
     user_data = user_schema.model_dump(exclude_none=True)
 
     existing = _users.find_one({"email": user_data["email"]})
@@ -95,7 +95,7 @@ def create_user(user_schema: UserSchema) -> UserSchema:
         raise HTTPException(status_code=500, detail=f"Error creating user: {exc}") from exc
 
 
-def update_user(user_id: str, user: UserSchema) -> UserSchema:
+def update(user_id: str, user: UserSchema) -> UserSchema:
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user id")
 
@@ -119,7 +119,7 @@ def update_user(user_id: str, user: UserSchema) -> UserSchema:
     return _to_schema(updated)
 
 
-def delete_user(user_id: str) -> dict:
+def delete(user_id: str) -> dict:
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user id")
 

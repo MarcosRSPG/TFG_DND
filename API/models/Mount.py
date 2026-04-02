@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 from pydantic import BaseModel, ConfigDict, Field
-from Generico import BaseSchema, ResourceReference, CostSchema
+from models.Generico import BaseSchema, ResourceReference, CostSchema
 
 
 class SpeedSchema(BaseModel):
@@ -15,11 +15,13 @@ class MountSchema(BaseSchema):
 	name: str
 	desc: List[str] = Field(default_factory=list)
 	special: List[str] = Field(default_factory=list)
-	equipment_category: ResourceReference = ResourceReference({
-        "index": "mounts",
-        "name": "Mounts",
-        "url": "/api/2014/equipment-categories/mounts"
-    })
+	equipment_category: ResourceReference = Field(
+		default_factory=lambda: ResourceReference(
+			index="mounts",
+			name="Mounts",
+			url="/api/2014/equipment-categories/mounts",
+		)
+	)
 	vehicle_category: str
 	cost: CostSchema
 	speed: SpeedSchema

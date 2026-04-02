@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
-from Generico import BaseSchema, ResourceReference, CostSchema
+from models.Generico import BaseSchema, ResourceReference, CostSchema
 
 
 
@@ -18,11 +18,13 @@ class ArmorSchema(BaseSchema):
 	name: str
 	desc: List[str] = Field(default_factory=list)
 	special: List[str] = Field(default_factory=list)
-	equipment_category: ResourceReference = ResourceReference({
-		"index": "armor",
-        "name": "Armor",
-        "url": "/api/2014/equipment-categories/armor"
-    })
+	equipment_category: ResourceReference = Field(
+		default_factory=lambda: ResourceReference(
+			index="armor",
+			name="Armor",
+			url="/api/2014/equipment-categories/armor",
+		)
+	)
 	armor_category: str
 	armor_class: ArmorClassSchema
 	str_minimum: int = 0

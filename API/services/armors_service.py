@@ -5,12 +5,12 @@ from bson import ObjectId
 from fastapi import HTTPException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
-import requests
+
+from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
 
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME, API_DND5E
-
-MONGODB_URI = F"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
+MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
 
 _client = MongoClient(MONGODB_URI)
@@ -26,41 +26,27 @@ def _to_schema(doc: dict) -> ArmorSchema:
     return ArmorSchema(**payload)
 
 
-def get_all_armors() -> list[ArmorSchema]:
-    try:
-        docs = list(_armors.find({'equipment_category.index': 'armor'}))
-        try:
-            armors_originales = requests.get(API_DND5E + "armors").json().get("results", [])
-            for armor in armors_originales:
-                armor_real = requests.get(API_DND5E + f"armors/{armor['index']}").json()
-                docs.append({**armor_real, "_id": armor_real.get("index")})
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving armors from external API: {exc}") from exc
-        return [_to_schema(doc) for doc in docs]
-    except PyMongoError as exc:
-        raise HTTPException(status_code=500, detail=f"Error retrieving armors: {exc}") from exc
+def get_all() -> list[ArmorSchema]:
+    docs = merge_docs("armor")
+    return [_to_schema(doc) for doc in docs]
 
 
-def get_armor_by_id(armor_id: str) -> ArmorSchema:
-    if not ObjectId.is_valid(armor_id):
-        raise HTTPException(status_code=400, detail="Invalid armor id")
+def get_by_id(armor_id: str) -> ArmorSchema:
+    doc = get_local_doc_by_id(armor_id)
+    if doc is not None:
+        if doc.get("equipment_category", {}).get("index") != "armor":
+            raise HTTPException(status_code=404, detail="Armor not found")
+        return _to_schema(doc)
 
-    doc = _armors.find_one({"_id": ObjectId(armor_id)})
-    if not doc:
-        # Try to find in external API
-        try:
-            armor_real = requests.get(API_DND5E + f"armors/{armor_id}").json()
-            if armor_real.get("error"):
-                raise HTTPException(status_code=404, detail="Armor not found")
-            return ArmorSchema(**armor_real)
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving armor from external API: {exc}") from exc
-    if not doc:
+    armor_real = get_remote_doc_by_id(armor_id)
+    if armor_real is None:
         raise HTTPException(status_code=404, detail="Armor not found")
-    return _to_schema(doc)
+    if armor_real.get("equipment_category", {}).get("index") != "armor":
+        raise HTTPException(status_code=404, detail="Armor not found")
+    return ArmorSchema(**armor_real)
 
 
-def create_armor(armor_schema: ArmorSchema, created_by: str | None) -> ArmorSchema:
+def create(armor_schema: ArmorSchema, created_by: str | None) -> ArmorSchema:
     armor_data = armor_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -86,7 +72,7 @@ def create_armor(armor_schema: ArmorSchema, created_by: str | None) -> ArmorSche
         raise HTTPException(status_code=500, detail=f"Error creating armor: {exc}") from exc
 
 
-def update_armor(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
+def update(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
     if not ObjectId.is_valid(armor_id):
         raise HTTPException(status_code=400, detail="Invalid armor id")
 
@@ -109,6 +95,22 @@ def update_armor(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
 
     updated = _armors.find_one({"_id": ObjectId(armor_id)})
     return _to_schema(updated)
+
+
+def get_all_armors() -> list[ArmorSchema]:
+    return get_all()
+
+
+def get_armor_by_id(armor_id: str) -> ArmorSchema:
+    return get_by_id(armor_id)
+
+
+def create_armor(armor: ArmorSchema, created_by: str | None) -> ArmorSchema:
+    return create(armor, created_by)
+
+
+def update_armor(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
+    return update(armor_id, armor)
 
 
 def delete_armor(armor_id: str) -> dict:

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
-from Generico import BaseSchema, ResourceReference
+from models.Generico import BaseSchema, ResourceReference
 
 
 class EquipmentItemSchema(BaseModel):

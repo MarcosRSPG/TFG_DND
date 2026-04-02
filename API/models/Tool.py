@@ -1,16 +1,18 @@
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
-from Generico import BaseSchema, ResourceReference, CostSchema
+from models.Generico import BaseSchema, ResourceReference, CostSchema
 
 
 class ToolSchema(BaseSchema):
 	index: str
 	name: str
-	equipment_category: ResourceReference = ResourceReference({
-        "index": "tools",
-        "name": "Tools",
-        "url": "/api/2014/equipment-categories/tools"
-    })
+	equipment_category: ResourceReference = Field(
+		default_factory=lambda: ResourceReference(
+			index="tools",
+			name="Tools",
+			url="/api/2014/equipment-categories/tools",
+		)
+	)
 	tool_category: str
 	cost: CostSchema
 	weight: Optional[float] = None

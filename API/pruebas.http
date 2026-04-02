@@ -74,7 +74,13 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 
 ###
 
-GET {{host}}/backgrounds
+GET {{host}}/items
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+###
+
+GET {{host}}/items/breastplate?type=armor
 X-API-Token: {{api_token_hash}}
 Authorization: Bearer {{login.response.body.$.access_token}}
 
