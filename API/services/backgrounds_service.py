@@ -5,10 +5,8 @@ from bson import ObjectId
 from fastapi import HTTPException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
-import requests
-
-
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME, API_DND5E
+from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from services.backgrounds_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
 MONGODB_URI = F"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
@@ -27,37 +25,19 @@ def _to_schema(doc: dict) -> BackgroundSchema:
 
 
 def get_all() -> list[BackgroundSchema]:
-    try:
-        docs = list(_backgrounds.find({}))
-        try:
-            backgrounds_originales = requests.get(API_DND5E + "backgrounds").json().get("results", [])
-            for background in backgrounds_originales:
-                background_real = requests.get(API_DND5E + f"backgrounds/{background['index']}").json()
-                docs.append({**background_real, "_id": background_real.get("index")})
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving backgrounds from external API: {exc}") from exc
-        return [_to_schema(doc) for doc in docs]
-    except PyMongoError as exc:
-        raise HTTPException(status_code=500, detail=f"Error retrieving backgrounds: {exc}") from exc
+    docs = merge_docs()
+    return [_to_schema(doc) for doc in docs]
 
 
 def get_by_id(background_id: str) -> BackgroundSchema:
-    if not ObjectId.is_valid(background_id):
-        raise HTTPException(status_code=400, detail="Invalid background id")
+    doc = get_local_doc_by_id(background_id)
+    if doc is not None:
+        return _to_schema(doc)
 
-    doc = _backgrounds.find_one({"_id": ObjectId(background_id)})
-    if not doc:
-        # Try to find in external API
-        try:
-            background_real = requests.get(API_DND5E + f"backgrounds/{background_id}").json()
-            if background_real.get("error"):
-                raise HTTPException(status_code=404, detail="Background not found")
-            return BackgroundSchema(**background_real)
-        except requests.RequestException as exc:
-            raise HTTPException(status_code=500, detail=f"Error retrieving background from external API: {exc}") from exc
-    if not doc:
+    background_real = get_remote_doc_by_id(background_id)
+    if background_real is None:
         raise HTTPException(status_code=404, detail="Background not found")
-    return _to_schema(doc)
+    return BackgroundSchema(**background_real)
 
 
 def create(background_schema: BackgroundSchema, created_by: str | None) -> BackgroundSchema:

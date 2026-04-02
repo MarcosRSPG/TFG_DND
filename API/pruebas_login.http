@@ -10,7 +10,7 @@
 @token =
 @user_id =
 
-### Login normal
+### Login normal - Este token se guarda en localStorage del cliente
 # @name login
 POST {{host}}/auth/login
 Content-Type: application/json
@@ -21,7 +21,7 @@ X-API-Token: {{api_token_hash}}
   "password": "{{password}}"
 }
 
-### Obtener token con form-data OAuth2
+### Obtener token con form-data OAuth2 (sin caducidad)
 POST {{host}}/auth/token
 Content-Type: application/x-www-form-urlencoded
 X-API-Token: {{api_token_hash}}

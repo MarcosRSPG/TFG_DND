@@ -1,14 +1,11 @@
-from functools import lru_cache
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-import requests
 from bson import ObjectId
-from fastapi import HTTPException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
-from config import API_DND5E, MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from config import API_DND5E, MONGODB_COLLECTION_ITEMS, MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from services.remote_catalog_repository import RemoteCatalogRepository
 
 
 MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
@@ -16,7 +13,8 @@ MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB
 
 _client = MongoClient(MONGODB_URI)
 _db = _client[MONGODB_DATABASE]
-_items = _db["items"]
+_items = _db[MONGODB_COLLECTION_ITEMS]
+_remote_equipment = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="equipment")
 
 
 _CATEGORY_ALIASES = {
@@ -39,35 +37,12 @@ def _doc_key(doc: dict[str, Any]) -> str:
     return str(doc.get("index") or doc.get("id") or doc.get("_id"))
 
 
-def _fetch_remote_detail(index: str) -> dict[str, Any] | None:
-    try:
-        detail = requests.get(API_DND5E + f"equipment/{index}", timeout=30).json()
-        if detail.get("error"):
-            return None
-        return detail
-    except requests.RequestException:
-        return None
-
-
-@lru_cache(maxsize=1)
 def get_remote_catalog() -> tuple[dict[str, Any], ...]:
-    try:
-        summaries = requests.get(API_DND5E + "equipment", timeout=30).json().get("results", [])
-        indexes = [summary.get("index") for summary in summaries if summary.get("index")]
-        docs: list[dict[str, Any]] = []
-        with ThreadPoolExecutor(max_workers=16) as executor:
-            futures = [executor.submit(_fetch_remote_detail, index) for index in indexes]
-            for future in as_completed(futures):
-                detail = future.result()
-                if detail is not None:
-                    docs.append(detail)
-        return tuple(docs)
-    except requests.RequestException as exc:
-        raise HTTPException(status_code=500, detail=f"Error retrieving equipment from external API: {exc}") from exc
+    return _remote_equipment.get_catalog()
 
 
 def clear_remote_cache() -> None:
-    get_remote_catalog.cache_clear()
+    _remote_equipment.clear_cache()
 
 
 def get_local_docs(category: str | None = None) -> list[dict[str, Any]]:
@@ -107,7 +82,5 @@ def get_local_doc_by_id(item_id: str) -> dict[str, Any] | None:
 
 
 def get_remote_doc_by_id(item_id: str) -> dict[str, Any] | None:
-    for doc in get_remote_catalog():
-        if doc.get("index") == item_id:
-            return doc
-    return None
+    return _remote_equipment.get_by_index(item_id)
+

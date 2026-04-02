@@ -1,0 +1,126 @@
+### Variables base
+@host = http://localhost:8000
+@api_token_hash = 32e469f398b2dd6e89892d33012ae447e046070c18c9f6c5f1a2430a039e5db7
+
+### Login previo
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+
+{
+  "username": "Oraxiel",
+  "password": "admin"
+}
+
+### GET ALL SPELLS (solo X-API-Token)
+GET {{host}}/spells/
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+
+
+### GET SPECIFIC SPELL (solo X-API-Token)
+GET {{host}}/spells/fireball
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+
+
+### GET ANOTHER SPELL (solo X-API-Token)
+GET {{host}}/spells/magic-missile
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+
+
+### CREATE NEW SPELL (requiere X-API-Token + Authorization)
+POST {{host}}/spells/
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+{
+  "index": "test-spell",
+  "name": "Test Spell",
+  "desc": [
+    "A test spell for API validation"
+  ],
+  "range": "60 feet",
+  "components": ["V", "S"],
+  "ritual": false,
+  "duration": "1 minute",
+  "concentration": true,
+  "casting_time": "1 action",
+  "level": 1,
+  "school": {
+    "index": "evocation",
+    "name": "Evocation",
+    "url": "/api/2014/magic-schools/evocation"
+  },
+  "classes": [
+    {
+      "index": "wizard",
+      "name": "Wizard",
+      "url": "/api/2014/classes/wizard"
+    }
+  ],
+  "url": "/api/2014/spells/test-spell"
+}
+
+
+### UPDATE SPELL (requiere X-API-Token + Authorization)
+PUT {{host}}/spells/test-spell
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+{
+  "index": "test-spell",
+  "name": "Test Spell Updated",
+  "desc": [
+    "An updated test spell for API validation"
+  ],
+  "range": "120 feet",
+  "components": ["V", "S", "M"],
+  "material": "A small crystal",
+  "ritual": false,
+  "duration": "2 minutes",
+  "concentration": true,
+  "casting_time": "1 bonus action",
+  "level": 2,
+  "school": {
+    "index": "evocation",
+    "name": "Evocation",
+    "url": "/api/2014/magic-schools/evocation"
+  },
+  "classes": [
+    {
+      "index": "wizard",
+      "name": "Wizard",
+      "url": "/api/2014/classes/wizard"
+    },
+    {
+      "index": "sorcerer",
+      "name": "Sorcerer",
+      "url": "/api/2014/classes/sorcerer"
+    }
+  ],
+  "url": "/api/2014/spells/test-spell"
+}
+
+
+### GET UPDATED SPELL (solo X-API-Token)
+GET {{host}}/spells/test-spell
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+
+
+### DELETE SPELL (requiere X-API-Token + Authorization)
+DELETE {{host}}/spells/test-spell
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+
+### VERIFY SPELL DELETED (should return 404)
+GET {{host}}/spells/test-spell
+Content-Type: application/json
+X-API-Token: {{api_token_hash}}

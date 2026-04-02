@@ -18,3 +18,9 @@ MONGODB_PASSWORD = os.getenv("MONGODB_PASSWORD")
 MONGODB_USERNAME = os.getenv("MONGODB_USERNAME")
 
 API_DND5E = os.getenv("API_DND5E")
+
+# MongoDB collection names
+MONGODB_COLLECTION_ITEMS = "items"  # Weapons, armors, tools, mounts, adventuring gears, magic items
+MONGODB_COLLECTION_MONSTERS = "monsters"
+MONGODB_COLLECTION_SPELLS = "spells"
+MONGODB_COLLECTION_BACKGROUNDS = "backgrounds"

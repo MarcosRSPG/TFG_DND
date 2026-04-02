@@ -13,25 +13,21 @@ X-API-Token: {{api_token_hash}}
   "password": "admin"
 }
 
-### Listar items
+### Listar items (solo X-API-Token)
 GET {{host}}/items
 X-API-Token: {{api_token_hash}}
-Authorization: Bearer {{login.response.body.$.access_token}}
 
-### Listar items por tipo: weapon
+### Listar items por tipo: weapon (solo X-API-Token)
 GET {{host}}/items/type/weapon
 X-API-Token: {{api_token_hash}}
-Authorization: Bearer {{login.response.body.$.access_token}}
 
-### Listar items por tipo: armor
+### Listar items por tipo: armor (solo X-API-Token)
 GET {{host}}/items/type/armor
 X-API-Token: {{api_token_hash}}
-Authorization: Bearer {{login.response.body.$.access_token}}
 
-### Obtener item por id y tipo
-GET {{host}}/items/66c8f1c2b1a2c3d4e5f67890?type=weapon
+### Obtener item por id y tipo (solo X-API-Token)
+GET {{host}}/items/69ce632fcdb131c442b1060c?type=weapon
 X-API-Token: {{api_token_hash}}
-Authorization: Bearer {{login.response.body.$.access_token}}
 
 ### Crear item weapon
 POST {{host}}/items?type=weapon
@@ -60,7 +56,7 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 }
 
 ### Actualizar item weapon
-PUT {{host}}/items/66c8f1c2b1a2c3d4e5f67890?type=weapon
+PUT {{host}}/items/69ce632fcdb131c442b1060c?type=weapon
 Content-Type: application/json
 X-API-Token: {{api_token_hash}}
 Authorization: Bearer {{login.response.body.$.access_token}}
@@ -86,6 +82,6 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 }
 
 ### Eliminar item
-DELETE {{host}}/items/66c8f1c2b1a2c3d4e5f67890
+DELETE {{host}}/items/69ce632fcdb131c442b1060c
 X-API-Token: {{api_token_hash}}
 Authorization: Bearer {{login.response.body.$.access_token}}

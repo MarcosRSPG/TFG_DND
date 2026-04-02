@@ -13,15 +13,13 @@ X-API-Token: {{api_token_hash}}
   "password": "admin"
 }
 
-### Listar backgrounds
+### Listar backgrounds (solo X-API-Token)
 GET {{host}}/backgrounds
 X-API-Token: {{api_token_hash}}
-Authorization: Bearer {{login.response.body.$.access_token}}
 
-### Obtener background por id
+### Obtener background por id (solo X-API-Token)
 GET {{host}}/backgrounds/66c8f1c2b1a2c3d4e5f67890
 X-API-Token: {{api_token_hash}}
-Authorization: Bearer {{login.response.body.$.access_token}}
 
 ### Crear background
 POST {{host}}/backgrounds

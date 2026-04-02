@@ -22,8 +22,8 @@ def _verify_password(plain_password: str, stored_password: str | None) -> bool:
 
 def _create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    # Sin fecha de caducidad - el token persiste indefinidamente
+    # Se guardará en localStorage del cliente
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -43,7 +43,7 @@ def authenticate_login(request: LoginRequest) -> LoginResponse:
     if not identifier:
         raise HTTPException(status_code=400, detail="Debes enviar email o username")
 
-    user = users_service.get_user_by_login(identifier, include_password=True)
+    user = users_service.get_by_login(identifier, include_password=True)
     if not user or not _verify_password(request.password, user.password):
         raise HTTPException(status_code=401, detail="Credenciales invalidas")
 
@@ -59,7 +59,7 @@ def authenticate_login(request: LoginRequest) -> LoginResponse:
 
 
 def authenticate_login_form(form_data: OAuth2PasswordRequestForm) -> LoginResponse:
-    user = users_service.get_user_by_login(form_data.username, include_password=True)
+    user = users_service.get_by_login(form_data.username, include_password=True)
     if not user or not _verify_password(form_data.password, user.password):
         raise HTTPException(status_code=401, detail="Credenciales invalidas")
 

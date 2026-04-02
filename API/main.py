@@ -24,9 +24,11 @@ def read_root():
 def health():
     return {"status": "ok"}
 
-from routes import login, users, backgrounds, items
+from routes import login, users, backgrounds, items, monsters, spells
 
 app.include_router(users.router)
 app.include_router(login.router)
 app.include_router(backgrounds.router)
 app.include_router(items.router)
+app.include_router(monsters.router)
+app.include_router(spells.router)

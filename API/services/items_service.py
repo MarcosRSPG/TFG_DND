@@ -22,6 +22,16 @@ _db = _client[MONGODB_DATABASE]
 _items = _db["items"]
 
 
+def _json_safe(value):
+    if isinstance(value, ObjectId):
+        return str(value)
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(v) for v in value]
+    return value
+
+
 def _schema_for_type(type: str | None):
     match type:
         case "adventuringgear":
@@ -44,7 +54,7 @@ def _coerce_item(type: str | None, item_data: dict):
 
 
 def get_all():
-    return merge_docs()
+    return [_json_safe(doc) for doc in merge_docs()]
 
 
 def get_by_type(type: str = None):
