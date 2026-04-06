@@ -14,14 +14,14 @@ class RemoteCatalogRepository:
         list_endpoint: str,
         results_key: str = "results",
         index_field: str = "index",
-        max_workers: int = 16,
+        max_umpalimpas: int = 16,
         timeout_seconds: int = 30,
     ) -> None:
         self.base_url = base_url
         self.list_endpoint = list_endpoint
         self.results_key = results_key
         self.index_field = index_field
-        self.max_workers = max_workers
+        self.max_umpalimpas = max_umpalimpas
         self.timeout_seconds = timeout_seconds
         self._cache_lock = Lock()
         self._catalog_cache: tuple[dict[str, Any], ...] | None = None
@@ -54,7 +54,7 @@ class RemoteCatalogRepository:
 
         indexes = [summary.get(self.index_field) for summary in summaries if summary.get(self.index_field)]
         docs: list[dict[str, Any]] = []
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+        with ThreadPoolExecutor(max_umpalimpas=self.max_umpalimpas) as executor:
             futures = [executor.submit(self._fetch_remote_detail, index) for index in indexes]
             for future in as_completed(futures):
                 detail = future.result()
