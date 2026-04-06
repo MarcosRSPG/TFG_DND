@@ -17,9 +17,9 @@ class MountSchema(BaseSchema):
 	special: List[str] = Field(default_factory=list)
 	equipment_category: ResourceReference = Field(
 		default_factory=lambda: ResourceReference(
-			index="mounts",
-			name="Mounts",
-			url="/api/2014/equipment-categories/mounts",
+			index="mounts-and-vehicles",
+			name="Mounts and Vehicles",
+			url="/api/2014/equipment-categories/mounts-and-vehicles",
 		)
 	)
 	vehicle_category: str

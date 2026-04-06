@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ReferenceSchema(BaseModel):
@@ -8,12 +9,17 @@ class ReferenceSchema(BaseModel):
     name: str
     url: str
 
+    model_config = ConfigDict(extra="allow")
+
 
 class ArmorClassSchema(BaseModel):
     """Armor class entry for monsters"""
     type: str
     value: int
     spell: Optional[ReferenceSchema] = None
+    armor: List[ReferenceSchema] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
 
 
 class SpeedSchema(BaseModel):
@@ -26,17 +32,23 @@ class SpeedSchema(BaseModel):
     burrow: Optional[str] = None
     hover: Optional[str] = None
 
+    model_config = ConfigDict(extra="allow")
+
 
 class ProficiencySchema(BaseModel):
     """Proficiency entry"""
     value: int
     proficiency: ReferenceSchema
 
+    model_config = ConfigDict(extra="allow")
+
 
 class DamageSchema(BaseModel):
     """Damage entry"""
     damage_type: ReferenceSchema
     damage_dice: Optional[str] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
 class AbilitySchema(BaseModel):
@@ -47,19 +59,31 @@ class AbilitySchema(BaseModel):
     spellcasting: Optional[Dict[str, Any]] = None
     attack_bonus: Optional[int] = None
     actions: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
+    usage: Optional[Dict[str, Any]] = None
+    dc: Optional[Dict[str, Any]] = None
+    multiattack_type: Optional[str] = None
+    area_of_effect: Optional[Dict[str, Any]] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
 class SensesSchema(BaseModel):
     """Senses entry"""
     passive_perception: Optional[int] = None
     darkvision: Optional[str] = None
+    blindsight: Optional[str] = None
     truesight: Optional[str] = None
+    tremorsense: Optional[str] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
 class AreaOfEffectSchema(BaseModel):
     """Area of effect for special abilities"""
     type: str
     size: int
+
+    model_config = ConfigDict(extra="allow")
 
 
 class LegendaryActionSchema(BaseModel):
@@ -69,13 +93,16 @@ class LegendaryActionSchema(BaseModel):
     attack_bonus: Optional[int] = None
     damage: Optional[List[DamageSchema]] = None
     dc: Optional[Dict[str, Any]] = None
+    usage: Optional[Dict[str, Any]] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
 class Monster(BaseModel):
     """D&D 5e Monster model"""
     index: str
     name: str
-    desc: str
+    desc: Optional[str] = None
     size: str
     type: str
     subtype: Optional[str] = None
@@ -98,6 +125,7 @@ class Monster(BaseModel):
     condition_immunities: Optional[List[str]] = Field(default_factory=list)
     senses: Optional[SensesSchema] = None
     languages: Optional[str] = None
+    spellcasting: Optional[Dict[str, Any]] = None
     challenge_rating: float
     proficiency_bonus: int
     xp: int
@@ -107,11 +135,13 @@ class Monster(BaseModel):
     reactions: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
     image: Optional[str] = None
     forms: Optional[List[str]] = Field(default_factory=list)
+    environment: Optional[List[str]] = Field(default_factory=list)
     url: str
     updated_at: Optional[str] = None
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        extra="allow",
+        json_schema_extra={
             "example": {
                 "index": "archmage",
                 "name": "Archmage",
@@ -138,4 +168,5 @@ class Monster(BaseModel):
                 "xp": 8400,
                 "url": "/api/2014/monsters/archmage"
             }
-        }
+        },
+    )

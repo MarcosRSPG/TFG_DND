@@ -2,6 +2,7 @@ from services import monsters_repository
 from models.Monster import Monster
 from bson import ObjectId
 import json
+from pydantic import ValidationError
 
 
 def _json_safe(value):
@@ -15,13 +16,26 @@ def _json_safe(value):
     return value
 
 
+def _to_schema(monster_data: dict) -> Monster:
+    payload = dict(monster_data)
+    mongo_id = payload.pop("_id", None)
+    if mongo_id is not None and not payload.get("id"):
+        payload["id"] = str(mongo_id)
+    return Monster.model_validate(payload)
+
+
+def _format_monster(monster_data: dict) -> dict:
+    try:
+        return _to_schema(monster_data).model_dump(exclude_none=True)
+    except ValidationError:
+        return _json_safe(monster_data)
+
+
 def get_all() -> list:
     """Get all monsters from merged local and remote sources"""
     try:
         monsters = monsters_repository.merge_docs()
-        # Convert to JSON-safe format
-        monsters = [_json_safe(m) for m in monsters]
-        return monsters
+        return [_format_monster(m) for m in monsters]
     except Exception as e:
         print(f"Error getting all monsters: {e}")
         return []
@@ -33,12 +47,12 @@ def get_by_id(monster_id: str) -> dict:
         # Check local first
         local_monster = monsters_repository.get_local_doc_by_id(monster_id)
         if local_monster:
-            return _json_safe(local_monster)
+            return _format_monster(local_monster)
         
         # Then check remote
         remote_monster = monsters_repository.get_remote_doc_by_id(monster_id)
         if remote_monster:
-            return _json_safe(remote_monster)
+            return _format_monster(remote_monster)
         
         return {}
     except Exception as e:
@@ -50,11 +64,11 @@ def create(monster: dict) -> dict:
     """Create a new monster in local MongoDB"""
     try:
         # Validate against schema
-        validated_monster = Monster(**monster)
+        validated_monster = Monster.model_validate(monster)
         # Convert back to dict for MongoDB
-        monster_dict = validated_monster.model_dump(exclude_unset=True)
+        monster_dict = validated_monster.model_dump(exclude_none=True)
         result = monsters_repository.save_local_monster(monster_dict)
-        return _json_safe(result)
+        return _format_monster(result)
     except Exception as e:
         print(f"Error creating monster: {e}")
         raise
@@ -64,11 +78,11 @@ def update(monster_id: str, monster: dict) -> dict:
     """Update an existing monster in local MongoDB"""
     try:
         # Validate against schema
-        validated_monster = Monster(**monster)
+        validated_monster = Monster.model_validate(monster)
         # Convert back to dict for MongoDB
-        monster_dict = validated_monster.model_dump(exclude_unset=True)
+        monster_dict = validated_monster.model_dump(exclude_none=True)
         result = monsters_repository.update_local_monster(monster_id, monster_dict)
-        return _json_safe(result)
+        return _format_monster(result)
     except Exception as e:
         print(f"Error updating monster: {e}")
         raise

@@ -5,6 +5,7 @@ from bson import ObjectId
 from fastapi import HTTPException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
+from pydantic import ValidationError
 
 from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
 from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
@@ -18,6 +19,20 @@ _db = _client[MONGODB_DATABASE]
 _weapons = _db["items"]
 
 
+def _is_magic_item_doc(doc: dict) -> bool:
+    rarity = doc.get("rarity")
+    if isinstance(rarity, dict) and rarity.get("name"):
+        return True
+
+    if isinstance(doc.get("variant"), bool):
+        return True
+
+    if isinstance(doc.get("url"), str) and "/magic-items/" in doc.get("url", ""):
+        return True
+
+    return doc.get("equipment_category", {}).get("index") == "magic-items"
+
+
 def _to_schema(doc: dict) -> WeaponSchema:
     payload = dict(doc)
     mongo_id = payload.pop("_id", None)
@@ -28,22 +43,36 @@ def _to_schema(doc: dict) -> WeaponSchema:
 
 def get_all() -> list[WeaponSchema]:
     docs = merge_docs("weapon")
-    return [_to_schema(doc) for doc in docs]
+    weapons: list[WeaponSchema] = []
+    for doc in docs:
+        if _is_magic_item_doc(doc):
+            continue
+        try:
+            weapons.append(_to_schema(doc))
+        except ValidationError:
+            continue
+    return weapons
 
 
 def get_by_id(weapon_id: str) -> WeaponSchema:
     doc = get_local_doc_by_id(weapon_id)
     if doc is not None:
-        if doc.get("equipment_category", {}).get("index") != "weapon":
+        if doc.get("equipment_category", {}).get("index") != "weapon" or _is_magic_item_doc(doc):
             raise HTTPException(status_code=404, detail="Weapon not found")
-        return _to_schema(doc)
+        try:
+            return _to_schema(doc)
+        except ValidationError as exc:
+            raise HTTPException(status_code=404, detail="Weapon not found") from exc
 
     weapon_real = get_remote_doc_by_id(weapon_id)
     if weapon_real is None:
         raise HTTPException(status_code=404, detail="Weapon not found")
-    if weapon_real.get("equipment_category", {}).get("index") != "weapon":
+    if weapon_real.get("equipment_category", {}).get("index") != "weapon" or _is_magic_item_doc(weapon_real):
         raise HTTPException(status_code=404, detail="Weapon not found")
-    return WeaponSchema(**weapon_real)
+    try:
+        return WeaponSchema(**weapon_real)
+    except ValidationError as exc:
+        raise HTTPException(status_code=404, detail="Weapon not found") from exc
 
 
 def create(weapon_schema: WeaponSchema, created_by: str | None) -> WeaponSchema:

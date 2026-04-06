@@ -18,6 +18,15 @@ _db = _client[MONGODB_DATABASE]
 _mounts = _db["items"]
 
 
+def _is_mount_doc(doc: dict) -> bool:
+    return (
+        doc.get("equipment_category", {}).get("index") == "mounts-and-vehicles"
+        and "vehicle_category" in doc
+        and "speed" in doc
+        and "capacity" in doc
+    )
+
+
 def _to_schema(doc: dict) -> MountSchema:
     payload = dict(doc)
     mongo_id = payload.pop("_id", None)
@@ -27,21 +36,21 @@ def _to_schema(doc: dict) -> MountSchema:
 
 
 def get_all() -> list[MountSchema]:
-    docs = merge_docs("mount")
-    return [_to_schema(doc) for doc in docs]
+    docs = merge_docs("mounts-and-vehicles")
+    return [_to_schema(doc) for doc in docs if _is_mount_doc(doc)]
 
 
 def get_by_id(mount_id: str) -> MountSchema:
     doc = get_local_doc_by_id(mount_id)
     if doc is not None:
-        if doc.get("equipment_category", {}).get("index") != "mount":
+        if not _is_mount_doc(doc):
             raise HTTPException(status_code=404, detail="Mount not found")
         return _to_schema(doc)
 
     mount_real = get_remote_doc_by_id(mount_id)
     if mount_real is None:
         raise HTTPException(status_code=404, detail="Mount not found")
-    if mount_real.get("equipment_category", {}).get("index") != "mount":
+    if not _is_mount_doc(mount_real):
         raise HTTPException(status_code=404, detail="Mount not found")
     return MountSchema(**mount_real)
 

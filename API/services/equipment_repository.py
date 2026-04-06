@@ -1,6 +1,7 @@
 from typing import Any
 
 from bson import ObjectId
+from fastapi import HTTPException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
@@ -15,6 +16,7 @@ _client = MongoClient(MONGODB_URI)
 _db = _client[MONGODB_DATABASE]
 _items = _db[MONGODB_COLLECTION_ITEMS]
 _remote_equipment = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="equipment")
+_remote_magic_items = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="magic-items")
 
 
 _CATEGORY_ALIASES = {
@@ -22,8 +24,12 @@ _CATEGORY_ALIASES = {
     "adventuring-gear": "adventuring-gear",
     "armor": "armor",
     "mount": "mount",
+    "mounts-and-vehicles": "mounts-and-vehicles",
     "tool": "tool",
     "weapon": "weapon",
+    "magicItem": "magic-items",
+    "magic-item": "magic-items",
+    "magic-items": "magic-items",
 }
 
 
@@ -38,11 +44,25 @@ def _doc_key(doc: dict[str, Any]) -> str:
 
 
 def get_remote_catalog() -> tuple[dict[str, Any], ...]:
-    return _remote_equipment.get_catalog()
+    equipment_docs = _remote_equipment.get_catalog()
+    magic_docs = _remote_magic_items.get_catalog()
+
+    combined: list[dict[str, Any]] = []
+    seen_keys: set[str] = set()
+
+    for doc in (*equipment_docs, *magic_docs):
+        key = _doc_key(doc)
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        combined.append(doc)
+
+    return tuple(combined)
 
 
 def clear_remote_cache() -> None:
     _remote_equipment.clear_cache()
+    _remote_magic_items.clear_cache()
 
 
 def get_local_docs(category: str | None = None) -> list[dict[str, Any]]:
@@ -50,7 +70,10 @@ def get_local_docs(category: str | None = None) -> list[dict[str, Any]]:
         query: dict[str, Any] = {}
         normalized_category = normalize_category(category)
         if normalized_category:
-            query["equipment_category.index"] = normalized_category
+            if normalized_category == "magic-items":
+                query["rarity.name"] = {"$exists": True}
+            else:
+                query["equipment_category.index"] = normalized_category
         return list(_items.find(query))
     except PyMongoError as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving items: {exc}") from exc
@@ -58,6 +81,9 @@ def get_local_docs(category: str | None = None) -> list[dict[str, Any]]:
 
 def get_remote_docs(category: str | None = None) -> list[dict[str, Any]]:
     normalized_category = normalize_category(category)
+    if normalized_category == "magic-items":
+        return list(_remote_magic_items.get_catalog())
+
     docs = list(get_remote_catalog())
     if normalized_category is None:
         return docs
@@ -82,5 +108,8 @@ def get_local_doc_by_id(item_id: str) -> dict[str, Any] | None:
 
 
 def get_remote_doc_by_id(item_id: str) -> dict[str, Any] | None:
-    return _remote_equipment.get_by_index(item_id)
+    equipment_doc = _remote_equipment.get_by_index(item_id)
+    if equipment_doc is not None:
+        return equipment_doc
+    return _remote_magic_items.get_by_index(item_id)
 

@@ -1,4 +1,4 @@
-from services import weapons_service, armors_service, mounts_service, tools_service, adventuringGears_service
+from services import weapons_service, armors_service, mounts_service, tools_service, adventuringGears_service, magicItems_service
 from services.equipment_repository import merge_docs
 from bson import ObjectId
 from fastapi import HTTPException
@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 import requests
 from pydantic import ValidationError
+from models.MagicItem import MagicItemSchema
 from models.Weapon import WeaponSchema
 from models.Armor import ArmorSchema
 from models.Mount import MountSchema
@@ -22,6 +23,30 @@ _db = _client[MONGODB_DATABASE]
 _items = _db["items"]
 
 
+def _normalize_type(type_value: str | None) -> str | None:
+    if type_value is None:
+        return None
+
+    normalized = type_value.strip().lower()
+    aliases = {
+        "adventuring-gear": "adventuringgear",
+        "adventuringgear": "adventuringgear",
+        "armor": "armor",
+        "mount": "mount",
+        "mounts": "mount",
+        "tool": "tool",
+        "tools": "tool",
+        "weapon": "weapon",
+        "weapons": "weapon",
+        "magicitem": "magicItem",
+        "magic-item": "magicItem",
+        "magic-items": "magicItem",
+        "magicitems": "magicItem",
+    }
+
+    return aliases.get(normalized, type_value)
+
+
 def _json_safe(value):
     if isinstance(value, ObjectId):
         return str(value)
@@ -32,8 +57,63 @@ def _json_safe(value):
     return value
 
 
+def _is_magic_item_doc(item_data: dict) -> bool:
+    rarity = item_data.get("rarity")
+    if isinstance(rarity, dict) and rarity.get("name"):
+        return True
+
+    if isinstance(item_data.get("variant"), bool):
+        return True
+
+    if isinstance(item_data.get("url"), str) and "/magic-items/" in item_data.get("url", ""):
+        return True
+
+    return item_data.get("equipment_category", {}).get("index") == "magic-items"
+
+
+def _schema_for_doc(item_data: dict):
+    category = item_data.get("equipment_category", {}).get("index")
+
+    if _is_magic_item_doc(item_data):
+        return MagicItemSchema
+    if category == "weapon":
+        return WeaponSchema
+    if category == "armor":
+        return ArmorSchema
+    if category == "mounts-and-vehicles":
+        # Some docs in this category are not full mounts/vehicles.
+        if "speed" in item_data and "capacity" in item_data and "vehicle_category" in item_data:
+            return MountSchema
+        return None
+    if category == "tool":
+        return ToolSchema
+    if category == "adventuring-gear":
+        return AdventuringGearSchema
+
+    return None
+
+
+def _format_item_doc(item_data: dict) -> dict:
+    payload = dict(item_data)
+    mongo_id = payload.pop("_id", None)
+    if mongo_id is not None and not payload.get("id"):
+        payload["id"] = str(mongo_id)
+
+    schema_class = _schema_for_doc(payload)
+    if schema_class is None:
+        return _json_safe(payload)
+
+    try:
+        return schema_class.model_validate(payload).model_dump(exclude_none=True)
+    except ValidationError:
+        # Keep endpoint stable for mixed/partial payloads.
+        return _json_safe(payload)
+
+
 def _schema_for_type(type: str | None):
-    match type:
+    normalized_type = _normalize_type(type)
+
+    match normalized_type:
         case "adventuringgear":
             return AdventuringGearSchema
         case "armor":
@@ -44,6 +124,8 @@ def _schema_for_type(type: str | None):
             return ToolSchema
         case "weapon":
             return WeaponSchema
+        case "magicitem":
+            return MagicItemSchema
         case _:
             raise HTTPException(status_code=400, detail="Invalid item type")
 
@@ -54,29 +136,35 @@ def _coerce_item(type: str | None, item_data: dict):
 
 
 def get_all():
-    return [_json_safe(doc) for doc in merge_docs()]
+    return [_format_item_doc(doc) for doc in merge_docs()]
 
 
 def get_by_type(type: str = None):
+    normalized_type = _normalize_type(type)
+
     try:
-        match type:
+        match normalized_type:
             case "adventuringgear": return adventuringGears_service.get_all()
             case "armor": return armors_service.get_all()
             case "mount": return mounts_service.get_all()
             case "tool": return tools_service.get_all()
             case "weapon": return weapons_service.get_all()
+            case "magicitem": return magicItems_service.get_all()
             case _: raise HTTPException(status_code=400, detail="Invalid item type")
     except requests.RequestException as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving items from external API: {exc}") from exc
 
 def get_by_id(item_id: str, type: str = None):
+    normalized_type = _normalize_type(type)
+
     try:
-        match type:
+        match normalized_type:
             case "adventuringgear": doc = adventuringGears_service.get_by_id(item_id)
             case "armor": doc = armors_service.get_by_id(item_id)
             case "mount": doc = mounts_service.get_by_id(item_id)
             case "tool": doc = tools_service.get_by_id(item_id)
             case "weapon": doc = weapons_service.get_by_id(item_id)
+            case "magicitem": doc = magicItems_service.get_by_id(item_id)
             case _: raise HTTPException(status_code=400, detail="Invalid item type")
     except requests.RequestException as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving item from external API: {exc}") from exc
@@ -85,14 +173,17 @@ def get_by_id(item_id: str, type: str = None):
     return doc
 
 def create(item_data: dict, type: str = None, created_by: str = None) -> dict:
+    normalized_type = _normalize_type(type)
+
     try:
-        item_schema = _coerce_item(type, item_data)
-        match type:
+        item_schema = _coerce_item(normalized_type, item_data)
+        match normalized_type:
             case "adventuringgear": return adventuringGears_service.create_adventuringgear(item_schema, created_by)
             case "armor": return armors_service.create_armor(item_schema, created_by)
             case "mount": return mounts_service.create_mount(item_schema, created_by)
             case "tool": return tools_service.create_tool(item_schema, created_by)
             case "weapon": return weapons_service.create_weapon(item_schema, created_by)
+            case "magicitem": return magicItems_service.create_magicItem(item_schema, created_by)
             case _: raise HTTPException(status_code=400, detail="Invalid item type")
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=exc.errors()) from exc
@@ -102,14 +193,18 @@ def create(item_data: dict, type: str = None, created_by: str = None) -> dict:
 def update(item_id: str, item_data: dict, type: str = None) -> dict:
     if not ObjectId.is_valid(item_id):
         raise HTTPException(status_code=400, detail="Invalid item id")
+
+    normalized_type = _normalize_type(type)
+
     try:
-        item_schema = _coerce_item(type, item_data)
-        match type:
+        item_schema = _coerce_item(normalized_type, item_data)
+        match normalized_type:
             case "adventuringgear": return adventuringGears_service.update_adventuringgear(item_id, item_schema)
             case "armor": return armors_service.update_armor(item_id, item_schema)
             case "mount": return mounts_service.update_mount(item_id, item_schema)
             case "tool": return tools_service.update_tool(item_id, item_schema)
             case "weapon": return weapons_service.update_weapon(item_id, item_schema)
+            case "magicitem": return magicItems_service.update_magicItem(item_id, item_schema)
             case _: raise HTTPException(status_code=400, detail="Invalid item type")
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=exc.errors()) from exc
