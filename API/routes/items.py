@@ -29,9 +29,16 @@ def create_item(item: dict = Body(...), current_user: dict = Depends(require_wri
 @router.put("/{id}", response_model_exclude_none=True)
 def update_item(id: str, item: dict = Body(...), current_user: dict = Depends(require_write_authorization), type: str = None):
     """Update an item (requires Authorization header with valid access token)"""
-    return items_service.update(id, item, type)
+    if current_user:
+        return items_service.update(id, item, type)
+    else:
+        raise fastapi.HTTPException(status_code=401, detail="Unauthorized")
+    
 
 @router.delete("/{id}")
 def delete_item(id: str, current_user: dict = Depends(require_write_authorization)):
     """Delete an item (requires Authorization header with valid access token)"""
-    return items_service.delete(id)
+    if current_user:
+        return items_service.delete(id)
+    else:
+        raise fastapi.HTTPException(status_code=401, detail="Unauthorized")
