@@ -54,7 +54,7 @@ class RemoteCatalogRepository:
 
         indexes = [summary.get(self.index_field) for summary in summaries if summary.get(self.index_field)]
         docs: list[dict[str, Any]] = []
-        with ThreadPoolExecutor(max_umpalimpas=self.max_umpalimpas) as executor:
+        with ThreadPoolExecutor(max_workers=self.max_umpalimpas) as executor:
             futures = [executor.submit(self._fetch_remote_detail, index) for index in indexes]
             for future in as_completed(futures):
                 detail = future.result()
