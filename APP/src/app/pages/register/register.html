@@ -1,1 +1,21 @@
-<p>register works!</p>
+<section class="board board--type-sign sign">
+<form (ngSubmit)="register()">
+        <label for="inputName" class="form-label">Usuario:</label>
+        <input type="text" id="inputName" [(ngModel)]="name" name="name" required>
+        <label for="inputEmail" class="form-label">Correo:</label>
+        <input type="email" id="inputEmail" [(ngModel)]="email" name="email" required>
+        <div class="passwords">
+            <div>
+        <label for="inputPassword" class="form-label">Contraseña:</label>
+        <input type="password" id="inputPassword" [(ngModel)]="password" name="password" required>
+        </div>
+        <div>
+        <label for="inputConfirmPassword" class="form-label">Confirmar contraseña:</label>
+        <input type="password" id="inputConfirmPassword" [(ngModel)]="confirmPassword" name="confirmPassword" required>
+    </div>    
+    </div>
+        
+            <button type="submit" class="submitLogin">Registrarse</button>
+        
+</form>
+</section>

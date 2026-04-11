@@ -409,9 +409,9 @@
 
 .board--type-sign {
   /* Use SVG fragment identifiers to select specific parts of the image. */
-  background-image: url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-top-chains"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-bottom-chains"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-corners"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-horizontal-sides"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-vertical-sides"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-holes"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-horizontal-sides-depth"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-corners-depth"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-horizontal-sides-shadow"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-vertical-sides-shadow"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-corners-shadow"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-holes-shadow"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-planks");
-  background-position: center -22px, center calc(100% + 22px), center center, center center, center calc(50% - 3px), center center, center center, center center, center center, center calc(50% - 3px), center center, center center, center center;
-  background-size: calc((100% - (29.78px - 9.4px) * 2) * 0.8) calc(((100% - 80%) / 2) + 22px * 2), calc((100% - (29.78px - 9.4px) * 2) * 0.8) calc(((100% - 80%) / 2) + 22px * 2), 100% 80%, calc(100% - (29.78px - 9.4px) * 2) 80%, 100% calc(80% - (29.78px - 9.4px) * 2 - 6.5px), calc((100% - (29.78px - 9.4px) * 2) * 0.8) 80%, calc(100% - (29.78px - 9.4px) * 2) 80%, 100% 80%, calc(100% - (29.78px - 9.4px) * 2) 80%, 100% calc(80% - (29.78px - 9.4px) * 2 - 6.5px), 100% 80%, calc(((100% - (29.78px - 9.4px) * 2) * 0.8) + 2.16px * 2) 80%, 100% 80%;
+  background-image: url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-top-chains"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-corners"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-horizontal-sides"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-vertical-sides"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-holes"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-horizontal-sides-depth"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-corners-depth"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-horizontal-sides-shadow"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-vertical-sides-shadow"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-corners-shadow"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-holes-shadow"), url("https://gistcdn.githack.com/andresangelini/d57f93b605eec432fdea98b969aaac72/raw/f0ee9369b781dcf01eefc37575a99d8e5dbe7b35/board.svg#l-sign-planks");
+  background-position: center -22px, center center, center center, center calc(50% - 3px), center center, center center, center center, center center, center calc(50% - 3px), center center, center center, center center;
+  background-size: calc((100% - (29.78px - 9.4px) * 2) * 0.8) calc(((100% - 80%) / 2) + 22px * 2), 100% 80%, calc(100% - (29.78px - 9.4px) * 2) 80%, 100% calc(80% - (29.78px - 9.4px) * 2 - 6.5px), calc((100% - (29.78px - 9.4px) * 2) * 0.8) 80%, calc(100% - (29.78px - 9.4px) * 2) 80%, 100% 80%, calc(100% - (29.78px - 9.4px) * 2) 80%, 100% calc(80% - (29.78px - 9.4px) * 2 - 6.5px), 100% 80%, calc(((100% - (29.78px - 9.4px) * 2) * 0.8) + 2.16px * 2) 80%, 100% 80%;
   /* IE < 11 don't scale SVGs properly when used as background images. Since IE < 11 don't support CSS pointer-events, use it to detect these versions. */
   /* *
    *  1) Safari and Safari iOS don't support SVG Fragment Identifiers at all, so use JPEG 2000 image format to detect
@@ -444,6 +444,7 @@
   top: -22px;
 }
 .no-csspointerevents .board--type-sign div:nth-child(12) {
+  display: none;
   margin-left: calc(calc((100% - (29.78px - 9.4px) * 2) * 0.8) / -2);
   margin-left: calc(((100% - (29.78px - 9.4px) * 2) * 0.8) / -2);
   left: 50%;
@@ -819,10 +820,5 @@
 }
 
 .sign {
-  height: 95%;
-  right: 35%;
-  margin-right: -30%;
-  min-height: 30%;
-  min-width: 15%;
-  width: 25%;
+  margin: 0;
 }

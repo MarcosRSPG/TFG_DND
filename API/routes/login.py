@@ -2,7 +2,7 @@ import fastapi
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from services.auth_service import get_current_user
-from models.Login import LoginRequest, LoginResponse
+from models.Login import LoginRequest, LoginResponse, VerifyTokenResponse
 from services.login_service import authenticate_login, authenticate_login_form, logout_service
 
 router = fastapi.APIRouter(prefix="/auth", tags=["auth"])
@@ -18,3 +18,8 @@ def login_token(form_data: OAuth2PasswordRequestForm = Depends()):
 @router.post('/logout')
 def logout(current_user: dict = Depends(get_current_user)):
     return logout_service()
+
+
+@router.post('/verify', response_model=VerifyTokenResponse)
+def verify_token(current_user: dict = Depends(get_current_user)):
+    return {"valid": True, "user": current_user}

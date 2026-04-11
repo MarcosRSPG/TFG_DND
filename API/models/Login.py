@@ -14,3 +14,15 @@ class LoginResponse(BaseModel):
     user_id: str
     name: str
     email: str
+
+
+class AuthUserPayload(BaseModel):
+    user_id: str
+    email: str
+    username: str
+    isAdmin: bool
+
+
+class VerifyTokenResponse(BaseModel):
+    valid: bool
+    user: AuthUserPayload

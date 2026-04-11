@@ -16,7 +16,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if not payload.get("email"):
+        if not payload.get("user_id") or not payload.get("email"):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
