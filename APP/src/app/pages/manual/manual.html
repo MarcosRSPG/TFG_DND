@@ -1,0 +1,32 @@
+<section class="manual-page">
+	<aside class="manual-sidebar board board--type-sign sign" aria-label="Categorias del manual">
+
+		<nav aria-label="Navegacion lateral del manual">
+			<ul class="manual-nav-list">
+				@for (section of sections; track section.id) {
+					<li class="manual-nav-item">
+						<button
+							class="manual-nav-toggle"
+							type="button"
+							[class.is-active]="isSelected(section.id)"
+							[attr.aria-current]="isSelected(section.id) ? 'page' : null"
+							(click)="selectSection(section.id)"
+						>
+							<span>{{ section.label }}</span>
+						</button>
+					</li>
+				}
+			</ul>
+		</nav>
+	</aside>
+
+	<article class="manual-content board board--type-sign sign" aria-live="polite">
+		@if (getSelectedSection(); as section) {
+			<h2>{{ section.label }}</h2>
+
+			@if (section.id === 'razas') {
+				<app-races />
+			}
+		}
+	</article>
+</section>

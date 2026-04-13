@@ -1,15 +1,15 @@
 <nav class="board board--type-bulletin bulletin">
         <section>  
-            <figure [hidden]="!authService.isLoggedIn()">
+            <figure [hidden]="!authService.isLoggedIn()" routerLink="/" aria-label="Inicio" title="Inicio">
                 <img src="icon.png" alt="Icono de GRIMLEDGER">
             </figure>
-            <h1 [style.font-size]="!authService.isLoggedIn() ? '5em' : '2em'" [style.text-align]="!authService.isLoggedIn() ? 'center' : 'start'">GRIMLEDGER</h1>
+            <h1 routerLink="/" [style.font-size]="!authService.isLoggedIn() ? '5em' : '2em'" [style.text-align]="!authService.isLoggedIn() ? 'center' : 'start'">GRIMLEDGER</h1>
         </section>
         @if (authService.isLoggedIn()) {
         <ul>
             <li>
-                <a routerLink="/" aria-label="Inicio" title="Inicio">
-                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/house-door-fill.svg" alt="Inicio">
+                <a routerLink="/user" aria-label="Usuario" title="Usuario">
+                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/person-fill.svg" alt="Usuario">
                 </a>
             </li>
             <li>

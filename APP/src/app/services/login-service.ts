@@ -103,12 +103,6 @@ export class LoginService {
       if (!token) {
         throw new Error('No token found');
       }
-      const user = await this.verifyToken(token);
-
-      if (!user || !user.user_id) {
-        throw new Error('Cannot get user ID from token');
-      }
-
 
         localStorage.removeItem('token');
         return true;

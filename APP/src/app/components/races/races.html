@@ -1,0 +1,8 @@
+<ul class="race-list" aria-label="Listado de razas">
+	@for (race of races; track race.name) {
+		<li class="race-item">
+			<h3>{{ race.name }}</h3>
+			<p>Origen: {{ race.origin }}</p>
+		</li>
+	}
+</ul>
