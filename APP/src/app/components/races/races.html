@@ -1,8 +1,28 @@
-<ul class="race-list" aria-label="Listado de razas">
-	@for (race of races; track race.name) {
-		<li class="race-item">
-			<h3>{{ race.name }}</h3>
-			<p>Origen: {{ race.origin }}</p>
-		</li>
-	}
-</ul>
+@if (loading) {
+	<p class="race-message">Cargando razas...</p>
+} @else if (error) {
+	<p class="race-message race-message--error">{{ error }}</p>
+} @else {
+	<ul class="race-list" aria-label="Listado de razas">
+		@for (race of races; track race.index) {
+			<li class="race-item">
+				<a [routerLink]="['/races', race.index]" class="race-link">
+					<h3>{{ race.name }}</h3>
+					<p>Velocidad: {{ race.speed }} pies</p>
+					<p>Tamaño: {{ race.size }}</p>
+					<p>
+						Competencias en características:
+						@if (race.ability_bonuses.length) {
+							@for (bonus of race.ability_bonuses; track bonus.ability_score.index) {
+								{{ bonus.ability_score.name }} +{{ bonus.bonus }}
+								@if (!$last) {, }
+							}
+						} @else {
+							Ninguna
+						}
+					</p>
+				</a>
+			</li>
+		}
+	</ul>
+}

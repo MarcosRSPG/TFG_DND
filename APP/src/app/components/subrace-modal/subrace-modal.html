@@ -1,0 +1,61 @@
+<div class="modal-backdrop" (click)="onBackdropClick($event)">
+	<div class="modal-content board board--type-sign sign">
+		<div class="modal-header">
+			<h2>{{ subrace.name }}</h2>
+			<button
+				type="button"
+				class="modal-close"
+				aria-label="Cerrar modal"
+				(click)="closeModal()"
+			>
+				&times;
+			</button>
+		</div>
+
+		<div class="modal-body">
+			<section class="subrace-section">
+				<h3>Descripción</h3>
+				<p>{{ subrace.desc }}</p>
+			</section>
+
+			<section class="subrace-section">
+				<h3>Raza</h3>
+				<p>{{ subrace.race.name }}</p>
+			</section>
+
+			@if (subrace.ability_bonuses.length) {
+				<section class="subrace-section">
+					<h3>Bonificaciones de características adicionales</h3>
+					<ul class="bonus-list">
+						@for (bonus of subrace.ability_bonuses; track bonus.ability_score.index) {
+							<li>
+								<strong>{{ bonus.ability_score.name }}:</strong> +{{ bonus.bonus }}
+							</li>
+						}
+					</ul>
+				</section>
+			}
+
+			@if (subrace.racial_traits.length) {
+				<section class="subrace-section">
+					<h3>Rasgos raciales de la subraza</h3>
+					<ul class="traits-list">
+						@for (trait of subrace.racial_traits; track trait.index) {
+							<li>{{ trait.name }}</li>
+						}
+					</ul>
+				</section>
+			}
+		</div>
+
+		<div class="modal-footer">
+			<button
+				type="button"
+				class="modal-button"
+				(click)="closeModal()"
+			>
+				Cerrar
+			</button>
+		</div>
+	</div>
+</div>

@@ -1,24 +1,31 @@
-import { Component } from '@angular/core';
-
-interface RacePreview {
-  name: string;
-  origin: string;
-}
+import { Component, OnInit, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Race } from '../../interfaces/race';
+import { RacesService } from '../../services/races-service';
 
 @Component({
   selector: 'app-races',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, RouterLink],
   templateUrl: './races.html',
   styleUrl: './races.css',
 })
-export class Races {
-  // Temporary mock list. Later this can be replaced by API data.
-  readonly races: RacePreview[] = [
-    { name: 'Humano', origin: 'Reinos Centrales' },
-    { name: 'Elfo', origin: 'Bosques Antiguos' },
-    { name: 'Enano', origin: 'Montanas del Norte' },
-    { name: 'Mediano', origin: 'Valles Verdes' },
-    { name: 'Draconido', origin: 'Tierras Escamadas' },
-    { name: 'Tiefling', origin: 'Ciudades Fronterizas' },
-  ];
+export class Races implements OnInit {
+  private readonly racesService = inject(RacesService);
+
+  races: Race[] = [];
+  loading = true;
+  error: string | null = null;
+
+  async ngOnInit(): Promise<void> {
+    try {
+      this.races = await this.racesService.getRaces();
+    } catch (error) {
+      console.error('Error loading races:', error);
+      this.error = 'No se han podido cargar las razas.';
+    } finally {
+      this.loading = false;
+    }
+  }
 }

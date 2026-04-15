@@ -1,0 +1,144 @@
+.modal-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.7);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modal-content {
+	background: rgba(55, 34, 19, 0.95);
+	border: 1px solid rgba(201, 162, 90, 0.35);
+	border-radius: 12px;
+	max-width: 600px;
+	max-height: 80vh;
+	overflow-y: auto;
+	color: #eadab8;
+	animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateY(-30px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1.5rem;
+	border-bottom: 1px solid rgba(201, 162, 90, 0.22);
+}
+
+.modal-header h2 {
+	margin: 0;
+	font-size: 1.5rem;
+	color: #f1dfbf;
+}
+
+.modal-close {
+	background: none;
+	border: none;
+	color: #c9a25a;
+	font-size: 2rem;
+	cursor: pointer;
+	padding: 0;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transition: all 0.2s;
+}
+
+.modal-close:hover {
+	background: rgba(201, 162, 90, 0.12);
+	color: #f1dfbf;
+}
+
+.modal-body {
+	padding: 1.5rem;
+}
+
+.subrace-section {
+	margin-bottom: 1.5rem;
+}
+
+.subrace-section:last-child {
+	margin-bottom: 0;
+}
+
+.subrace-section h3 {
+	margin: 0 0 0.75rem;
+	font-size: 1.1rem;
+	color: #f0d8b0;
+	border-bottom: 1px solid rgba(201, 162, 90, 0.22);
+	padding-bottom: 0.5rem;
+}
+
+.subrace-section p {
+	margin: 0.5rem 0;
+	line-height: 1.8;
+	color: #cfbc96;
+}
+
+.bonus-list,
+.traits-list {
+	list-style: none;
+	margin: 0;
+	padding-left: 1rem;
+}
+
+.bonus-list li,
+.traits-list li {
+	padding: 0.5rem 0;
+	margin-bottom: 0.4rem;
+	border-left: 3px solid rgba(201, 162, 90, 0.22);
+	padding-left: 0.75rem;
+	color: #cfbc96;
+}
+
+.bonus-list li strong,
+.traits-list li strong {
+	color: #f0d8b0;
+}
+
+.modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	padding: 1rem 1.5rem;
+	border-top: 1px solid rgba(201, 162, 90, 0.22);
+	gap: 0.75rem;
+}
+
+.modal-button {
+	padding: 0.6rem 1.5rem;
+	border-radius: 6px;
+	border: 1px solid rgba(201, 162, 90, 0.35);
+	background: rgba(201, 162, 90, 0.12);
+	color: #f0d8b0;
+	cursor: pointer;
+	font-weight: 500;
+	transition: all 0.2s;
+}
+
+.modal-button:hover {
+	background: rgba(201, 162, 90, 0.25);
+	border-color: rgba(201, 162, 90, 0.5);
+}
+
+.modal-button:active {
+	transform: scale(0.98);
+}

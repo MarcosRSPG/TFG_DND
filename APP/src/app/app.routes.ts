@@ -3,6 +3,7 @@ import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
 import { Home } from './pages/home/home';
 import { Manual } from './pages/manual/manual';
+import { RaceDetail } from './pages/race-detail/race-detail';
 
 export const routes: Routes = [
     {
@@ -24,5 +25,10 @@ export const routes: Routes = [
     path: 'manual',
     component: Manual,
     title: 'Manual',
+  },
+  {
+    path: 'races/:index',
+    component: RaceDetail,
+    title: 'Race Details',
   },
 ];

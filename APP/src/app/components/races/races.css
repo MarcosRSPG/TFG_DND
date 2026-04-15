@@ -11,15 +11,53 @@
 	background: rgba(55, 34, 19, 0.65);
 	color: #eadab8;
 	border-radius: 8px;
-	padding: 0.8rem 1rem;
+	padding: 0;
+	overflow: hidden;
+	transition: all 0.3s ease;
 }
 
-.race-item h3 {
+.race-item:hover {
+	border-color: rgba(201, 162, 90, 0.5);
+	background: rgba(55, 34, 19, 0.8);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.race-link {
+	display: block;
+	padding: 0.8rem 1rem;
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.2s;
+}
+
+.race-link:focus {
+	outline: 2px solid rgba(201, 162, 90, 0.5);
+	outline-offset: -2px;
+}
+
+.race-link h3 {
 	margin: 0 0 0.25rem;
 	font-size: 1.1rem;
+	color: #f0d8b0;
 }
 
-.race-item p {
-	margin: 0;
+.race-link p {
+	margin: 0.25rem 0;
 	color: #cfbc96;
+	font-size: 0.95rem;
+}
+
+.race-message {
+	margin: 0;
+	padding: 0.75rem 1rem;
+	border-radius: 8px;
+	background: rgba(55, 34, 19, 0.65);
+	color: #eadab8;
+	border: 1px solid rgba(201, 162, 90, 0.35);
+}
+
+.race-message--error {
+	border-color: rgba(183, 93, 77, 0.6);
+	color: #f3c2b9;
 }

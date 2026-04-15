@@ -1,0 +1,161 @@
+.race-detail-container {
+	max-width: 900px;
+	margin: 0 auto;
+    margin-top: 15em;
+	padding: 1.5rem;
+}
+
+.back-link {
+	display: inline-block;
+	margin-bottom: 1rem;
+	color: #c9a25a;
+	text-decoration: none;
+	font-weight: 500;
+	transition: color 0.2s;
+}
+
+.back-link:hover {
+	color: #f1dfbf;
+}
+
+.message {
+	padding: 0.75rem 1rem;
+	border-radius: 8px;
+	background: rgba(55, 34, 19, 0.65);
+	color: #eadab8;
+	border: 1px solid rgba(201, 162, 90, 0.35);
+	margin: 0;
+}
+
+.message--error {
+	border-color: rgba(183, 93, 77, 0.6);
+	color: #f3c2b9;
+}
+
+.race-detail {
+	border: 1px solid rgba(201, 162, 90, 0.35);
+	background: rgba(55, 34, 19, 0.65);
+	border-radius: 8px;
+	padding: 2rem;
+	margin-bottom: 2rem;
+	color: #eadab8;
+}
+
+.race-detail h1 {
+	margin: 0 0 1.5rem;
+	font-size: 2.5rem;
+	color: #f1dfbf;
+}
+
+.race-overview {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 1rem;
+	margin-bottom: 2rem;
+	padding: 1rem;
+	background: rgba(201, 162, 90, 0.08);
+	border-radius: 6px;
+	border-left: 4px solid rgba(201, 162, 90, 0.35);
+}
+
+.overview-item {
+	font-size: 1rem;
+	line-height: 1.6;
+}
+
+.overview-item strong {
+	color: #f0d8b0;
+}
+
+.race-section {
+	margin-bottom: 2rem;
+}
+
+.race-section h2 {
+	margin: 0 0 0.75rem;
+	font-size: 1.3rem;
+	color: #f0d8b0;
+	border-bottom: 2px solid rgba(201, 162, 90, 0.22);
+	padding-bottom: 0.5rem;
+}
+
+.race-section p {
+	line-height: 1.8;
+	color: #cfbc96;
+	margin: 0.5rem 0;
+}
+
+.bonus-list,
+.traits-list {
+	list-style: none;
+	margin: 0;
+	padding-left: 1rem;
+}
+
+.bonus-list li,
+.traits-list li {
+	padding: 0.5rem 0;
+	margin-bottom: 0.4rem;
+	border-left: 3px solid rgba(201, 162, 90, 0.22);
+	padding-left: 0.75rem;
+	color: #cfbc96;
+}
+
+.bonus-list li strong,
+.traits-list li strong {
+	color: #f0d8b0;
+}
+
+.subraces-section {
+	border: 1px solid rgba(201, 162, 90, 0.35);
+	background: rgba(55, 34, 19, 0.65);
+	border-radius: 8px;
+	padding: 2rem;
+	color: #eadab8;
+}
+
+.subraces-section h2 {
+	margin: 0 0 1.5rem;
+	font-size: 1.5rem;
+	color: #f1dfbf;
+	border-bottom: 2px solid rgba(201, 162, 90, 0.22);
+	padding-bottom: 0.75rem;
+}
+
+.subraces-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.subrace-item {
+	padding: 1rem;
+	border: 1px solid rgba(201, 162, 90, 0.22);
+	border-radius: 6px;
+	background: rgba(201, 162, 90, 0.08);
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.subrace-item:hover {
+	border-color: rgba(201, 162, 90, 0.5);
+	background: rgba(201, 162, 90, 0.12);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.subrace-item h3 {
+	margin: 0 0 0.5rem;
+	font-size: 1.1rem;
+	color: #f0d8b0;
+}
+
+.subrace-desc {
+	margin: 0;
+	font-size: 0.95rem;
+	color: #cfbc96;
+	font-style: italic;
+}

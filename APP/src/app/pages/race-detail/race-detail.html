@@ -1,0 +1,94 @@
+@if (loading()) {
+	<div class="race-detail-container">
+		<p class="message">Cargando detalles de la raza...</p>
+	</div>
+} @else if (error()) {
+	<div class="race-detail-container">
+		<p class="message message--error">{{ error() }}</p>
+	</div>
+} @else if (race(); as currentRace) {
+	<div class="race-detail-container">
+
+		<article class="race-detail">
+			<h1>{{ currentRace.name }}</h1>
+
+			<section class="race-overview">
+				<div class="overview-item">
+					<strong>Tamaño:</strong> {{ currentRace.size }}
+				</div>
+				<div class="overview-item">
+					<strong>Velocidad:</strong> {{ currentRace.speed }} pies
+				</div>
+				<div class="overview-item">
+					<strong>Alineamiento:</strong> {{ currentRace.alignment }}
+				</div>
+			</section>
+
+			<section class="race-section">
+				<h2>Descripción</h2>
+				<p>{{ currentRace.size_description }}</p>
+			</section>
+
+			<section class="race-section">
+				<h2>Edad</h2>
+				<p>{{ currentRace.age }}</p>
+			</section>
+
+			<section class="race-section">
+				<h2>Idiomas</h2>
+				<p>{{ currentRace.language_desc }}</p>
+			</section>
+
+			@if (currentRace.ability_bonuses.length) {
+				<section class="race-section">
+					<h2>Bonificaciones de características</h2>
+					<ul class="bonus-list">
+						@for (bonus of currentRace.ability_bonuses; track bonus.ability_score.index) {
+							<li>
+								<strong>{{ bonus.ability_score.name }}:</strong> +{{ bonus.bonus }}
+							</li>
+						}
+					</ul>
+				</section>
+			}
+
+			@if (currentRace.traits.length) {
+				<section class="race-section">
+					<h2>Rasgos raciales</h2>
+					<ul class="traits-list">
+						@for (trait of currentRace.traits; track trait.index) {
+							<li>{{ trait.name }}</li>
+						}
+					</ul>
+				</section>
+			}
+		</article>
+
+		@if (subraces().length) {
+			<section class="subraces-section">
+				<h2>Subrazas</h2>
+				<ul class="subraces-list">
+					@for (subrace of subraces(); track subrace.index) {
+						<li
+							class="subrace-item"
+							(click)="openSubraceModal(subrace)"
+							role="button"
+							tabindex="0"
+							[attr.aria-label]="'Ver detalles de ' + subrace.name"
+						>
+							<h3>{{ subrace.name }}</h3>
+							<p class="subrace-desc">{{ subrace.desc.substring(0, 100) }}...</p>
+						</li>
+					}
+				</ul>
+			</section>
+		}
+	</div>
+
+	@if (showModal() && selectedSubrace(); as currentSubrace) {
+		<app-subrace-modal
+			[subrace]="currentSubrace"
+			(onClose)="closeModal()"
+		></app-subrace-modal>
+	}
+}
