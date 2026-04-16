@@ -1,0 +1,46 @@
+<!-- From Uiverse.io by santhosh_2608 --> 
+<label class="viking-toggle">
+  <input
+    type="checkbox"
+    class="viking-toggle__checkbox"
+    [checked]="checked"
+    [disabled]="disabled"
+    [attr.aria-label]="ariaLabel"
+    (change)="onToggle($event)"
+  />
+  <div class="viking-toggle__track">
+    <div class="viking-toggle__chain viking-toggle__chain--left"></div>
+    <div class="viking-toggle__chain viking-toggle__chain--right"></div>
+    <div class="viking-toggle__inner">
+      <span class="viking-toggle__runes">ᛟ ᛏ ᛞ ᛁ ᚾ</span>
+    </div>
+    <div class="viking-toggle__glow"></div>
+    <div class="viking-toggle__embers">
+      <span class="viking-toggle__ember"></span>
+      <span class="viking-toggle__ember"></span>
+      <span class="viking-toggle__ember"></span>
+      <span class="viking-toggle__ember"></span>
+    </div>
+    <svg
+      class="viking-toggle__icon viking-toggle__icon--left"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M6.92 5L5 6.92l5.79 5.79L4.5 19H8l4-4 3.08 3.08L16.92 19l-5.79-5.79L18 6.5V3l-6.29 6.29L6.92 5z"
+      ></path>
+    </svg>
+    <svg
+      class="viking-toggle__icon viking-toggle__icon--right"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12 2L2 7l3 2-3 6 6-2 4 9 4-9 6 2-3-6 3-2-10-5zm0 4l4 2-4 8-4-8 4-2z"
+      ></path>
+    </svg>
+    <div class="viking-toggle__knob">
+      <div class="viking-toggle__shield"></div>
+    </div>
+  </div>
+</label>

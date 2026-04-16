@@ -20,6 +20,8 @@ export interface Monster {
   actions?: MonsterAction[];
   special_abilities?: MonsterAction[];
   legendary_actions?: MonsterAction[];
+  created_by?: string;
+  created_at?: string;
   updated_at?: string;
   [key: string]: unknown;
 }
