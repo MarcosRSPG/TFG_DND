@@ -21,8 +21,6 @@ export interface Background {
   flaws?: {
     desc?: string;
   };
-  created_by?: string;
-  created_at?: string;
   updated_at?: string;
   [key: string]: unknown;
 }

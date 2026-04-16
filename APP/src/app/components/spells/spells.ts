@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { Spell } from '../../interfaces/spell';
 import { SpellsService } from '../../services/spells-service';
 import { FilterModalComponent } from '../filter-modal/filter-modal';
-import { VikingCheck } from '../viking-check/viking-check';
 
 interface SpellFilters {
   searchName: string;
@@ -19,7 +18,7 @@ interface SpellFilters {
 @Component({
   selector: 'app-spells',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, FilterModalComponent, VikingCheck],
+  imports: [CommonModule, RouterLink, FormsModule, FilterModalComponent],
   templateUrl: './spells.html',
   styleUrl: './spells.css',
 })
