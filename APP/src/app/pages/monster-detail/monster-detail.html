@@ -1,0 +1,60 @@
+@if (loading()) {
+  <section class="detail board board--type-sign sign">
+    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <p>Cargando monster...</p>
+  </section>
+} @else if (error()) {
+  <section class="detail board board--type-sign sign">
+    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <p>{{ error() }}</p>
+  </section>
+} @else if (monster(); as item) {
+  <section class="detail board board--type-sign sign">
+    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <header class="detail-header">
+      <h1>{{ item.name }}</h1>
+      <p class="detail-subtitle">Monster</p>
+    </header>
+
+    <section class="detail-meta-grid">
+      <p class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">{{ item.size }} {{ item.type }} {{ item.subtype ? '(' + item.subtype + ')' : '' }}</span></p>
+      <p class="meta-item"><span class="meta-label">Alineamiento</span><span class="meta-value">{{ item.alignment }}</span></p>
+      <p class="meta-item"><span class="meta-label">HP</span><span class="meta-value">{{ item.hit_points }} ({{ item.hit_dice }})</span></p>
+      <p class="meta-item"><span class="meta-label">CR</span><span class="meta-value">{{ item.challenge_rating }}</span></p>
+    </section>
+
+    <section class="detail-block">
+      <h2>Estadisticas</h2>
+      <div class="stats-grid">
+        <div class="stat-pill"><span>STR</span><strong>{{ item.strength }}</strong></div>
+        <div class="stat-pill"><span>DEX</span><strong>{{ item.dexterity }}</strong></div>
+        <div class="stat-pill"><span>CON</span><strong>{{ item.constitution }}</strong></div>
+        <div class="stat-pill"><span>INT</span><strong>{{ item.intelligence }}</strong></div>
+        <div class="stat-pill"><span>WIS</span><strong>{{ item.wisdom }}</strong></div>
+        <div class="stat-pill"><span>CHA</span><strong>{{ item.charisma }}</strong></div>
+      </div>
+    </section>
+
+    @if (item.actions?.length) {
+      <section class="detail-block">
+        <h2>Actions</h2>
+        <ul class="detail-list">
+          @for (action of item.actions ?? []; track action.name) {
+            <li><strong>{{ action.name }}:</strong> {{ action.desc }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (item.special_abilities?.length) {
+      <section class="detail-block">
+        <h2>Special Abilities</h2>
+        <ul class="detail-list">
+          @for (ability of item.special_abilities ?? []; track ability.name) {
+            <li><strong>{{ ability.name }}:</strong> {{ ability.desc }}</li>
+          }
+        </ul>
+      </section>
+    }
+  </section>
+}

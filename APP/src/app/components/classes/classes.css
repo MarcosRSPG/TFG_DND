@@ -1,0 +1,132 @@
+.filters-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(55, 34, 19, 0.65);
+  border: 1px solid rgba(201, 162, 90, 0.22);
+  border-radius: 8px;
+  width: min(80vw, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.9rem;
+  color: #f0d8b0;
+  font-weight: 500;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.filter-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #d8b470;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 0.6rem 0.75rem;
+  background: rgba(20, 12, 7, 0.5);
+  border: 1px solid rgba(201, 162, 90, 0.22);
+  border-radius: 6px;
+  color: #eadab8;
+  font-size: 0.95rem;
+}
+
+.filter-group input::placeholder {
+  color: #8b6f47;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: rgba(201, 162, 90, 0.5);
+  background: rgba(20, 12, 7, 0.8);
+}
+
+.class-list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  width: min(80vw, 100%);
+  overflow-x: hidden;
+}
+
+.class-item {
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  background: rgba(55, 34, 19, 0.65);
+  color: #eadab8;
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.class-item:hover {
+  border-color: rgba(201, 162, 90, 0.5);
+  background: rgba(55, 34, 19, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.class-link {
+  display: block;
+  padding: 0.8rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+}
+
+.class-link:focus {
+  outline: 2px solid rgba(201, 162, 90, 0.5);
+  outline-offset: -2px;
+}
+
+.class-link h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+  color: #f0d8b0;
+}
+
+.class-link p {
+  margin: 0.25rem 0;
+  color: #cfbc96;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.class-message {
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: rgba(55, 34, 19, 0.65);
+  color: #eadab8;
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  width: min(80vw, 100%);
+}
+
+.class-message--error {
+  border-color: rgba(183, 93, 77, 0.6);
+  color: #f3c2b9;
+}

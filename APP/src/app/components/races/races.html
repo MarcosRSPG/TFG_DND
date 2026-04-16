@@ -1,10 +1,10 @@
-@if (loading) {
+@if (loading()) {
 	<p class="race-message">Cargando razas...</p>
-} @else if (error) {
-	<p class="race-message race-message--error">{{ error }}</p>
+} @else if (error()) {
+	<p class="race-message race-message--error">{{ error() }}</p>
 } @else {
 	<ul class="race-list" aria-label="Listado de razas">
-		@for (race of races; track race.index) {
+		@for (race of races(); track race.index) {
 			<li class="race-item">
 				<a [routerLink]="['/races', race.index]" class="race-link">
 					<h3>{{ race.name }}</h3>

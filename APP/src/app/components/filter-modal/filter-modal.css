@@ -1,0 +1,173 @@
+.filter-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.filter-modal-content {
+  background: rgba(32, 20, 12, 0.95);
+  border: 2px solid rgba(201, 162, 90, 0.4);
+  border-radius: 12px;
+  width: min(90vw, 450px);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.filter-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(201, 162, 90, 0.2);
+}
+
+.filter-modal-header h2 {
+  margin: 0;
+  color: #f0d8b0;
+  font-size: 1.3rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #cfbc96;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(201, 162, 90, 0.1);
+  color: #f0d8b0;
+}
+
+.filter-modal-search {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(201, 162, 90, 0.1);
+}
+
+.filter-search-input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  background: rgba(20, 12, 7, 0.6);
+  border: 1px solid rgba(201, 162, 90, 0.3);
+  border-radius: 6px;
+  color: #eadab8;
+  font-size: 0.95rem;
+}
+
+.filter-search-input::placeholder {
+  color: #8b6f47;
+}
+
+.filter-search-input:focus {
+  outline: none;
+  border-color: rgba(201, 162, 90, 0.6);
+  background: rgba(20, 12, 7, 0.8);
+}
+
+.filter-modal-options {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+}
+
+.filter-option-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  color: #eadab8;
+  font-size: 0.95rem;
+}
+
+.filter-option-label:hover {
+  background: rgba(201, 162, 90, 0.1);
+}
+
+.filter-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #d8b470;
+}
+
+.filter-modal-actions {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(201, 162, 90, 0.2);
+  justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-confirm {
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.btn-cancel {
+  background: rgba(201, 162, 90, 0.1);
+  color: #cfbc96;
+  border: 1px solid rgba(201, 162, 90, 0.3);
+}
+
+.btn-cancel:hover {
+  background: rgba(201, 162, 90, 0.2);
+  border-color: rgba(201, 162, 90, 0.5);
+}
+
+.btn-confirm {
+  background: rgba(201, 162, 90, 0.3);
+  color: #f0d8b0;
+  border: 1px solid rgba(201, 162, 90, 0.5);
+}
+
+.btn-confirm:hover {
+  background: rgba(201, 162, 90, 0.45);
+  border-color: rgba(201, 162, 90, 0.7);
+}
+
+/* Scrollbar styling */
+.filter-modal-options::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filter-modal-options::-webkit-scrollbar-track {
+  background: rgba(201, 162, 90, 0.05);
+  border-radius: 4px;
+}
+
+.filter-modal-options::-webkit-scrollbar-thumb {
+  background: rgba(201, 162, 90, 0.3);
+  border-radius: 4px;
+}
+
+.filter-modal-options::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 162, 90, 0.5);
+}

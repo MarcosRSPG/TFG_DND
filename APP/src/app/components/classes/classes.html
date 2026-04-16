@@ -1,0 +1,62 @@
+@if (loading()) {
+  <p class="class-message">Cargando clases...</p>
+} @else if (error()) {
+  <p class="class-message class-message--error">{{ error() }}</p>
+} @else {
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="class-search">Buscar por nombre:</label>
+      <input
+        id="class-search"
+        type="text"
+        [(ngModel)]="filters().searchName"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Ej: Mago, Bardo..."
+      />
+    </div>
+
+    <div class="filter-group">
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          [checked]="filters().isMagical === true"
+          (change)="onMagicalChange($any($event.target).checked)"
+          class="filter-checkbox"
+        />
+        <span>Mágico</span>
+      </label>
+    </div>
+
+    <div class="filter-group">
+      <label for="class-source">Contenido:</label>
+      <select
+        id="class-source"
+        [(ngModel)]="filters().source"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option value="all">Todos</option>
+        <option value="official">Oficial</option>
+      </select>
+    </div>
+  </div>
+
+  <ul class="class-list" aria-label="Listado de clases">
+    @for (dndClass of filteredClasses(); track dndClass.index) {
+      <li class="class-item">
+        <a [routerLink]="['/classes', dndClass.index]" class="class-link">
+          <h3>{{ dndClass.name }}</h3>
+          <p>Dado de golpe: d{{ dndClass.hit_die }}</p>
+          <p>Tiradas de salvacion: {{ dndClass.saving_throws[0]?.name }} / {{ dndClass.saving_throws[1]?.name }}</p>
+          <p>
+            Magia:
+            @if (dndClass.spellcasting) {
+              Si ({{ dndClass.spellcasting.spellcasting_ability.name }})
+            } @else {
+              No
+            }
+          </p>
+        </a>
+      </li>
+    }
+  </ul>
+}

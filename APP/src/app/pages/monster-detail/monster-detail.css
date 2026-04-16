@@ -22,20 +22,6 @@
   color: #f1dfbf;
 }
 
-.message {
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  background: rgba(55, 34, 19, 0.65);
-  color: #eadab8;
-  border: 1px solid rgba(201, 162, 90, 0.35);
-  margin: 0;
-}
-
-.message--error {
-  border-color: rgba(183, 93, 77, 0.6);
-  color: #f3c2b9;
-}
-
 .detail-header {
   margin-bottom: 1rem;
 }
@@ -94,8 +80,31 @@
   padding-bottom: 0.35rem;
 }
 
-.detail-text-stack p + p {
-  margin-top: 0.55rem;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 0.55rem;
+}
+
+.stat-pill {
+  border: 1px solid rgba(201, 162, 90, 0.22);
+  border-radius: 10px;
+  background: rgba(20, 12, 7, 0.35);
+  padding: 0.55rem 0.45rem;
+  text-align: center;
+}
+
+.stat-pill span {
+  display: block;
+  font-size: 0.72rem;
+  color: #bfa77d;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stat-pill strong {
+  font-size: 1.08rem;
+  color: #eadab8;
 }
 
 .detail p,
@@ -104,9 +113,7 @@
   line-height: 1.55;
 }
 
-.detail-list,
-.subraces-list,
-.traits-blocks {
+.detail-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -119,54 +126,6 @@
   border-left: 3px solid rgba(201, 162, 90, 0.26);
   background: rgba(16, 10, 6, 0.28);
   border-radius: 0 8px 8px 0;
-}
-
-.traits-blocks {
-  gap: 0.55rem;
-}
-
-.trait-block {
-  border: 1px solid rgba(201, 162, 90, 0.22);
-  background: rgba(20, 12, 7, 0.35);
-  border-radius: 10px;
-  padding: 0.75rem;
-}
-
-.trait-block h3 {
-  margin: 0 0 0.4rem;
-  color: #f0d8b0;
-  font-size: 1.02rem;
-}
-
-.trait-block p {
-  margin: 0.35rem 0;
-}
-
-.subraces-list {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
-.subrace-item {
-  padding: 0.8rem;
-  border: 1px solid rgba(201, 162, 90, 0.22);
-  border-radius: 10px;
-  background: rgba(20, 12, 7, 0.35);
-  cursor: pointer;
-}
-
-.subrace-item:hover {
-  border-color: rgba(201, 162, 90, 0.5);
-  background: rgba(201, 162, 90, 0.15);
-}
-
-.subrace-item h3 {
-  margin: 0 0 0.35rem;
-  color: #f0d8b0;
-}
-
-.subrace-desc {
-  margin: 0;
-  color: #cfbc96;
 }
 
 @media (max-width: 860px) {

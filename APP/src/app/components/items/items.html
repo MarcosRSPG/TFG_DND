@@ -1,0 +1,82 @@
+@if (loading()) {
+  <p class="entity-message">Cargando items...</p>
+} @else if (error()) {
+  <p class="entity-message entity-message--error">{{ error() }}</p>
+} @else {
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="item-search">Buscar por nombre:</label>
+      <input
+        id="item-search"
+        type="text"
+        [(ngModel)]="filters().searchName"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Ej: Espada larga, Armadura..."
+      />
+    </div>
+
+    <div class="filter-group">
+      <button class="filter-button" (click)="typesModal.open()">
+        Tipos ({{ filters().types.length }})
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <label for="item-cost-min">Coste mínimo:</label>
+      <input
+        id="item-cost-min"
+        type="number"
+        [(ngModel)]="filters().costMin"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Mín"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label for="item-cost-max">Coste máximo:</label>
+      <input
+        id="item-cost-max"
+        type="number"
+        [(ngModel)]="filters().costMax"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Máx"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label for="item-source">Contenido:</label>
+      <select
+        id="item-source"
+        [(ngModel)]="filters().source"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option value="all">Todos</option>
+        <option value="official">Oficial</option>
+      </select>
+    </div>
+  </div>
+
+  <app-filter-modal
+    #typesModal
+    title="Seleccionar Tipos"
+    [options]="Array.from(itemTypes())"
+    [selectedOptions]="filters().types"
+    (confirmed)="onTypesConfirmed($event)"
+  ></app-filter-modal>
+
+  <ul class="entity-list" aria-label="Listado de items">
+    @for (item of filteredItems(); track getIdentifier(item)) {
+      <li class="entity-item">
+        <a
+          [routerLink]="['/items', getIdentifier(item)]"
+          [queryParams]="{ type: getType(item) }"
+          class="entity-link"
+        >
+          <h3>{{ item.name }}</h3>
+          <p>Categoria: {{ item.equipment_category?.name || 'N/A' }}</p>
+          <p>Costo: {{ item.cost?.quantity || '-' }} {{ item.cost?.unit || '' }}</p>
+        </a>
+      </li>
+    }
+  </ul>
+}

@@ -35,8 +35,6 @@
 
 .manual-sidebar {
 	padding: 1rem;
-	max-height: calc(100vh - var(--header-offset) - 4rem);
-	overflow-y: auto;
 }
 
 .manual-sidebar__eyebrow {
@@ -138,7 +136,6 @@ h1 {
 .manual-page-numbers {
 	display: flex;
 	gap: 0.25rem;
-	overflow-x: auto;
 	scrollbar-width: thin;
 }
 
@@ -175,8 +172,6 @@ h1 {
 	padding: 2rem;
 	display: flex;
 	flex-direction: column;
-	overflow-y: auto;
-	max-height: calc(100vh - var(--header-offset) - 4rem);
 }
 
 .manual-content h2 {

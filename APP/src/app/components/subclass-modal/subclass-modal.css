@@ -1,0 +1,140 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: rgba(55, 34, 19, 0.95);
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  border-radius: 12px;
+  width: 70em;
+  color: #eadab8;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(201, 162, 90, 0.22);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #f1dfbf;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #c9a25a;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(201, 162, 90, 0.12);
+  color: #f1dfbf;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.subclass-section {
+  margin-bottom: 1.5rem;
+}
+
+.subclass-section:last-child {
+  margin-bottom: 0;
+}
+
+.subclass-section h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  color: #f0d8b0;
+  border-bottom: 1px solid rgba(201, 162, 90, 0.22);
+  padding-bottom: 0.5rem;
+}
+
+.subclass-section p {
+  margin: 0.5rem 0;
+  line-height: 1.8;
+  color: #cfbc96;
+}
+
+.features-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.feature-item {
+  border: 1px solid rgba(201, 162, 90, 0.22);
+  background: rgba(201, 162, 90, 0.08);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.feature-item h4 {
+  margin: 0 0 0.4rem;
+  color: #f0d8b0;
+  font-size: 1rem;
+}
+
+.feature-item p {
+  margin: 0.35rem 0;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(201, 162, 90, 0.22);
+}
+
+.modal-button {
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  background: rgba(201, 162, 90, 0.12);
+  color: #f0d8b0;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.modal-button:hover {
+  background: rgba(201, 162, 90, 0.25);
+}

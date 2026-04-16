@@ -1,0 +1,104 @@
+@if (loading()) {
+  <p class="entity-message">Cargando spells...</p>
+} @else if (error()) {
+  <p class="entity-message entity-message--error">{{ error() }}</p>
+} @else {
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="spell-search">Buscar por nombre:</label>
+      <input
+        id="spell-search"
+        type="text"
+        [(ngModel)]="filters().searchName"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Ej: Bola de fuego..."
+      />
+    </div>
+
+    <div class="filter-group">
+      <button class="filter-button" (click)="schoolsModal.open()">
+        Escuelas ({{ filters().schools.length }})
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <label for="spell-level">Nivel:</label>
+      <select
+        id="spell-level"
+        [(ngModel)]="filters().level"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option value="all">Todos</option>
+        <option value="0">0 (Truco)</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          [checked]="filters().ritual === true"
+          (change)="onRitualChange($any($event.target).checked)"
+          class="filter-checkbox"
+        />
+        <span>Ritual</span>
+      </label>
+    </div>
+
+    <div class="filter-group">
+      <button class="filter-button" (click)="rangesModal.open()">
+        Rangos ({{ filters().ranges.length }})
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <label for="spell-source">Contenido:</label>
+      <select
+        id="spell-source"
+        [(ngModel)]="filters().source"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option value="all">Todos</option>
+        <option value="official">Oficial</option>
+      </select>
+    </div>
+  </div>
+
+  <app-filter-modal
+    #schoolsModal
+    title="Seleccionar Escuelas"
+    [options]="Array.from(schools())"
+    [selectedOptions]="filters().schools"
+    (confirmed)="onSchoolsConfirmed($event)"
+  ></app-filter-modal>
+
+  <app-filter-modal
+    #rangesModal
+    title="Seleccionar Rangos"
+    [options]="Array.from(ranges())"
+    [selectedOptions]="filters().ranges"
+    (confirmed)="onRangesConfirmed($event)"
+  ></app-filter-modal>
+
+  <ul class="entity-list" aria-label="Listado de spells">
+    @for (spell of filteredSpells(); track getIdentifier(spell)) {
+      <li class="entity-item">
+        <a [routerLink]="['/spells', getIdentifier(spell)]" class="entity-link">
+          <h3>{{ spell.name }}</h3>
+          <p>Nivel: {{ spell.level }}</p>
+          <p>Escuela: {{ spell.school?.name || 'N/A' }}</p>
+          <p>Concentracion: {{ spell.concentration ? 'Si' : 'No' }}</p>
+        </a>
+      </li>
+    }
+  </ul>
+}

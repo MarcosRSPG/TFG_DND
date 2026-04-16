@@ -1,0 +1,53 @@
+<div class="modal-backdrop" (click)="onBackdropClick($event)">
+  <div class="modal-content board board--type-sign sign">
+    <div class="modal-header">
+      <h2>{{ subclass.name }}</h2>
+      <button type="button" class="modal-close" aria-label="Cerrar modal" (click)="closeModal()">
+        &times;
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <section class="subclass-section">
+        <h3>Clase</h3>
+        <p>{{ subclass.class.name }}</p>
+      </section>
+
+      <section class="subclass-section">
+        <h3>Tipo</h3>
+        <p>{{ subclass.subclass_flavor }}</p>
+      </section>
+
+      <section class="subclass-section">
+        <h3>Descripcion</h3>
+        @for (description of subclass.desc; track $index) {
+          <p>{{ description }}</p>
+        }
+      </section>
+
+      @if (features.length) {
+        <section class="subclass-section">
+          <h3>Caracteristicas de subclase</h3>
+          <ul class="features-list">
+            @for (item of features; track item.feature.index) {
+              <li class="feature-item">
+                <h4>Nivel {{ item.level }} - {{ item.feature.name }}</h4>
+                @if (item.feature.desc?.length) {
+                  @for (featureDescription of item.feature.desc; track $index) {
+                    <p>{{ featureDescription }}</p>
+                  }
+                } @else {
+                  <p>Sin descripcion disponible.</p>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="modal-button" (click)="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>

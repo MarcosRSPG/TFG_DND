@@ -39,11 +39,16 @@
 			@if (subrace.racial_traits.length) {
 				<section class="subrace-section">
 					<h3>Rasgos raciales de la subraza</h3>
-					<ul class="traits-list">
+					<div class="traits-blocks">
 						@for (trait of subrace.racial_traits; track trait.index) {
-							<li>{{ trait.name }}</li>
+							<div class="trait-block">
+								<h4>{{ trait.name }}</h4>
+								@for (line of getTraitDescriptions(trait); track $index) {
+									<p>{{ line }}</p>
+								}
+							</div>
 						}
-					</ul>
+					</div>
 				</section>
 			}
 		</div>

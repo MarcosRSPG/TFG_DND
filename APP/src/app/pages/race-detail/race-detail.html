@@ -1,71 +1,78 @@
 @if (loading()) {
-	<div class="race-detail-container">
+	<section class="detail board board--type-sign sign">
+		<a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
 		<p class="message">Cargando detalles de la raza...</p>
-	</div>
+	</section>
 } @else if (error()) {
-	<div class="race-detail-container">
+	<section class="detail board board--type-sign sign">
+		<a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
 		<p class="message message--error">{{ error() }}</p>
-	</div>
+	</section>
 } @else if (race(); as currentRace) {
-	<div class="race-detail-container">
+	<section class="detail board board--type-sign sign">
+		<a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
 
-		<article class="race-detail">
+		<header class="detail-header">
 			<h1>{{ currentRace.name }}</h1>
+			<p class="detail-subtitle">Race</p>
+		</header>
 
-			<section class="race-overview">
-				<div class="overview-item">
-					<strong>Tamaño:</strong> {{ currentRace.size }}
-				</div>
-				<div class="overview-item">
-					<strong>Velocidad:</strong> {{ currentRace.speed }} pies
-				</div>
-				<div class="overview-item">
-					<strong>Alineamiento:</strong> {{ currentRace.alignment }}
-				</div>
-			</section>
+		<section class="detail-meta-grid">
+			<p class="meta-item"><span class="meta-label">Tamano</span><span class="meta-value">{{ currentRace.size }}</span></p>
+			<p class="meta-item"><span class="meta-label">Velocidad</span><span class="meta-value">{{ currentRace.speed }} pies</span></p>
+			<p class="meta-item"><span class="meta-label">Alineamiento</span><span class="meta-value">{{ currentRace.alignment }}</span></p>
+		</section>
 
-			<section class="race-section">
-				<h2>Descripción</h2>
+		<section class="detail-block">
+			<h2>Descripcion</h2>
+			<div class="detail-text-stack">
 				<p>{{ currentRace.size_description }}</p>
-			</section>
+			</div>
+		</section>
 
-			<section class="race-section">
-				<h2>Edad</h2>
+		<section class="detail-block">
+			<h2>Edad</h2>
+			<div class="detail-text-stack">
 				<p>{{ currentRace.age }}</p>
-			</section>
+			</div>
+		</section>
 
-			<section class="race-section">
-				<h2>Idiomas</h2>
+		<section class="detail-block">
+			<h2>Idiomas</h2>
+			<div class="detail-text-stack">
 				<p>{{ currentRace.language_desc }}</p>
+			</div>
+		</section>
+
+		@if (currentRace.ability_bonuses.length) {
+			<section class="detail-block">
+				<h2>Bonificaciones de caracteristicas</h2>
+				<ul class="detail-list">
+					@for (bonus of currentRace.ability_bonuses; track bonus.ability_score.index) {
+						<li><strong>{{ bonus.ability_score.name }}:</strong> +{{ bonus.bonus }}</li>
+					}
+				</ul>
 			</section>
+		}
 
-			@if (currentRace.ability_bonuses.length) {
-				<section class="race-section">
-					<h2>Bonificaciones de características</h2>
-					<ul class="bonus-list">
-						@for (bonus of currentRace.ability_bonuses; track bonus.ability_score.index) {
-							<li>
-								<strong>{{ bonus.ability_score.name }}:</strong> +{{ bonus.bonus }}
-							</li>
-						}
-					</ul>
-				</section>
-			}
-
-			@if (currentRace.traits.length) {
-				<section class="race-section">
-					<h2>Rasgos raciales</h2>
-					<ul class="traits-list">
-						@for (trait of currentRace.traits; track trait.index) {
-							<li>{{ trait.name }}</li>
-						}
-					</ul>
-				</section>
-			}
-		</article>
+		@if (currentRace.traits.length) {
+			<section class="detail-block">
+				<h2>Rasgos raciales</h2>
+				<div class="traits-blocks">
+					@for (trait of currentRace.traits; track trait.index) {
+						<div class="trait-block">
+							<h3>{{ trait.name }}</h3>
+							@for (line of getTraitDescriptions(trait); track $index) {
+								<p>{{ line }}</p>
+							}
+						</div>
+					}
+				</div>
+			</section>
+		}
 
 		@if (subraces().length) {
-			<section class="subraces-section">
+			<section class="detail-block">
 				<h2>Subrazas</h2>
 				<ul class="subraces-list">
 					@for (subrace of subraces(); track subrace.index) {
@@ -83,11 +90,12 @@
 				</ul>
 			</section>
 		}
-	</div>
+	</section>
 
 	@if (showModal() && selectedSubrace(); as currentSubrace) {
 		<app-subrace-modal
 			[subrace]="currentSubrace"
+			[traitDetails]="traitDetails()"
 			(onClose)="closeModal()"
 		></app-subrace-modal>
 	}

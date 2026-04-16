@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Race } from '../../interfaces/race';
@@ -14,18 +14,30 @@ import { RacesService } from '../../services/races-service';
 export class Races implements OnInit {
   private readonly racesService = inject(RacesService);
 
-  races: Race[] = [];
-  loading = true;
-  error: string | null = null;
+  races = signal<Race[]>([]);
+  private raceIndexSet = new Set<string>();
+  loading = signal(true);
+  error = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
     try {
-      this.races = await this.racesService.getRaces();
+      await this.racesService.getRaces((item) => {
+        if (this.raceIndexSet.has(item.index)) {
+          return;
+        }
+
+        this.raceIndexSet.add(item.index);
+        this.races.update((current) => [...current, item].sort((a, b) => a.name.localeCompare(b.name)));
+        this.loading.set(false);
+      });
     } catch (error) {
       console.error('Error loading races:', error);
-      this.error = 'No se han podido cargar las razas.';
+      this.error.set('No se han podido cargar las razas.');
     } finally {
-      this.loading = false;
+      if (!this.error()) {
+        this.loading.set(false);
+      }
+      this.raceIndexSet.clear();
     }
   }
 }

@@ -1,0 +1,42 @@
+@if (loading()) {
+  <p class="entity-message">Cargando backgrounds...</p>
+} @else if (error()) {
+  <p class="entity-message entity-message--error">{{ error() }}</p>
+} @else {
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="background-search">Buscar por nombre:</label>
+      <input
+        id="background-search"
+        type="text"
+        [(ngModel)]="filters().searchName"
+        (ngModelChange)="onFilterChange()"
+        placeholder="Ej: Nómada, Soldado..."
+      />
+    </div>
+
+    <div class="filter-group">
+      <label for="background-source">Contenido:</label>
+      <select
+        id="background-source"
+        [(ngModel)]="filters().source"
+        (ngModelChange)="onFilterChange()"
+      >
+        <option value="all">Todos</option>
+        <option value="official">Oficial</option>
+      </select>
+    </div>
+  </div>
+
+  <ul class="entity-list" aria-label="Listado de backgrounds">
+    @for (background of filteredBackgrounds(); track getIdentifier(background)) {
+      <li class="entity-item">
+        <a [routerLink]="['/backgrounds', getIdentifier(background)]" class="entity-link">
+          <h3>{{ background.name }}</h3>
+          <p>Proficiencias iniciales: {{ background.starting_proficiencies?.length || 0 }}</p>
+          <p>Feature: {{ background.feature?.name || 'Ninguna' }}</p>
+        </a>
+      </li>
+    }
+  </ul>
+}

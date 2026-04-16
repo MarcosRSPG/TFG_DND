@@ -38,6 +38,14 @@ export interface RaceTrait {
 	url: string;
 }
 
+export interface RaceTraitDetail {
+	index: string;
+	name: string;
+	desc: string[];
+	url: string;
+	updated_at?: string;
+}
+
 export interface RaceSubrace {
 	index: string;
 	name: string;

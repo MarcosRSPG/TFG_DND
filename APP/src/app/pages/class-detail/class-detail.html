@@ -1,0 +1,134 @@
+@if (loading()) {
+  <section class="detail board board--type-sign sign">
+    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <p class="message">Cargando detalles de la clase...</p>
+  </section>
+} @else if (error()) {
+  <section class="detail board board--type-sign sign">
+    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <p class="message message--error">{{ error() }}</p>
+  </section>
+} @else if (dndClass(); as currentClass) {
+  <section class="detail board board--type-sign sign">
+    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+
+    <article>
+      <header class="detail-header">
+      <h1>{{ currentClass.name }}</h1>
+      <p class="detail-subtitle">Class</p>
+      </header>
+
+      <div class="levels-table-wrapper">
+        <table class="levels-table" aria-label="Progresion por nivel de clase">
+          <thead>
+            <tr>
+              <th>Nivel</th>
+              <th>Bono competencia</th>
+              <th>Habilidades adquiridas</th>
+              @for (column of counterColumns(); track column.id) {
+                <th>{{ column.label }}</th>
+              }
+              @if (isSpellcasterClass()) {
+                @for (slotLevel of slotLevels; track slotLevel) {
+                  <th>{{ slotLevel }}</th>
+                }
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (level of levels(); track level.level) {
+              <tr>
+                <td>{{ level.level }}</td>
+                <td>+{{ level.prof_bonus }}</td>
+                <td>{{ getFeatureTitles(level) }}</td>
+                @for (column of counterColumns(); track column.id) {
+                  <td>{{ getCounterValue(level, column) }}</td>
+                }
+                @if (isSpellcasterClass()) {
+                  @for (slotLevel of slotLevels; track slotLevel) {
+                    <td>{{ getSpellSlot(level, slotLevel) || '-' }}</td>
+                  }
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <section class="detail-block class-meta">
+        <h2>Hit Points</h2>
+        <p><strong>Hit Dice:</strong> 1d{{ currentClass.hit_die }} per {{ currentClass.name.toLowerCase() }} level</p>
+        <p><strong>Hit Points at 1st Level:</strong> {{ getHitPointsAtFirstLevel(currentClass.hit_die) }}</p>
+        <p><strong>Hit Points at Higher Levels:</strong> {{ getHitPointsAtHigherLevels(currentClass.hit_die, currentClass.name) }}</p>
+
+        <h2>Proficiencies</h2>
+        <p><strong>Armor:</strong> {{ getArmorProficiencies() }}</p>
+        <p><strong>Weapons:</strong> {{ getWeaponProficiencies() }}</p>
+        <p><strong>Tools:</strong> {{ getToolProficiencies() }}</p>
+        <p>
+          <strong>Saving Throws:</strong>
+          @for (savingThrow of currentClass.saving_throws; track savingThrow.index) {
+            {{ savingThrow.name }}@if (!$last) {, }
+          }
+        </p>
+
+        <p><strong>Skills:</strong> {{ getSkillsDescription() }}</p>
+
+        <h2>Equipment</h2>
+        <p>You start with the following equipment, in addition to the equipment granted by your background:</p>
+        <ul class="text-list">
+          @for (line of getEquipmentOptionLines(); track $index) {
+            <li>{{ line }}</li>
+          }
+          @for (line of getStartingEquipmentLines(); track $index) {
+            <li>{{ line }}</li>
+          }
+        </ul>
+
+        @if (currentClass.spellcasting) {
+          <p><strong>Spellcasting Ability:</strong> {{ currentClass.spellcasting.spellcasting_ability.name }}</p>
+        }
+      </section>
+
+      @if (classFeatures().length) {
+        <section class="detail-block features-section">
+          <h2>Nuevas habilidades y descripcion</h2>
+          <ul class="features-list">
+            @for (item of classFeatures(); track item.feature.index) {
+              <li class="feature-item">
+                <h3>Nivel {{ item.level }} - {{ item.feature.name }}</h3>
+                @for (description of getFeatureDescriptions(item); track $index) {
+                  <p>{{ description }}</p>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </article>
+
+    @if (subclasses().length) {
+      <section class="detail-block subclasses-section">
+        <h2>Subclases</h2>
+        <ul class="subclasses-list">
+          @for (subclass of subclasses(); track subclass.index) {
+            <li
+              class="subclass-item"
+              (click)="openSubclassModal(subclass)"
+              role="button"
+              tabindex="0"
+              [attr.aria-label]="'Ver detalles de ' + subclass.name"
+            >
+              <h3>{{ subclass.name }}</h3>
+              <p>{{ subclass.subclass_flavor }}</p>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </section>
+
+  @if (showModal() && selectedSubclass(); as currentSubclass) {
+    <app-subclass-modal [subclass]="currentSubclass" [features]="subclassFeatures()" (onClose)="closeModal()"></app-subclass-modal>
+  }
+}

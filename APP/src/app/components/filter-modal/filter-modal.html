@@ -1,0 +1,38 @@
+@if (isOpen()) {
+  <div class="filter-modal-backdrop" (click)="close()">
+    <div class="filter-modal-content" (click)="$event.stopPropagation()">
+      <div class="filter-modal-header">
+        <h2>{{ title }}</h2>
+        <button class="close-btn" (click)="close()" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="filter-modal-search">
+        <input
+          type="text"
+          [(ngModel)]="searchText"
+          placeholder="Buscar..."
+          class="filter-search-input"
+        />
+      </div>
+
+      <div class="filter-modal-options">
+        @for (option of filteredOptions; track option) {
+          <label class="filter-option-label">
+            <input
+              type="checkbox"
+              [checked]="localSelected().includes(option)"
+              (change)="toggleOption(option)"
+              class="filter-checkbox"
+            />
+            <span>{{ option }}</span>
+          </label>
+        }
+      </div>
+
+      <div class="filter-modal-actions">
+        <button class="btn-cancel" (click)="close()">Cancelar</button>
+        <button class="btn-confirm" (click)="confirm()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+}

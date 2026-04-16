@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { Race, RaceListResponse } from '../interfaces/race';
+import { Race, RaceListResponse, RaceTraitDetail } from '../interfaces/race';
 import { Subrace } from '../interfaces/subrace';
 
 @Injectable({
@@ -8,8 +8,20 @@ import { Subrace } from '../interfaces/subrace';
 })
 export class RacesService {
   private readonly apiUrl = environment.API_DND_OFICIAL;
+  private racesCache: Race[] | null = null;
+  private readonly traitCache = new Map<string, RaceTraitDetail>();
 
-  async getRaces(): Promise<Race[]> {
+  async getRaces(onItemLoaded?: (value: Race) => void): Promise<Race[]> {
+    if (this.racesCache) {
+      const cached = [...this.racesCache];
+      if (onItemLoaded) {
+        for (const item of cached) {
+          onItemLoaded(item);
+        }
+      }
+      return cached;
+    }
+
     const response = await fetch(this.apiUrl + '/races');
 
     if (!response.ok) {
@@ -22,14 +34,21 @@ export class RacesService {
       return [];
     }
     const races: Race[] = [];
-    for (const racePreview of data.results) {
-      try {        
-        const race = await this.getRace(racePreview.index);
-        races.push(race);
-      } catch (error) {
-        console.error(`Error loading race ${racePreview.index}:`, error);
-      }
-    }
+    await Promise.all(
+      data.results.map(async (racePreview) => {
+        try {
+          const race = await this.getRace(racePreview.index);
+          races.push(race);
+          onItemLoaded?.(race);
+        } catch (error) {
+          console.error(`Error loading race ${racePreview.index}:`, error);
+        }
+      }),
+    );
+
+    races.sort((a, b) => a.name.localeCompare(b.name));
+    this.racesCache = [...races];
+
     return races;
   }
 
@@ -70,5 +89,23 @@ export class RacesService {
       }
     }
     return subraces;
+  }
+
+  async getTrait(index: string): Promise<RaceTraitDetail> {
+    const cached = this.traitCache.get(index);
+    if (cached) {
+      return cached;
+    }
+
+    const response = await fetch(this.apiUrl + `/traits/${index}`);
+
+    if (!response.ok) {
+      throw new Error(`No se ha podido cargar el rasgo ${index}: ${response.status} ${response.statusText}`);
+    }
+
+    const trait = (await response.json()) as RaceTraitDetail;
+    this.traitCache.set(index, trait);
+
+    return trait;
   }
 }

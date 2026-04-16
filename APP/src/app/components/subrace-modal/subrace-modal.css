@@ -15,9 +15,7 @@
 	background: rgba(55, 34, 19, 0.95);
 	border: 1px solid rgba(201, 162, 90, 0.35);
 	border-radius: 12px;
-	max-width: 600px;
-	max-height: 80vh;
-	overflow-y: auto;
+	width: 70em;
 	color: #eadab8;
 	animation: slideIn 0.3s ease-out;
 }
@@ -94,15 +92,13 @@
 	color: #cfbc96;
 }
 
-.bonus-list,
-.traits-list {
+.bonus-list {
 	list-style: none;
 	margin: 0;
 	padding-left: 1rem;
 }
 
-.bonus-list li,
-.traits-list li {
+.bonus-list li {
 	padding: 0.5rem 0;
 	margin-bottom: 0.4rem;
 	border-left: 3px solid rgba(201, 162, 90, 0.22);
@@ -110,9 +106,31 @@
 	color: #cfbc96;
 }
 
-.bonus-list li strong,
-.traits-list li strong {
+.bonus-list li strong {
 	color: #f0d8b0;
+}
+
+.traits-blocks {
+	display: grid;
+	gap: 0.55rem;
+}
+
+.trait-block {
+	border: 1px solid rgba(201, 162, 90, 0.22);
+	background: rgba(20, 12, 7, 0.35);
+	border-radius: 10px;
+	padding: 0.75rem;
+}
+
+.trait-block h4 {
+	margin: 0 0 0.4rem;
+	color: #f0d8b0;
+	font-size: 0.95rem;
+}
+
+.trait-block p {
+	margin: 0.35rem 0;
+	color: #cfbc96;
 }
 
 .modal-footer {
