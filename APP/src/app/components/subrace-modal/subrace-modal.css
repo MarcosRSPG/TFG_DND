@@ -15,9 +15,15 @@
 	background: rgba(55, 34, 19, 0.95);
 	border: 1px solid rgba(201, 162, 90, 0.35);
 	border-radius: 12px;
-	width: 70em;
+	width: 60%;
 	color: #eadab8;
 	animation: slideIn 0.3s ease-out;
+	max-height: 88vh;
+	margin: 4vh 1.5vw;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-sizing: border-box;
 }
 
 @keyframes slideIn {
@@ -68,6 +74,19 @@
 
 .modal-body {
 	padding: 1.5rem;
+	overflow-y: auto;
+	max-height: 56vh;
+}
+@media (max-width: 700px) {
+	.modal-content {
+		max-width: 98vw;
+		margin: 4vw 1vw;
+		padding: 0.5rem;
+	}
+	.modal-body {
+		padding: 0.7rem;
+		max-height: 60vh;
+	}
 }
 
 .subrace-section {
