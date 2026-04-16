@@ -15,8 +15,6 @@ export interface Spell {
   school?: SpellReference;
   classes?: SpellReference[];
   subclasses?: SpellReference[];
-  created_by?: string;
-  created_at?: string;
   updated_at?: string;
   [key: string]: unknown;
 }

@@ -1,12 +1,3 @@
-  /**
-   * Obtiene el rol del usuario actual ("admin", "user", etc). Devuelve null si no hay usuario logueado.
-   */
-  async getUserRole(): Promise<string | null> {
-    const token = this.getToken();
-    if (!token) return null;
-    const user = await this.verifyToken(token);
-    return user ? user.role : null;
-  }
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { TokenHashService } from './token-hash.service';
