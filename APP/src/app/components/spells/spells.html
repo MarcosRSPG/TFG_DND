@@ -15,7 +15,7 @@
       />
     </div>
 
-    <div class="filter-group">
+    <div class="filter-group filter-group--multi">
       <button class="filter-button" (click)="schoolsModal.open()">
         Escuelas ({{ filters().schools.length }})
       </button>
@@ -44,17 +44,16 @@
 
     <div class="filter-group">
       <label class="checkbox-label">
-        <input
-          type="checkbox"
+        <app-viking-check
           [checked]="filters().ritual === true"
-          (change)="onRitualChange($any($event.target).checked)"
-          class="filter-checkbox"
-        />
+          (checkedChange)="onRitualChange($event)"
+          ariaLabel="Filtrar spells por ritual"
+        ></app-viking-check>
         <span>Ritual</span>
       </label>
     </div>
 
-    <div class="filter-group">
+    <div class="filter-group filter-group--multi">
       <button class="filter-button" (click)="rangesModal.open()">
         Rangos ({{ filters().ranges.length }})
       </button>
