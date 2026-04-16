@@ -17,12 +17,11 @@
 
     <div class="filter-group">
       <label class="checkbox-label">
-        <input
-          type="checkbox"
+        <app-viking-check
           [checked]="filters().isMagical === true"
-          (change)="onMagicalChange($any($event.target).checked)"
-          class="filter-checkbox"
-        />
+          (checkedChange)="onMagicalChange($event)"
+          ariaLabel="Filtrar clases magicas"
+        ></app-viking-check>
         <span>Mágico</span>
       </label>
     </div>

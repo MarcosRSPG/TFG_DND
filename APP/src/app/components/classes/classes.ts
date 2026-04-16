@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DndClass } from '../../interfaces/class';
 import { ClassesService } from '../../services/classes-service';
+import { VikingCheck } from '../viking-check/viking-check';
 
 interface ClassFilters {
   searchName: string;
@@ -14,7 +15,7 @@ interface ClassFilters {
 @Component({
   selector: 'app-classes',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, VikingCheck],
   templateUrl: './classes.html',
   styleUrl: './classes.css',
 })
