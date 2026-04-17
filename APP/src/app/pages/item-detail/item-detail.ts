@@ -19,6 +19,10 @@ export class ItemDetail implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
 
+  public get queryParams() {
+    return this.route.snapshot.queryParams;
+  }
+
   async ngOnInit(): Promise<void> {
     try {
       const id = this.route.snapshot.paramMap.get('id');

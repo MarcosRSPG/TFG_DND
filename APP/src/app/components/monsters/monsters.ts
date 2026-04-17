@@ -25,6 +25,9 @@ interface MonsterFilters {
   styleUrl: './monsters.css',
 })
 export class Monsters implements OnInit {
+    paginatedMonsters = signal<Monster[]>([]);
+    currentPage = signal(1);
+    readonly pageSize = 25;
   private readonly monstersService = inject(MonstersService);
 
   @ViewChild('typesModal') typesModal!: FilterModalComponent;
@@ -78,6 +81,7 @@ export class Monsters implements OnInit {
   }
 
   onFilterChange(): void {
+    this.currentPage.set(1);
     this.applyFilters();
   }
 
@@ -122,6 +126,40 @@ export class Monsters implements OnInit {
       filtered = filtered.filter((m) => m.hit_points <= maxHp);
     }
     this.filteredMonsters.set(filtered);
+    this.updatePaginatedMonsters();
+  }
+
+  updatePaginatedMonsters(): void {
+    const filtered = this.filteredMonsters();
+    const start = (this.currentPage() - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.paginatedMonsters.set(filtered.slice(start, end));
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.updatePaginatedMonsters();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredMonsters().length / this.pageSize) || 1;
+  }
+
+  get paginationPages(): (number | string)[] {
+    const total = this.totalPages;
+    const current = this.currentPage();
+    if (total <= 5) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const pages: (number | string)[] = [];
+    if (current > 3) pages.push(1);
+    if (current > 4) pages.push('...');
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      pages.push(i);
+    }
+    if (current < total - 3) pages.push('...');
+    if (current < total - 2) pages.push(total);
+    return pages;
   }
 
   onTypesConfirmed(types: string[]): void {

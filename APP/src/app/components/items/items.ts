@@ -22,12 +22,31 @@ interface ItemFilters {
   styleUrl: './items.css',
 })
 export class Items implements OnInit {
+    get paginationPages(): (number | string)[] {
+      const total = this.totalPages;
+      const current = this.currentPage();
+      if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+      }
+      const pages: (number | string)[] = [];
+      if (current > 3) pages.push(1);
+      if (current > 4) pages.push('...');
+      for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+        pages.push(i);
+      }
+      if (current < total - 3) pages.push('...');
+      if (current < total - 2) pages.push(total);
+      return pages;
+    }
   private readonly itemsService = inject(ItemsService);
 
   @ViewChild('typesModal') typesModal!: FilterModalComponent;
 
   allItems = signal<Item[]>([]);
   filteredItems = signal<Item[]>([]);
+  paginatedItems = signal<Item[]>([]);
+  currentPage = signal(1);
+  readonly pageSize = 25;
   filters = signal<ItemFilters>({
     searchName: '',
     types: [],
@@ -69,6 +88,7 @@ export class Items implements OnInit {
   }
 
   onFilterChange(): void {
+    this.currentPage.set(1);
     this.applyFilters();
   }
 
@@ -100,6 +120,23 @@ export class Items implements OnInit {
       filtered = filtered.filter((item) => (item.cost?.quantity || 0) <= maxCost);
     }
     this.filteredItems.set(filtered);
+    this.updatePaginatedItems();
+  }
+
+  updatePaginatedItems(): void {
+    const filtered = this.filteredItems();
+    const start = (this.currentPage() - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.paginatedItems.set(filtered.slice(start, end));
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.updatePaginatedItems();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredItems().length / this.pageSize) || 1;
   }
 
   onTypesConfirmed(types: string[]): void {

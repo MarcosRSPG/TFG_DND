@@ -40,7 +40,7 @@
   </div>
 
   <ul class="class-list" aria-label="Listado de clases">
-    @for (dndClass of filteredClasses(); track dndClass.index) {
+    @for (dndClass of paginatedClasses(); track dndClass.index) {
       <li class="class-item">
         <a [routerLink]="['/classes', dndClass.index]" class="class-link">
           <h3>{{ dndClass.name }}</h3>
@@ -58,4 +58,23 @@
       </li>
     }
   </ul>
+
+  <nav class="pagination" *ngIf="filteredClasses().length > pageSize">
+    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
+    <ng-container *ngFor="let page of paginationPages">
+      <ng-container *ngIf="page === '...'">
+        <span class="pagination-ellipsis">...</span>
+      </ng-container>
+      <ng-container *ngIf="page !== '...'">
+        <button
+          class="pagination-btn"
+          [class.active]="currentPage() === page"
+          *ngIf="typeof page === 'number'"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+      </ng-container>
+    </ng-container>
+    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
+  </nav>
 }

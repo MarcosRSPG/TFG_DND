@@ -18,6 +18,9 @@ interface BackgroundFilters {
   styleUrl: './backgrounds.css',
 })
 export class Backgrounds implements OnInit {
+    paginatedBackgrounds = signal<Background[]>([]);
+    currentPage = signal(1);
+    readonly pageSize = 25;
   private readonly backgroundsService = inject(BackgroundsService);
 
   allBackgrounds = signal<Background[]>([]);
@@ -56,6 +59,7 @@ export class Backgrounds implements OnInit {
   }
 
   onFilterChange(): void {
+    this.currentPage.set(1);
     this.applyFilters();
   }
 
@@ -67,6 +71,40 @@ export class Backgrounds implements OnInit {
       filtered = filtered.filter((b) => b.name.toLowerCase().includes(search));
     }
     this.filteredBackgrounds.set(filtered);
+    this.updatePaginatedBackgrounds();
+  }
+
+  updatePaginatedBackgrounds(): void {
+    const filtered = this.filteredBackgrounds();
+    const start = (this.currentPage() - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.paginatedBackgrounds.set(filtered.slice(start, end));
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.updatePaginatedBackgrounds();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredBackgrounds().length / this.pageSize) || 1;
+  }
+
+  get paginationPages(): (number | string)[] {
+    const total = this.totalPages;
+    const current = this.currentPage();
+    if (total <= 5) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const pages: (number | string)[] = [];
+    if (current > 3) pages.push(1);
+    if (current > 4) pages.push('...');
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      pages.push(i);
+    }
+    if (current < total - 3) pages.push('...');
+    if (current < total - 2) pages.push(total);
+    return pages;
   }
 
   getIdentifier(item: Background): string {

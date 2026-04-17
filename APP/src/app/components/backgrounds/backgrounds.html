@@ -29,7 +29,7 @@
   </div>
 
   <ul class="entity-list" aria-label="Listado de backgrounds">
-    @for (background of filteredBackgrounds(); track getIdentifier(background)) {
+    @for (background of paginatedBackgrounds(); track getIdentifier(background)) {
       <li class="entity-item">
         <a [routerLink]="['/backgrounds', getIdentifier(background)]" class="entity-link">
           <h3>{{ background.name }}</h3>
@@ -39,4 +39,23 @@
       </li>
     }
   </ul>
+
+  <nav class="pagination" *ngIf="filteredBackgrounds().length > pageSize">
+    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
+    <ng-container *ngFor="let page of paginationPages">
+      <ng-container *ngIf="page === '...'">
+        <span class="pagination-ellipsis">...</span>
+      </ng-container>
+      <ng-container *ngIf="page !== '...'">
+        <button
+          class="pagination-btn"
+          [class.active]="currentPage() === page"
+          *ngIf="typeof page === 'number'"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+      </ng-container>
+    </ng-container>
+    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
+  </nav>
 }

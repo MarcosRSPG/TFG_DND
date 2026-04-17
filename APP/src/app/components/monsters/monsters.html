@@ -87,7 +87,7 @@
   </div>
 
   <ul class="entity-list" aria-label="Listado de monsters">
-    @for (monster of filteredMonsters(); track getIdentifier(monster)) {
+    @for (monster of paginatedMonsters(); track getIdentifier(monster)) {
       <li class="entity-item">
         <a [routerLink]="['/monsters', getIdentifier(monster)]" class="entity-link">
           <h3>{{ monster.name }}</h3>
@@ -97,6 +97,25 @@
       </li>
     }
   </ul>
+
+  <nav class="pagination" *ngIf="filteredMonsters().length > pageSize">
+    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
+    <ng-container *ngFor="let page of paginationPages">
+      <ng-container *ngIf="page === '...'">
+        <span class="pagination-ellipsis">...</span>
+      </ng-container>
+      <ng-container *ngIf="page !== '...'">
+        <button
+          class="pagination-btn"
+          [class.active]="currentPage() === page"
+          *ngIf="typeof page === 'number'"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+      </ng-container>
+    </ng-container>
+    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
+  </nav>
 
   <app-filter-modal
     #typesModal

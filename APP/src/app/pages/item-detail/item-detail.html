@@ -11,6 +11,7 @@
 } @else if (item(); as data) {
   <section class="detail board board--type-sign sign">
     <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <a [routerLink]="['/items']" [queryParams]="queryParams" class="back-link">&larr; Volver a la lista</a>
     <header class="detail-header">
       <h1>{{ data.name }}</h1>
       <p class="detail-subtitle">Item</p>

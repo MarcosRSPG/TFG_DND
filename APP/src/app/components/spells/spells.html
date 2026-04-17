@@ -89,7 +89,7 @@
   ></app-filter-modal>
 
   <ul class="entity-list" aria-label="Listado de spells">
-    @for (spell of filteredSpells(); track getIdentifier(spell)) {
+    @for (spell of paginatedSpells(); track getIdentifier(spell)) {
       <li class="entity-item">
         <a [routerLink]="['/spells', getIdentifier(spell)]" class="entity-link">
           <h3>{{ spell.name }}</h3>
@@ -100,4 +100,23 @@
       </li>
     }
   </ul>
+
+  <nav class="pagination" *ngIf="filteredSpells().length > pageSize">
+    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
+    <ng-container *ngFor="let page of paginationPages">
+      <ng-container *ngIf="page === '...'">
+        <span class="pagination-ellipsis">...</span>
+      </ng-container>
+      <ng-container *ngIf="page !== '...'">
+        <button
+          class="pagination-btn"
+          [class.active]="currentPage() === page"
+          *ngIf="typeof page === 'number'"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+      </ng-container>
+    </ng-container>
+    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
+  </nav>
 }
