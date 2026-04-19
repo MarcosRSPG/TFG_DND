@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Race, RaceTrait, RaceTraitDetail } from '../../interfaces/race';
 import { Subrace } from '../../interfaces/subrace';
@@ -16,6 +16,7 @@ import { SubraceModalComponent } from '../../components/subrace-modal/subrace-mo
 export class RaceDetail implements OnInit {
   private readonly racesService = inject(RacesService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   race = signal<Race | null>(null);
   subraces = signal<Subrace[]>([]);
@@ -24,8 +25,17 @@ export class RaceDetail implements OnInit {
   error = signal<string | null>(null);
   selectedSubrace = signal<Subrace | null>(null);
   showModal = signal(false);
+  backQueryParams: Record<string, string> = {};
 
   async ngOnInit(): Promise<void> {
+    const queryParams = this.route.snapshot.queryParamMap;
+    this.backQueryParams = {
+      section: queryParams.get('section') || 'races',
+      searchName: queryParams.get('searchName') || '',
+      size: queryParams.get('size') || '',
+      page: queryParams.get('page') || '',
+    };
+
     try {
       const index = this.route.snapshot.paramMap.get('index');
       if (!index) {
@@ -42,7 +52,7 @@ export class RaceDetail implements OnInit {
       await this.loadTraitDetails(raceData.traits);
     } catch (error) {
       console.error('Error loading race detail:', error);
-      this.error.set('No se ha podido cargar los detalles de la raza.');
+      this.error.set('Failed to load race details.');
     } finally {
       this.loading.set(false);
     }
@@ -86,5 +96,13 @@ export class RaceDetail implements OnInit {
     );
 
     this.traitDetails.set(Object.fromEntries(detailEntries));
+  }
+
+  get backParams(): Record<string, string> {
+    const params: Record<string, string> = { section: this.backQueryParams['section'] || 'races' };
+    if (this.backQueryParams['searchName']) params['searchName'] = this.backQueryParams['searchName'];
+    if (this.backQueryParams['size']) params['size'] = this.backQueryParams['size'];
+    if (this.backQueryParams['page']) params['page'] = this.backQueryParams['page'];
+    return params;
   }
 }

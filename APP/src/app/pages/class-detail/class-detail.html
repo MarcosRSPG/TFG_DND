@@ -1,16 +1,16 @@
 @if (loading()) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
-    <p class="message">Cargando detalles de la clase...</p>
+    <a routerLink="/manual" [queryParams]="{section: 'clases'}" class="back-link">&larr; Back to manual</a>
+    <p class="message">Loading class details...</p>
   </section>
 } @else if (error()) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <a routerLink="/manual" [queryParams]="{section: 'clases'}" class="back-link">&larr; Back to manual</a>
     <p class="message message--error">{{ error() }}</p>
   </section>
 } @else if (dndClass(); as currentClass) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <a routerLink="/manual" [queryParams]="{section: 'clases'}" class="back-link">&larr; Back to manual</a>
 
     <article>
       <header class="detail-header">
@@ -23,8 +23,8 @@
           <thead>
             <tr>
               <th>Nivel</th>
-              <th>Bono competencia</th>
-              <th>Habilidades adquiridas</th>
+              <th>Proficiency Bonus</th>
+              <th>Features Gained</th>
               @for (column of counterColumns(); track column.id) {
                 <th>{{ column.label }}</th>
               }
@@ -92,11 +92,11 @@
 
       @if (classFeatures().length) {
         <section class="detail-block features-section">
-          <h2>Nuevas habilidades y descripcion</h2>
+          <h2>New Features</h2>
           <ul class="features-list">
             @for (item of classFeatures(); track item.feature.index) {
               <li class="feature-item">
-                <h3>Nivel {{ item.level }} - {{ item.feature.name }}</h3>
+                <h3>Level {{ item.level }} - {{ item.feature.name }}</h3>
                 @for (description of getFeatureDescriptions(item); track $index) {
                   <p>{{ description }}</p>
                 }
@@ -109,7 +109,7 @@
 
     @if (subclasses().length) {
       <section class="detail-block subclasses-section">
-        <h2>Subclases</h2>
+        <h2>Subclasses</h2>
         <ul class="subclasses-list">
           @for (subclass of subclasses(); track subclass.index) {
             <li
@@ -117,7 +117,7 @@
               (click)="openSubclassModal(subclass)"
               role="button"
               tabindex="0"
-              [attr.aria-label]="'Ver detalles de ' + subclass.name"
+              [attr.aria-label]="'View details of ' + subclass.name"
             >
               <h3>{{ subclass.name }}</h3>
               <p>{{ subclass.subclass_flavor }}</p>

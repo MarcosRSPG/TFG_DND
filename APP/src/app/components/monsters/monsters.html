@@ -1,92 +1,92 @@
 @if (loading()) {
-  <p class="entity-message">Cargando monsters...</p>
+  <p class="entity-message">Loading monsters...</p>
 } @else if (error()) {
   <p class="entity-message entity-message--error">{{ error() }}</p>
 } @else {
   <div class="filters-section">
     <div class="filter-group">
-      <label for="monster-search">Buscar por nombre:</label>
+      <label for="monster-search">Search by name:</label>
       <input
         id="monster-search"
         type="text"
         [(ngModel)]="filters().searchName"
         (ngModelChange)="onFilterChange()"
-        placeholder="Ej: Dragón, Golem..."
+        placeholder="e.g. Dragon, Golem..."
       />
     </div>
 
     <div class="filter-group filter-group--multi">
       <button class="filter-button" (click)="typesModal.open()">
-        Tipos ({{ filters().types.length }})
+        Types ({{ filters().types.length }})
       </button>
     </div>
 
     <div class="filter-group filter-group--multi">
       <button class="filter-button" (click)="sizesModal.open()">
-        Tamaños ({{ filters().sizes.length }})
+        Sizes ({{ filters().sizes.length }})
       </button>
     </div>
 
     <div class="filter-group">
-      <label for="monster-cr-min">CR mínimo:</label>
+      <label for="monster-cr-min">Min CR:</label>
       <input
         id="monster-cr-min"
         type="number"
         [(ngModel)]="filters().crMin"
         (ngModelChange)="onFilterChange()"
-        placeholder="Mín"
+        placeholder="Min"
         step="0.125"
       />
     </div>
 
     <div class="filter-group">
-      <label for="monster-cr-max">CR máximo:</label>
+      <label for="monster-cr-max">Max CR:</label>
       <input
         id="monster-cr-max"
         type="number"
         [(ngModel)]="filters().crMax"
         (ngModelChange)="onFilterChange()"
-        placeholder="Máx"
+        placeholder="Max"
         step="0.125"
       />
     </div>
 
     <div class="filter-group">
-      <label for="monster-hp-min">HP mínimo:</label>
+      <label for="monster-hp-min">Min HP:</label>
       <input
         id="monster-hp-min"
         type="number"
         [(ngModel)]="filters().hpMin"
         (ngModelChange)="onFilterChange()"
-        placeholder="Mín"
+        placeholder="Min"
       />
     </div>
 
     <div class="filter-group">
-      <label for="monster-hp-max">HP máximo:</label>
+      <label for="monster-hp-max">Max HP:</label>
       <input
         id="monster-hp-max"
         type="number"
         [(ngModel)]="filters().hpMax"
         (ngModelChange)="onFilterChange()"
-        placeholder="Máx"
+        placeholder="Max"
       />
     </div>
 
     <div class="filter-group">
-      <label for="monster-source">Contenido:</label>
+      <label for="monster-source">Content:</label>
       <select
         id="monster-source"
         [(ngModel)]="filters().source"
         (ngModelChange)="onFilterChange()"
       >
-        <option value="all">Todos</option>
-        <option value="official">Oficial</option>
+        <option value="all">All</option>
+        <option value="official">Official</option>
       </select>
     </div>
   </div>
 
-  <ul class="entity-list" aria-label="Listado de monsters">
+  <ul class="entity-list" aria-label="List of monsters">
     @for (monster of paginatedMonsters(); track getIdentifier(monster)) {
       <li class="entity-item">
         <a [routerLink]="['/monsters', getIdentifier(monster)]" class="entity-link">
@@ -99,7 +99,7 @@
   </ul>
 
   <nav class="pagination" *ngIf="filteredMonsters().length > pageSize">
-    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
+    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Previous</button>
     <ng-container *ngFor="let page of paginationPages">
       <ng-container *ngIf="page === '...'">
         <span class="pagination-ellipsis">...</span>
@@ -114,12 +114,12 @@
         </button>
       </ng-container>
     </ng-container>
-    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
+    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Next</button>
   </nav>
 
   <app-filter-modal
     #typesModal
-    title="Seleccionar Tipos"
+    title="Select Types"
     [options]="Array.from(types())"
     [selectedOptions]="filters().types"
     (confirmed)="onTypesConfirmed($event)"
@@ -127,7 +127,7 @@
 
   <app-filter-modal
     #sizesModal
-    title="Seleccionar Tamaños"
+    title="Select Sizes"
     [options]="Array.from(sizes())"
     [selectedOptions]="filters().sizes"
     (confirmed)="onSizesConfirmed($event)"

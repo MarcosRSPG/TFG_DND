@@ -1,35 +1,35 @@
 @if (loading()) {
-  <p class="entity-message">Cargando spells...</p>
+  <p class="entity-message">Loading spells...</p>
 } @else if (error()) {
   <p class="entity-message entity-message--error">{{ error() }}</p>
 } @else {
   <div class="filters-section">
     <div class="filter-group">
-      <label for="spell-search">Buscar por nombre:</label>
+      <label for="spell-search">Search by name:</label>
       <input
         id="spell-search"
         type="text"
         [(ngModel)]="filters().searchName"
         (ngModelChange)="onFilterChange()"
-        placeholder="Ej: Bola de fuego..."
+        placeholder="e.g. Fireball..."
       />
     </div>
 
     <div class="filter-group filter-group--multi">
       <button class="filter-button" (click)="schoolsModal.open()">
-        Escuelas ({{ filters().schools.length }})
+        Schools ({{ filters().schools.length }})
       </button>
     </div>
 
     <div class="filter-group">
-      <label for="spell-level">Nivel:</label>
+      <label for="spell-level">Level:</label>
       <select
         id="spell-level"
         [(ngModel)]="filters().level"
         (ngModelChange)="onFilterChange()"
       >
-        <option value="all">Todos</option>
-        <option value="0">0 (Truco)</option>
+        <option value="all">All</option>
+        <option value="0">0 (Cantrip)</option>
         <option value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>
@@ -47,7 +47,7 @@
         <app-viking-check
           [checked]="filters().ritual === true"
           (checkedChange)="onRitualChange($event)"
-          ariaLabel="Filtrar spells por ritual"
+          ariaLabel="Filter spells by ritual"
         ></app-viking-check>
         <span>Ritual</span>
       </label>
@@ -55,26 +55,26 @@
 
     <div class="filter-group filter-group--multi">
       <button class="filter-button" (click)="rangesModal.open()">
-        Rangos ({{ filters().ranges.length }})
+        Ranges ({{ filters().ranges.length }})
       </button>
     </div>
 
     <div class="filter-group">
-      <label for="spell-source">Contenido:</label>
+      <label for="spell-source">Content:</label>
       <select
         id="spell-source"
         [(ngModel)]="filters().source"
         (ngModelChange)="onFilterChange()"
       >
-        <option value="all">Todos</option>
-        <option value="official">Oficial</option>
+        <option value="all">All</option>
+        <option value="official">Official</option>
       </select>
     </div>
   </div>
 
   <app-filter-modal
     #schoolsModal
-    title="Seleccionar Escuelas"
+    title="Select Schools"
     [options]="Array.from(schools())"
     [selectedOptions]="filters().schools"
     (confirmed)="onSchoolsConfirmed($event)"
@@ -82,27 +82,27 @@
 
   <app-filter-modal
     #rangesModal
-    title="Seleccionar Rangos"
+    title="Select Ranges"
     [options]="Array.from(ranges())"
     [selectedOptions]="filters().ranges"
     (confirmed)="onRangesConfirmed($event)"
   ></app-filter-modal>
 
-  <ul class="entity-list" aria-label="Listado de spells">
+  <ul class="entity-list" aria-label="List of spells">
     @for (spell of paginatedSpells(); track getIdentifier(spell)) {
       <li class="entity-item">
         <a [routerLink]="['/spells', getIdentifier(spell)]" class="entity-link">
           <h3>{{ spell.name }}</h3>
-          <p>Nivel: {{ spell.level }}</p>
-          <p>Escuela: {{ spell.school?.name || 'N/A' }}</p>
-          <p>Concentracion: {{ spell.concentration ? 'Si' : 'No' }}</p>
+          <p>Level: {{ spell.level }}</p>
+          <p>School: {{ spell.school?.name || 'N/A' }}</p>
+          <p>Concentration: {{ spell.concentration ? 'Yes' : 'No' }}</p>
         </a>
       </li>
     }
   </ul>
 
   <nav class="pagination" *ngIf="filteredSpells().length > pageSize">
-    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
+    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Previous</button>
     <ng-container *ngFor="let page of paginationPages">
       <ng-container *ngIf="page === '...'">
         <span class="pagination-ellipsis">...</span>
@@ -117,6 +117,6 @@
         </button>
       </ng-container>
     </ng-container>
-    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
+    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Next</button>
   </nav>
 }

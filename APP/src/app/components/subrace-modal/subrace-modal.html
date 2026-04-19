@@ -5,7 +5,7 @@
 			<button
 				type="button"
 				class="modal-close"
-				aria-label="Cerrar modal"
+				aria-label="Close modal"
 				(click)="closeModal()"
 			>
 				&times;
@@ -14,18 +14,18 @@
 
 		<div class="modal-body">
 			<section class="subrace-section">
-				<h3>Descripción</h3>
+				<h3>Description</h3>
 				<p>{{ subrace.desc }}</p>
 			</section>
 
 			<section class="subrace-section">
-				<h3>Raza</h3>
+				<h3>Race</h3>
 				<p>{{ subrace.race.name }}</p>
 			</section>
 
 			@if (subrace.ability_bonuses.length) {
 				<section class="subrace-section">
-					<h3>Bonificaciones de características adicionales</h3>
+					<h3>Additional Ability Bonuses</h3>
 					<ul class="bonus-list">
 						@for (bonus of subrace.ability_bonuses; track bonus.ability_score.index) {
 							<li>
@@ -38,7 +38,7 @@
 
 			@if (subrace.racial_traits.length) {
 				<section class="subrace-section">
-					<h3>Rasgos raciales de la subraza</h3>
+					<h3>Subrace Traits</h3>
 					<div class="traits-blocks">
 						@for (trait of subrace.racial_traits; track trait.index) {
 							<div class="trait-block">
@@ -59,7 +59,7 @@
 				class="modal-button"
 				(click)="closeModal()"
 			>
-				Cerrar
+				Close
 			</button>
 		</div>
 	</div>

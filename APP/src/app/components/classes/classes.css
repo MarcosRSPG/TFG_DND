@@ -47,7 +47,7 @@
   background: rgba(55, 34, 19, 0.65);
   border: 1px solid rgba(201, 162, 90, 0.22);
   border-radius: 8px;
-  width: min(80vw, 100%);
+  width: min(35vw, 100%) !important;
   margin-left: auto;
   margin-right: auto;
 }
@@ -118,7 +118,7 @@
   padding: 0;
   display: grid;
   gap: 0.75rem;
-  width: min(80vw, 100%);
+  width: min(35vw, 100%);
   overflow-x: hidden;
 }
 
@@ -175,10 +175,24 @@
   background: rgba(55, 34, 19, 0.65);
   color: #eadab8;
   border: 1px solid rgba(201, 162, 90, 0.35);
-  width: min(80vw, 100%);
+  width: min(35vw, 100%);
 }
 
 .class-message--error {
   border-color: rgba(183, 93, 77, 0.6);
   color: #f3c2b9;
+}
+
+@media (max-width: 860px) {
+  .class-list {
+    width: min(60vw, 100%);
+  }
+
+  .class-message {
+    width: min(60vw, 100%);
+  }
+
+  .filters-section {
+    width: min(60vw, 100%);
+  }
 }

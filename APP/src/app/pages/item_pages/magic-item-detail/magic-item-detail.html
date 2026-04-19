@@ -1,0 +1,54 @@
+@if (magicItem) {
+  <section class="detail-container">
+    <h2 class="detail-title">{{ magicItem.name }}</h2>
+    <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+      <div>
+        <div class="detail-section">
+          <h3>Type</h3>
+          <p>{{ magicItem.type }}</p>
+        </div>
+        <div class="detail-section">
+          <h3>Category</h3>
+          <p>{{ magicItem.equipment_category.name }}</p>
+        </div>
+        <div class="detail-section">
+          <h3>Rarity</h3>
+          <p>{{ magicItem.rarity.name }}</p>
+        </div>
+        @if (magicItem.variant) {
+          <div class="detail-section">
+            <h3>Is Variant?</h3>
+            <p>Yes</p>
+          </div>
+        }
+      </div>
+      <div>
+        @if (magicItem.image) {
+          <div class="detail-section" style="text-align:center;">
+            <img [src]="magicItem.image" alt="Image of {{ magicItem.name }}" style="max-width: 100%; max-height: 220px; border-radius: 8px; box-shadow: 0 2px 8px #0006; margin-bottom: 1rem;" />
+          </div>
+        }
+        @if (magicItem.desc.length) {
+          <div class="detail-section">
+            <h3>Description</h3>
+            <ul>
+              @for (d of magicItem.desc; track $index) {
+                <li>{{ d }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+    @if (magicItem.variants.length) {
+      <div class="detail-section">
+        <h3>Variants</h3>
+        <ul>
+          @for (v of magicItem.variants; track $index) {
+            <li>{{ v.name }}</li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
+}

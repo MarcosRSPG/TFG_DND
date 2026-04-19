@@ -1,0 +1,26 @@
+  @if (loading()) {
+  <section class="detail board board--type-sign sign">
+    <a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
+    <p>Loading item...</p>
+  </section>
+} @else if (error()) {
+  <section class="detail board board--type-sign sign">
+    <a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
+    <p>{{ error() }}</p>
+  </section>
+} @else if (weapon || armor || gear || magicItem || tool || mount) {
+  <section class="detail board board--type-sign sign">
+    <a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
+    <header class="detail-header">
+      <h1>Item Detail</h1>
+    </header>
+    <section class="detail-block">
+      @if (weapon) { <app-weapon-detail [weapon]="weapon"></app-weapon-detail> }
+      @if (armor) { <app-armor-detail [armor]="armor"></app-armor-detail> }
+      @if (gear) { <app-adventuring-gear-detail [gear]="gear"></app-adventuring-gear-detail> }
+      @if (magicItem) { <app-magic-item-detail [magicItem]="magicItem"></app-magic-item-detail> }
+      @if (tool) { <app-tool-detail [tool]="tool"></app-tool-detail> }
+      @if (mount) { <app-mount-detail [mount]="mount"></app-mount-detail> }
+    </section>
+  </section>
+}

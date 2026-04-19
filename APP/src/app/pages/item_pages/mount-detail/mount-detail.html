@@ -1,0 +1,75 @@
+@if (mount) {
+  <section class="detail-container">
+    <h2 class="detail-title">{{ mount.name }}</h2>
+    <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+      <div>
+        <div class="detail-section">
+          <h3>Category</h3>
+          <p>{{ mount.equipment_category.name }}</p>
+        </div>
+        @if (mount.vehicle_category) {
+          <div class="detail-section">
+            <h3>Vehicle Type</h3>
+            <p>{{ mount.vehicle_category }}</p>
+          </div>
+        }
+        @if (mount.cost) {
+          <div class="detail-section">
+            <h3>Cost</h3>
+            <p>{{ mount.cost.quantity }} {{ mount.cost.unit }}</p>
+          </div>
+        }
+        @if (mount.weight) {
+          <div class="detail-section">
+            <h3>Weight</h3>
+            <p>{{ mount.weight }} lb</p>
+          </div>
+        }
+        @if (mount.speed) {
+          <div class="detail-section">
+            <h3>Speed</h3>
+            <p>{{ mount.speed.quantity }} {{ mount.speed.unit }}</p>
+          </div>
+        }
+        @if (mount.capacity) {
+          <div class="detail-section">
+            <h3>Capacity</h3>
+            <p>{{ mount.capacity }}</p>
+          </div>
+        }
+      </div>
+      <div>
+        @if (mount.desc.length) {
+          <div class="detail-section">
+            <h3>Description</h3>
+            <ul>
+              @for (d of mount.desc; track $index) {
+                <li>{{ d }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (mount.contents.length) {
+          <div class="detail-section">
+            <h3>Contenido</h3>
+            <ul>
+              @for (c of mount.contents; track $index) {
+                <li>{{ c.item.name }} x{{ c.quantity }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (mount.special.length) {
+          <div class="detail-section">
+            <h3>Especial</h3>
+            <ul>
+              @for (s of mount.special; track $index) {
+                <li>{{ s }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

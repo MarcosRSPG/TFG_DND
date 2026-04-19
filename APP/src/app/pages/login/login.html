@@ -1,12 +1,12 @@
 <section class="board board--type-sign sign">
 <form (ngSubmit)="login()">
-        <label for="inputEmail" class="form-label">Correo:</label>
+        <label for="inputEmail" class="form-label">Email:</label>
         <input type="email" id="inputEmail" [(ngModel)]="email" name="email" required>
-        <label for="inputPassword" class="form-label">Contraseña:</label>
+        <label for="inputPassword" class="form-label">Password:</label>
         <input type="password" id="inputPassword" [(ngModel)]="password" name="password" required>
         <div class="buttons">
-            <button type="button" class="submitLogin" [routerLink]="['/register']">Registrate</button>
-            <button type="submit" class="submitLogin">Iniciar sesión</button>
+            <button type="button" class="submitLogin" [routerLink]="['/register']">Register</button>
+            <button type="submit" class="submitLogin">Login</button>
         </div>
 </form>
 </section>

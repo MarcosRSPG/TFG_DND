@@ -19,12 +19,8 @@ _mounts = _db["items"]
 
 
 def _is_mount_doc(doc: dict) -> bool:
-    return (
-        doc.get("equipment_category", {}).get("index") == "mounts-and-vehicles"
-        and "vehicle_category" in doc
-        and "speed" in doc
-        and "capacity" in doc
-    )
+    # Mostrar absolutamente todo lo que sea de la categoría mounts-and-vehicles
+    return doc.get("equipment_category", {}).get("index") == "mounts-and-vehicles"
 
 
 def _to_schema(doc: dict) -> MountSchema:
@@ -37,7 +33,18 @@ def _to_schema(doc: dict) -> MountSchema:
 
 def get_all() -> list[MountSchema]:
     docs = merge_docs("mounts-and-vehicles")
-    return [_to_schema(doc) for doc in docs if _is_mount_doc(doc)]
+    # Solo exponer mounts con un id/index válido y únicos
+    seen_ids = set()
+    valid_mounts = []
+    for doc in docs:
+        if not _is_mount_doc(doc):
+            continue
+        doc_id = str(doc.get("index") or doc.get("id") or doc.get("_id"))
+        if not doc_id or doc_id in seen_ids:
+            continue
+        seen_ids.add(doc_id)
+        valid_mounts.append(_to_schema(doc))
+    return valid_mounts
 
 
 def get_by_id(mount_id: str) -> MountSchema:

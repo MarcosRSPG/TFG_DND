@@ -1,0 +1,63 @@
+@if (tool) {
+  <section class="detail-container">
+    <h2 class="detail-title">{{ tool.name }}</h2>
+    <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+      <div>
+        <div class="detail-section">
+          <h3>Category</h3>
+          <p>{{ tool.equipment_category.name }}</p>
+        </div>
+        @if (tool.tool_category) {
+          <div class="detail-section">
+            <h3>Tool Type</h3>
+            <p>{{ tool.tool_category }}</p>
+          </div>
+        }
+        @if (tool.cost) {
+          <div class="detail-section">
+            <h3>Cost</h3>
+            <p>{{ tool.cost.quantity }} {{ tool.cost.unit }}</p>
+          </div>
+        }
+        @if (tool.weight) {
+          <div class="detail-section">
+            <h3>Weight</h3>
+            <p>{{ tool.weight }} lb</p>
+          </div>
+        }
+      </div>
+      <div>
+        @if (tool.desc.length) {
+          <div class="detail-section">
+            <h3>Description</h3>
+            <ul>
+              @for (d of tool.desc; track $index) {
+                <li>{{ d }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (tool.contents.length) {
+          <div class="detail-section">
+            <h3>Contents</h3>
+            <ul>
+              @for (c of tool.contents; track $index) {
+                <li>{{ c.item.name }} x{{ c.quantity }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (tool.special.length) {
+          <div class="detail-section">
+            <h3>Especial</h3>
+            <ul>
+              @for (s of tool.special; track $index) {
+                <li>{{ s }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

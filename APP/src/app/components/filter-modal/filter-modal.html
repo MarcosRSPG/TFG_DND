@@ -3,14 +3,14 @@
     <div class="filter-modal-content" (click)="$event.stopPropagation()">
       <div class="filter-modal-header">
         <h2>{{ title }}</h2>
-        <button class="close-btn" (click)="close()" aria-label="Cerrar">✕</button>
+        <button class="close-btn" (click)="close()" aria-label="Close">✕</button>
       </div>
 
       <div class="filter-modal-search">
         <input
           type="text"
           [(ngModel)]="searchText"
-          placeholder="Buscar..."
+          placeholder="Search..."
           class="filter-search-input"
         />
       </div>
@@ -30,8 +30,8 @@
       </div>
 
       <div class="filter-modal-actions">
-        <button class="btn-cancel" (click)="close()">Cancelar</button>
-        <button class="btn-confirm" (click)="confirm()">Aceptar</button>
+        <button class="btn-cancel" (click)="close()">Cancel</button>
+        <button class="btn-confirm" (click)="confirm()">Confirm</button>
       </div>
     </div>
   </div>

@@ -57,7 +57,7 @@
   background: rgba(55, 34, 19, 0.65);
   border: 1px solid rgba(201, 162, 90, 0.22);
   border-radius: 8px;
-  width: min(80vw, 100%);
+  width: min(35vw, 100%);
   margin-left: auto;
   margin-right: auto;
 }
@@ -126,7 +126,7 @@
   padding: 0;
   display: grid;
   gap: 0.9rem;
-  width: min(80vw, 100%);
+  width: min(35vw, 100%);
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
@@ -174,7 +174,7 @@
 
 .entity-message {
   margin: 0 auto;
-  width: min(80vw, 100%);
+  width: min(35vw, 100%);
   padding: 0.9rem 1rem;
   border-radius: 10px;
   background: rgba(55, 34, 19, 0.78);
@@ -189,11 +189,15 @@
 
 @media (max-width: 860px) {
   .entity-list {
-    width: min(92vw, 100%);
+    width: min(60vw, 100%);
     grid-template-columns: 1fr;
   }
 
   .entity-message {
-    width: min(92vw, 100%);
+    width: min(60vw, 100%);
+  }
+
+  .filters-section {
+    width: min(60vw, 100%);
   }
 }

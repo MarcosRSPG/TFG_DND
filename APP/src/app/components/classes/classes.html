@@ -1,17 +1,17 @@
 @if (loading()) {
-  <p class="class-message">Cargando clases...</p>
+  <p class="class-message">Loading classes...</p>
 } @else if (error()) {
   <p class="class-message class-message--error">{{ error() }}</p>
 } @else {
   <div class="filters-section">
     <div class="filter-group">
-      <label for="class-search">Buscar por nombre:</label>
+      <label for="class-search">Search by name:</label>
       <input
         id="class-search"
         type="text"
         [(ngModel)]="filters().searchName"
         (ngModelChange)="onFilterChange()"
-        placeholder="Ej: Mago, Bardo..."
+        placeholder="e.g. Wizard, Bard..."
       />
     </div>
 
@@ -20,36 +20,36 @@
         <app-viking-check
           [checked]="filters().isMagical === true"
           (checkedChange)="onMagicalChange($event)"
-          ariaLabel="Filtrar clases magicas"
+          ariaLabel="Filter magical classes"
         ></app-viking-check>
-        <span>Mágico</span>
+        <span>Magical</span>
       </label>
     </div>
 
     <div class="filter-group">
-      <label for="class-source">Contenido:</label>
+      <label for="class-source">Content:</label>
       <select
         id="class-source"
         [(ngModel)]="filters().source"
         (ngModelChange)="onFilterChange()"
       >
-        <option value="all">Todos</option>
-        <option value="official">Oficial</option>
+        <option value="all">All</option>
+        <option value="official">Official</option>
       </select>
     </div>
   </div>
 
-  <ul class="class-list" aria-label="Listado de clases">
+  <ul class="class-list" aria-label="List of classes">
     @for (dndClass of paginatedClasses(); track dndClass.index) {
       <li class="class-item">
         <a [routerLink]="['/classes', dndClass.index]" class="class-link">
           <h3>{{ dndClass.name }}</h3>
-          <p>Dado de golpe: d{{ dndClass.hit_die }}</p>
-          <p>Tiradas de salvacion: {{ dndClass.saving_throws[0]?.name }} / {{ dndClass.saving_throws[1]?.name }}</p>
+          <p>Hit die: d{{ dndClass.hit_die }}</p>
+          <p>Saving throws: {{ dndClass.saving_throws[0]?.name }} / {{ dndClass.saving_throws[1]?.name }}</p>
           <p>
-            Magia:
+            Magic:
             @if (dndClass.spellcasting) {
-              Si ({{ dndClass.spellcasting.spellcasting_ability.name }})
+              Yes ({{ dndClass.spellcasting.spellcasting_ability.name }})
             } @else {
               No
             }
@@ -60,7 +60,7 @@
   </ul>
 
   <nav class="pagination" *ngIf="filteredClasses().length > pageSize">
-    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
+    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Previous</button>
     <ng-container *ngFor="let page of paginationPages">
       <ng-container *ngIf="page === '...'">
         <span class="pagination-ellipsis">...</span>
@@ -75,6 +75,6 @@
         </button>
       </ng-container>
     </ng-container>
-    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
+    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Next</button>
   </nav>
 }

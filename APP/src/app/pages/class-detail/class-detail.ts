@@ -63,7 +63,7 @@ export class ClassDetail implements OnInit {
       this.counterColumns.set(this.extractCounterColumns(levelData));
     } catch (error) {
       console.error('Error loading class detail:', error);
-      this.error.set('No se han podido cargar los detalles de la clase.');
+      this.error.set('Failed to load class details.');
     } finally {
       this.loading.set(false);
     }
@@ -90,7 +90,7 @@ export class ClassDetail implements OnInit {
 
   getFeatureTitles(level: DndClassLevel): string {
     if (!level.features?.length) {
-      return 'Ninguna';
+      return 'None';
     }
 
     return level.features.map((feature) => feature.name).join(', ');
@@ -289,7 +289,7 @@ export class ClassDetail implements OnInit {
   }
 
   getFeatureDescriptions(item: LeveledFeature): string[] {
-    return item.feature.desc?.length ? item.feature.desc : ['Sin descripcion disponible.'];
+    return item.feature.desc?.length ? item.feature.desc : ['No description available.'];
   }
 
   private isScalar(value: unknown): value is string | number {

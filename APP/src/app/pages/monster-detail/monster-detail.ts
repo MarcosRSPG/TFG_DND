@@ -30,7 +30,7 @@ export class MonsterDetail implements OnInit {
       this.monster.set(monster);
     } catch (error) {
       console.error('Error loading monster detail:', error);
-      this.error.set('No se ha podido cargar el detalle del monster.');
+      this.error.set('Failed to load monster details.');
     } finally {
       this.loading.set(false);
     }

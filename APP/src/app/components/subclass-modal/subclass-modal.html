@@ -2,24 +2,24 @@
   <div class="modal-content board board--type-sign sign">
     <div class="modal-header">
       <h2>{{ subclass.name }}</h2>
-      <button type="button" class="modal-close" aria-label="Cerrar modal" (click)="closeModal()">
+      <button type="button" class="modal-close" aria-label="Close modal" (click)="closeModal()">
         &times;
       </button>
     </div>
 
     <div class="modal-body">
       <section class="subclass-section">
-        <h3>Clase</h3>
+        <h3>Class</h3>
         <p>{{ subclass.class.name }}</p>
       </section>
 
       <section class="subclass-section">
-        <h3>Tipo</h3>
+        <h3>Type</h3>
         <p>{{ subclass.subclass_flavor }}</p>
       </section>
 
       <section class="subclass-section">
-        <h3>Descripcion</h3>
+        <h3>Description</h3>
         @for (description of subclass.desc; track $index) {
           <p>{{ description }}</p>
         }
@@ -27,17 +27,17 @@
 
       @if (features.length) {
         <section class="subclass-section">
-          <h3>Caracteristicas de subclase</h3>
+          <h3>Subclass Features</h3>
           <ul class="features-list">
             @for (item of features; track item.feature.index) {
               <li class="feature-item">
-                <h4>Nivel {{ item.level }} - {{ item.feature.name }}</h4>
+                <h4>Level {{ item.level }} - {{ item.feature.name }}</h4>
                 @if (item.feature.desc?.length) {
                   @for (featureDescription of item.feature.desc; track $index) {
                     <p>{{ featureDescription }}</p>
                   }
                 } @else {
-                  <p>Sin descripcion disponible.</p>
+                  <p>No description available.</p>
                 }
               </li>
             }
@@ -47,7 +47,7 @@
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="modal-button" (click)="closeModal()">Cerrar</button>
+      <button type="button" class="modal-button" (click)="closeModal()">Close</button>
     </div>
   </div>
 </div>

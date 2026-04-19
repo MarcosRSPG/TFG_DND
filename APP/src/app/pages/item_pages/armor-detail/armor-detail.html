@@ -1,0 +1,76 @@
+@if (armor) {
+  <section class="detail-container">
+    <h2 class="detail-title">{{ armor.name }}</h2>
+    <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+      <div>
+        <div class="detail-section">
+          <h3>Category</h3>
+          <p>{{ armor.equipment_category.name }}</p>
+        </div>
+        @if (armor.armor_category) {
+          <div class="detail-section">
+            <h3>Armor Type</h3>
+            <p>{{ armor.armor_category }}</p>
+          </div>
+        }
+        @if (armor.cost) {
+          <div class="detail-section">
+            <h3>Cost</h3>
+            <p>{{ armor.cost.quantity }} {{ armor.cost.unit }}</p>
+          </div>
+        }
+        @if (armor.weight) {
+          <div class="detail-section">
+            <h3>Weight</h3>
+            <p>{{ armor.weight }} lb</p>
+          </div>
+        }
+        @if (armor.armor_class) {
+          <div class="detail-section">
+            <h3>Armor Class</h3>
+            <p>Base: {{ armor.armor_class.base }}<br>
+            DEX bonus: {{ armor.armor_class.dex_bonus ? 'Yes' : 'No' }}<br>
+            @if (armor.armor_class.max_bonus !== undefined) {
+              Max DEX bonus: {{ armor.armor_class.max_bonus }}
+            }
+            </p>
+          </div>
+        }
+        @if (armor.str_minimum !== undefined) {
+          <div class="detail-section">
+            <h3>Min Strength</h3>
+            <p>{{ armor.str_minimum }}</p>
+          </div>
+        }
+        @if (armor.stealth_disadvantage !== undefined) {
+          <div class="detail-section">
+            <h3>Stealth Disadvantage</h3>
+            <p>{{ armor.stealth_disadvantage ? 'Yes' : 'No' }}</p>
+          </div>
+        }
+      </div>
+      <div>
+        @if (armor.desc.length) {
+          <div class="detail-section">
+            <h3>Description</h3>
+            <ul>
+              @for (d of armor.desc; track $index) {
+                <li>{{ d }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (armor.special.length) {
+          <div class="detail-section">
+            <h3>Especial</h3>
+            <ul>
+              @for (s of armor.special; track $index) {
+                <li>{{ s }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

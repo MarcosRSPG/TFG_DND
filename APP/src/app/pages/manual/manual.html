@@ -1,7 +1,7 @@
 <section class="manual-page">
-	<aside class="manual-sidebar board board--type-sign sign" aria-label="Categorias del manual">
+	<aside class="manual-sidebar board board--type-sign sign" aria-label="Manual categories">
 
-		<nav aria-label="Navegacion lateral del manual">
+		<nav aria-label="Manual side navigation">
 			<ul class="manual-nav-list">
 				@for (section of sections; track section.id) {
 					<li class="manual-nav-item">
@@ -24,7 +24,7 @@
 		@if (getSelectedSection(); as section) {
 			<h2>{{ section.label }}</h2>
 
-			@if (section.id === 'razas') {
+			@if (section.id === 'races') {
 				<app-races />
 			}
 

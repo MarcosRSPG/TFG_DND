@@ -1,0 +1,68 @@
+/* Eliminar estilos de .back-link */
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: #c9a25a;
+  text-decoration: none;
+  font-weight: 500;
+}
+.back-link:hover {
+	color: #f1dfbf;
+}
+.detail-container {
+	width: 70em;
+	margin: 0 auto;
+	padding: 1.8rem;
+	color: #eadab8;
+	border-radius: 14px;
+	border: 2px solid rgba(210, 167, 89, 0.35);
+	background: linear-gradient(165deg, rgba(49, 30, 18, 0.9), rgba(29, 18, 10, 0.92));
+	box-shadow: 0 20px 30px rgba(0, 0, 0, 0.35);
+}
+.detail-title {
+	color: #f1dfbf;
+	font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+	margin-bottom: 1.2rem;
+}
+h3 {
+	color: #c9a25a;
+	margin-bottom: 0.5rem;
+}
+.detail-section, .detail-grid {
+	background: rgba(55, 34, 19, 0.65);
+	border-radius: 8px;
+	padding: 1rem;
+	margin-bottom: 1.5rem;
+	box-shadow: 0 2px 8px #0006;
+}
+h3 {
+	color: #c9a25a;
+	margin-bottom: 0.5rem;
+}
+ul {
+	padding-left: 1.2rem;
+}
+li {
+	margin-bottom: 0.3rem;
+}
+.detail-title {
+	font-size: 2.2rem;
+	margin-bottom: 1.2rem;
+	color: #ffd700;
+	text-shadow: 1px 1px 8px #000a;
+}
+.detail-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.5rem 2rem;
+	margin-bottom: 1.5rem;
+}
+/* .detail-section ya está cubierto arriba, eliminamos la sobreescritura gris */
+/* Unificamos color de títulos a dorado, ya definido arriba */
+ul {
+	padding-left: 1.2rem;
+}
+li {
+	margin-bottom: 0.3rem;
+}

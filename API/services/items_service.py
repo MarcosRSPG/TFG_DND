@@ -38,13 +38,13 @@ def _normalize_type(type_value: str | None) -> str | None:
         "tools": "tool",
         "weapon": "weapon",
         "weapons": "weapon",
-        "magicitem": "magicItem",
-        "magic-item": "magicItem",
-        "magic-items": "magicItem",
-        "magicitems": "magicItem",
+        "magicitem": "magicitem",
+        "magic-item": "magicitem",
+        "magic-items": "magicitem",
+        "magicitems": "magicitem",
     }
 
-    return aliases.get(normalized, type_value)
+    return aliases.get(normalized, normalized)
 
 
 def _json_safe(value):
@@ -124,7 +124,7 @@ def _schema_for_type(type: str | None):
             return ToolSchema
         case "weapon":
             return WeaponSchema
-        case "magicitem":
+        case "magicItem":
             return MagicItemSchema
         case _:
             raise HTTPException(status_code=400, detail="Invalid item type")

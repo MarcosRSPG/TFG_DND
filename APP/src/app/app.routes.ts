@@ -5,10 +5,10 @@ import { Home } from './pages/home/home';
 import { BackgroundDetail } from './pages/background-detail/background-detail';
 import { Manual } from './pages/manual/manual';
 import { ClassDetail } from './pages/class-detail/class-detail';
-import { ItemDetail } from './pages/item-detail/item-detail';
 import { MonsterDetail } from './pages/monster-detail/monster-detail';
 import { RaceDetail } from './pages/race-detail/race-detail';
 import { SpellDetail } from './pages/spell-detail/spell-detail';
+import { ItemDetailPageComponent } from './pages/item_pages/item-detail-page/item-detail-page';
 
 export const routes: Routes = [
     {
@@ -56,9 +56,9 @@ export const routes: Routes = [
     component: MonsterDetail,
     title: 'Monster Details',
   },
-  {
-    path: 'items/:id',
-    component: ItemDetail,
-    title: 'Item Details',
+  { path: 'items/:type/:id', 
+    component: ItemDetailPageComponent, 
+    title: 'Item Details' 
   },
+
 ];

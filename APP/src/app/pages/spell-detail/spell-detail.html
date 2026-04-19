@@ -1,33 +1,33 @@
 @if (loading()) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
-    <p>Cargando spell...</p>
+    <a routerLink="/manual" [queryParams]="{section: 'spells'}" class="back-link">&larr; Back to manual</a>
+    <p>Loading spell...</p>
   </section>
 } @else if (error()) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <a routerLink="/manual" [queryParams]="{section: 'spells'}" class="back-link">&larr; Back to manual</a>
     <p>{{ error() }}</p>
   </section>
 } @else if (spell(); as item) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <a routerLink="/manual" [queryParams]="{section: 'spells'}" class="back-link">&larr; Back to manual</a>
     <header class="detail-header">
       <h1>{{ item.name }}</h1>
       <p class="detail-subtitle">Spell</p>
     </header>
 
     <section class="detail-meta-grid">
-      <p class="meta-item"><span class="meta-label">Nivel</span><span class="meta-value">{{ item.level }}</span></p>
-      <p class="meta-item"><span class="meta-label">Escuela</span><span class="meta-value">{{ item.school?.name || 'N/A' }}</span></p>
+      <p class="meta-item"><span class="meta-label">Level</span><span class="meta-value">{{ item.level }}</span></p>
+      <p class="meta-item"><span class="meta-label">School</span><span class="meta-value">{{ item.school?.name || 'N/A' }}</span></p>
       <p class="meta-item"><span class="meta-label">Range</span><span class="meta-value">{{ item.range }}</span></p>
       <p class="meta-item"><span class="meta-label">Casting Time</span><span class="meta-value">{{ item.casting_time }}</span></p>
       <p class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">{{ item.duration }}</span></p>
-      <p class="meta-item"><span class="meta-label">Concentration</span><span class="meta-value">{{ item.concentration ? 'Si' : 'No' }}</span></p>
-      <p class="meta-item"><span class="meta-label">Ritual</span><span class="meta-value">{{ item.ritual ? 'Si' : 'No' }}</span></p>
+      <p class="meta-item"><span class="meta-label">Concentration</span><span class="meta-value">{{ item.concentration ? 'Yes' : 'No' }}</span></p>
+      <p class="meta-item"><span class="meta-label">Ritual</span><span class="meta-value">{{ item.ritual ? 'Yes' : 'No' }}</span></p>
     </section>
 
     <section class="detail-block">
-      <h2>Descripcion</h2>
+      <h2>Description</h2>
       <div class="detail-text-stack">
         @for (line of item.desc; track $index) {
           <p>{{ line }}</p>

@@ -1,30 +1,30 @@
 @if (loading()) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
-    <p>Cargando monster...</p>
+    <a routerLink="/manual" [queryParams]="{section: 'monsters'}" class="back-link">&larr; Back to manual</a>
+    <p>Loading monster...</p>
   </section>
 } @else if (error()) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <a routerLink="/manual" [queryParams]="{section: 'monsters'}" class="back-link">&larr; Back to manual</a>
     <p>{{ error() }}</p>
   </section>
 } @else if (monster(); as item) {
   <section class="detail board board--type-sign sign">
-    <a routerLink="/manual" class="back-link">&larr; Volver al manual</a>
+    <a routerLink="/manual" [queryParams]="{section: 'monsters'}" class="back-link">&larr; Back to manual</a>
     <header class="detail-header">
       <h1>{{ item.name }}</h1>
       <p class="detail-subtitle">Monster</p>
     </header>
 
     <section class="detail-meta-grid">
-      <p class="meta-item"><span class="meta-label">Tipo</span><span class="meta-value">{{ item.size }} {{ item.type }} {{ item.subtype ? '(' + item.subtype + ')' : '' }}</span></p>
-      <p class="meta-item"><span class="meta-label">Alineamiento</span><span class="meta-value">{{ item.alignment }}</span></p>
+      <p class="meta-item"><span class="meta-label">Type</span><span class="meta-value">{{ item.size }} {{ item.type }} {{ item.subtype ? '(' + item.subtype + ')' : '' }}</span></p>
+      <p class="meta-item"><span class="meta-label">Alignment</span><span class="meta-value">{{ item.alignment }}</span></p>
       <p class="meta-item"><span class="meta-label">HP</span><span class="meta-value">{{ item.hit_points }} ({{ item.hit_dice }})</span></p>
       <p class="meta-item"><span class="meta-label">CR</span><span class="meta-value">{{ item.challenge_rating }}</span></p>
     </section>
 
     <section class="detail-block">
-      <h2>Estadisticas</h2>
+      <h2>Stats</h2>
       <div class="stats-grid">
         <div class="stat-pill"><span>STR</span><strong>{{ item.strength }}</strong></div>
         <div class="stat-pill"><span>DEX</span><strong>{{ item.dexterity }}</strong></div>

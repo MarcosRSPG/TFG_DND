@@ -22,11 +22,11 @@ class MountSchema(BaseSchema):
 			url="/api/2014/equipment-categories/mounts-and-vehicles",
 		)
 	)
-	vehicle_category: str
-	cost: CostSchema
-	speed: SpeedSchema
-	capacity: str
-	url: str
+	vehicle_category: str | None = None
+	cost: CostSchema | None = None
+	speed: SpeedSchema | None = None
+	capacity: str | None = None
+	url: str | None = None
 	contents: List[Dict[str, Any]] = Field(default_factory=list)
 	properties: List[Dict[str, Any]] = Field(default_factory=list)
 

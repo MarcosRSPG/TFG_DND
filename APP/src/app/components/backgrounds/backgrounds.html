@@ -1,29 +1,29 @@
 @if (loading()) {
-  <p class="entity-message">Cargando backgrounds...</p>
+  <p class="entity-message">Loading backgrounds...</p>
 } @else if (error()) {
   <p class="entity-message entity-message--error">{{ error() }}</p>
 } @else {
   <div class="filters-section">
     <div class="filter-group">
-      <label for="background-search">Buscar por nombre:</label>
+      <label for="background-search">Search by name:</label>
       <input
         id="background-search"
         type="text"
         [(ngModel)]="filters().searchName"
         (ngModelChange)="onFilterChange()"
-        placeholder="Ej: Nómada, Soldado..."
+        placeholder="e.g. Outlander, Soldier..."
       />
     </div>
 
     <div class="filter-group">
-      <label for="background-source">Contenido:</label>
+      <label for="background-source">Content:</label>
       <select
         id="background-source"
         [(ngModel)]="filters().source"
         (ngModelChange)="onFilterChange()"
       >
-        <option value="all">Todos</option>
-        <option value="official">Oficial</option>
+        <option value="all">All</option>
+        <option value="official">Official</option>
       </select>
     </div>
   </div>
@@ -41,7 +41,7 @@
   </ul>
 
   <nav class="pagination" *ngIf="filteredBackgrounds().length > pageSize">
-    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
+    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Previous</button>
     <ng-container *ngFor="let page of paginationPages">
       <ng-container *ngIf="page === '...'">
         <span class="pagination-ellipsis">...</span>
@@ -56,6 +56,6 @@
         </button>
       </ng-container>
     </ng-container>
-    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
+    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Next</button>
   </nav>
 }

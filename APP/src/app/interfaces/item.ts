@@ -1,26 +1,22 @@
-export type ItemType = 'adventuringgear' | 'armor' | 'mount' | 'tool' | 'weapon' | 'magicitem';
-
-export interface Item {
-  id?: string;
+export interface ResourceReference {
   index: string;
   name: string;
-  type?: string;
+  url: string;
+}
+
+export interface CostSchema {
+  quantity: number;
+  unit: string;
+}
+
+export interface Item {
+  index: string;
+  name: string;
   desc?: string[];
-  equipment_category?: {
-    index: string;
-    name: string;
-    url: string;
-  };
-  cost?: {
-    quantity: number;
-    unit: string;
-  };
+  special?: string[];
+  equipment_category?: ResourceReference;
+  cost?: CostSchema;
   weight?: number;
-  rarity?: {
-    name: string;
-  };
-  created_by?: string;
-  created_at?: string;
-  updated_at?: string;
-  [key: string]: unknown;
+  url?: string;
+  [key: string]: any;
 }

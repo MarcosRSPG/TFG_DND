@@ -30,7 +30,7 @@ export class BackgroundDetail implements OnInit {
       this.background.set(background);
     } catch (error) {
       console.error('Error loading background detail:', error);
-      this.error.set('No se ha podido cargar el detalle del background.');
+      this.error.set('Failed to load background details.');
     } finally {
       this.loading.set(false);
     }

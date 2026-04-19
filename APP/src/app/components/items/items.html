@@ -1,101 +1,116 @@
 @if (loading()) {
-  <p class="entity-message">Cargando items...</p>
+  <p class="entity-message">Loading items...</p>
 } @else if (error()) {
   <p class="entity-message entity-message--error">{{ error() }}</p>
 } @else {
   <div class="filters-section">
     <div class="filter-group">
-      <label for="item-search">Buscar por nombre:</label>
+      <label for="item-search">Search by name:</label>
       <input
         id="item-search"
         type="text"
         [(ngModel)]="filters().searchName"
         (ngModelChange)="onFilterChange()"
-        placeholder="Ej: Espada larga, Armadura..."
+        placeholder="e.g. Longsword, Armor..."
       />
     </div>
 
     <div class="filter-group filter-group--multi">
       <button class="filter-button" (click)="typesModal.open()">
-        Tipos ({{ filters().types.length }})
+        Types ({{ filters().types.length }})
       </button>
     </div>
 
     <div class="filter-group">
-      <label for="item-cost-min">Coste mínimo:</label>
+      <label for="item-cost-min">Min cost:</label>
       <input
         id="item-cost-min"
         type="number"
         [(ngModel)]="filters().costMin"
         (ngModelChange)="onFilterChange()"
-        placeholder="Mín"
+        placeholder="Min"
       />
     </div>
 
     <div class="filter-group">
-      <label for="item-cost-max">Coste máximo:</label>
+      <label for="item-cost-max">Max cost:</label>
       <input
         id="item-cost-max"
         type="number"
         [(ngModel)]="filters().costMax"
         (ngModelChange)="onFilterChange()"
-        placeholder="Máx"
+        placeholder="Max"
       />
     </div>
 
     <div class="filter-group">
-      <label for="item-source">Contenido:</label>
+      <label for="item-source">Content:</label>
       <select
         id="item-source"
         [(ngModel)]="filters().source"
         (ngModelChange)="onFilterChange()"
       >
-        <option value="all">Todos</option>
-        <option value="official">Oficial</option>
+        <option value="all">All</option>
+        <option value="official">Official</option>
       </select>
     </div>
   </div>
 
   <app-filter-modal
     #typesModal
-    title="Seleccionar Tipos"
+    title="Select Types"
     [options]="Array.from(itemTypes())"
     [selectedOptions]="filters().types"
     (confirmed)="onTypesConfirmed($event)"
   ></app-filter-modal>
 
-  <ul class="entity-list" aria-label="Listado de items">
+  <ul class="entity-list" aria-label="List of items">
     @for (item of paginatedItems(); track getIdentifier(item)) {
-      <li class="entity-item">
-        <a
-          [routerLink]="['/items', getIdentifier(item)]"
-          [queryParams]="{ type: getType(item) }"
-          class="entity-link"
-        >
+      <li class="entity-item" (click)="onSelectItem(item)" style="cursor: pointer;">
+        <div class="entity-link">
           <h3>{{ item.name }}</h3>
-          <p>Categoria: {{ item.equipment_category?.name || 'N/A' }}</p>
-          <p>Costo: {{ item.cost?.quantity || '-' }} {{ item.cost?.unit || '' }}</p>
-        </a>
+          <p>Category: {{ item.equipment_category?.name || 'N/A' }}</p>
+          <p>Cost: {{ item.cost?.quantity || '-' }} {{ item.cost?.unit || '' }}</p>
+        </div>
       </li>
     }
   </ul>
 
-  <nav class="pagination" *ngIf="filteredItems().length > pageSize">
-    <button class="pagination-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">Anterior</button>
-    <ng-container *ngFor="let page of paginationPages">
-      <ng-container *ngIf="page === '...'">
-        <span class="pagination-ellipsis">...</span>
-      </ng-container>
-      <ng-container *ngIf="page !== '...'">
-        <button
-          class="pagination-btn"
-          [class.active]="currentPage() === page"
-          *ngIf="typeof page === 'number'"
-          (click)="goToPage(page)">
-          {{ page }}
-        </button>
-      </ng-container>
-    </ng-container>
-    <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Siguiente</button>
-  </nav>
+  <!-- El detalle ahora se muestra por routing, no aquí -->
+
+  @if (filteredItems().length > pageSize) {
+    <nav class="pagination">
+      <button
+        class="pagination-btn"
+        (click)="goToPage(currentPage() - 1)"
+        [disabled]="currentPage() === 1"
+      >
+        Previous
+      </button>
+
+      @for (page of paginationPages; track page) {
+        @if (page === '...') {
+          <span class="pagination-ellipsis">...</span>
+        } @else {
+          @if (typeof page === 'number') {
+            <button
+              class="pagination-btn"
+              [class.active]="currentPage() === page"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          }
+        }
+      }
+
+      <button
+        class="pagination-btn"
+        (click)="goToPage(currentPage() + 1)"
+        [disabled]="currentPage() === totalPages"
+      >
+        Next
+      </button>
+    </nav>
+  }
 }

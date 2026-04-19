@@ -30,7 +30,7 @@ export class SpellDetail implements OnInit {
       this.spell.set(spell);
     } catch (error) {
       console.error('Error loading spell detail:', error);
-      this.error.set('No se ha podido cargar el detalle del spell.');
+      this.error.set('Failed to load spell details.');
     } finally {
       this.loading.set(false);
     }

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MonsterCreate } from './monster-create';
+import { MountDetailComponent } from './mount-detail';
 
-describe('MonsterCreate', () => {
-  let component: MonsterCreate;
-  let fixture: ComponentFixture<MonsterCreate>;
+describe('MountDetailComponent', () => {
+  let component: MountDetailComponent;
+  let fixture: ComponentFixture<MountDetailComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MonsterCreate]
+      imports: [MountDetailComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(MonsterCreate);
+    fixture = TestBed.createComponent(MountDetailComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

@@ -1,0 +1,79 @@
+@if (weapon) {
+  <section class="detail-container">
+    <h2 class="detail-title">{{ weapon.name }}</h2>
+    <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+      <div>
+        <div class="detail-section">
+          <h3>Category</h3>
+          <p>{{ weapon.equipment_category.name }}</p>
+        </div>
+        @if (weapon.weapon_category) {
+          <div class="detail-section">
+            <h3>Weapon Type</h3>
+            <p>{{ weapon.weapon_category }}</p>
+          </div>
+        }
+        @if (weapon.cost) {
+          <div class="detail-section">
+            <h3>Cost</h3>
+            <p>{{ weapon.cost.quantity }} {{ weapon.cost.unit }}</p>
+          </div>
+        }
+        @if (weapon.weight) {
+          <div class="detail-section">
+            <h3>Weight</h3>
+            <p>{{ weapon.weight }} lb</p>
+          </div>
+        }
+        @if (weapon.damage) {
+          <div class="detail-section">
+            <h3>Damage</h3>
+            <p>{{ weapon.damage.damage_dice }} ({{ weapon.damage.damage_type.name }})</p>
+          </div>
+        }
+        @if (weapon.range) {
+          <div class="detail-section">
+            <h3>Range</h3>
+            <p>Normal: {{ weapon.range.normal }}
+            @if (weapon.range.long) {
+              / Long: {{ weapon.range.long }}
+            }
+            </p>
+          </div>
+        }
+      </div>
+      <div>
+        @if (weapon.properties.length) {
+          <div class="detail-section">
+            <h3>Properties</h3>
+            <ul>
+              @for (p of weapon.properties; track $index) {
+                <li>{{ p.name }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (weapon.special.length) {
+          <div class="detail-section">
+            <h3>Special</h3>
+            <ul>
+              @for (s of weapon.special; track $index) {
+                <li>{{ s }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (weapon.desc.length) {
+          <div class="detail-section">
+            <h3>Description</h3>
+            <ul>
+              @for (d of weapon.desc; track $index) {
+                <li>{{ d }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

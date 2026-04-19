@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Spell } from '../../interfaces/spell';
 import { SpellsService } from '../../services/spells-service';
@@ -19,24 +19,34 @@ interface SpellFilters {
 @Component({
   selector: 'app-spells',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, FilterModalComponent, VikingCheck],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    FilterModalComponent,
+    VikingCheck
+  ],
   templateUrl: './spells.html',
   styleUrl: './spells.css',
 })
 export class Spells implements OnInit {
-    paginatedSpells = signal<Spell[]>([]);
-    currentPage = signal(1);
-    readonly pageSize = 25;
-  private readonly spellsService = inject(SpellsService);
 
+  // 🔹 Servicios
+  private readonly spellsService = inject(SpellsService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  // 🔹 ViewChild
   @ViewChild('schoolsModal') schoolsModal!: FilterModalComponent;
   @ViewChild('rangesModal') rangesModal!: FilterModalComponent;
 
-  // Expose Array constructor for template
-  Array = Array;
-
+  // 🔹 Signals
   allSpells = signal<Spell[]>([]);
   filteredSpells = signal<Spell[]>([]);
+  paginatedSpells = signal<Spell[]>([]);
+  currentPage = signal(1);
+  readonly pageSize = 25;
+
   filters = signal<SpellFilters>({
     searchName: '',
     schools: [],
@@ -45,45 +55,98 @@ export class Spells implements OnInit {
     ranges: [],
     source: 'all',
   });
-  private indexSet = new Set<string>();
+
   loading = signal(true);
   error = signal<string | null>(null);
+
   schools = signal<Set<string>>(new Set());
   ranges = signal<Set<string>>(new Set());
 
+  private indexSet = new Set<string>();
+
+  // Para template
+  Array = Array;
+
+  // =========================
+  // INIT
+  // =========================
   async ngOnInit(): Promise<void> {
+
+    // 🔹 Leer query params
+    this.route.queryParams.subscribe(params => {
+      this.filters.set({
+        searchName: params['searchName'] || '',
+        schools: params['schools'] ? params['schools'].split(',') : [],
+        level: params['level'] || 'all',
+        ritual:
+          params['ritual'] === 'true'
+            ? true
+            : params['ritual'] === 'false'
+            ? false
+            : null,
+        ranges: params['ranges'] ? params['ranges'].split(',') : [],
+        source: params['source'] || 'all',
+      });
+
+      this.currentPage.set(Number(params['page']) || 1);
+      this.applyFilters();
+    });
+
+    // 🔹 Carga de datos
     try {
       await this.spellsService.getSpells((item) => {
         const id = this.getIdentifier(item);
-        if (this.indexSet.has(id)) {
-          return;
-        }
+
+        if (this.indexSet.has(id)) return;
         this.indexSet.add(id);
-        const sorted = [...this.allSpells(), item].sort((a, b) => a.name.localeCompare(b.name));
+
+        const sorted = [...this.allSpells(), item].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+
         this.allSpells.set(sorted);
         this.updateFiltersOptions();
         this.applyFilters();
-        this.loading.set(false);
       });
+
     } catch (error) {
       console.error('Error loading spells:', error);
       this.error.set('No se han podido cargar los spells.');
     } finally {
-      if (!this.error()) {
-        this.loading.set(false);
-      }
+      this.loading.set(false);
       this.indexSet.clear();
     }
   }
 
+  // =========================
+  // FILTROS
+  // =========================
+
   onFilterChange(): void {
     this.currentPage.set(1);
     this.applyFilters();
+
+    const filters = this.filters();
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        searchName: filters.searchName || undefined,
+        schools: filters.schools.length ? filters.schools.join(',') : undefined,
+        level: filters.level !== 'all' ? filters.level : undefined,
+        ritual: filters.ritual !== null ? filters.ritual : undefined,
+        ranges: filters.ranges.length ? filters.ranges.join(',') : undefined,
+        source: filters.source !== 'all' ? filters.source : undefined,
+        page: 1
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 
   private updateFiltersOptions(): void {
     const schoolSet = new Set<string>();
     const rangeSet = new Set<string>();
+
     this.allSpells().forEach((spell) => {
       if (spell.school?.name) {
         schoolSet.add(spell.school.name);
@@ -92,6 +155,7 @@ export class Spells implements OnInit {
         rangeSet.add(spell.range);
       }
     });
+
     this.schools.set(schoolSet);
     this.ranges.set(rangeSet);
   }
@@ -99,36 +163,73 @@ export class Spells implements OnInit {
   private applyFilters(): void {
     const filters = this.filters();
     let filtered = this.allSpells();
+
     if (filters.searchName.trim()) {
       const search = filters.searchName.toLowerCase();
-      filtered = filtered.filter((spell) => spell.name.toLowerCase().includes(search));
+      filtered = filtered.filter((spell) =>
+        spell.name.toLowerCase().includes(search)
+      );
     }
+
     if (filters.schools.length > 0) {
-      filtered = filtered.filter((spell) => filters.schools.includes(spell.school?.name || ''));
+      filtered = filtered.filter((spell) =>
+        filters.schools.includes(spell.school?.name || '')
+      );
     }
+
     if (filters.level !== 'all') {
-      filtered = filtered.filter((spell) => spell.level === Number(filters.level));
+      filtered = filtered.filter(
+        (spell) => spell.level === Number(filters.level)
+      );
     }
+
     if (filters.ritual !== null) {
-      filtered = filtered.filter((spell) => spell.ritual === filters.ritual);
+      filtered = filtered.filter(
+        (spell) => spell.ritual === filters.ritual
+      );
     }
+
     if (filters.ranges.length > 0) {
-      filtered = filtered.filter((spell) => filters.ranges.includes(spell.range));
+      filtered = filtered.filter((spell) =>
+        filters.ranges.includes(spell.range)
+      );
     }
+
     this.filteredSpells.set(filtered);
     this.updatePaginatedSpells();
   }
+
+  // =========================
+  // PAGINACIÓN
+  // =========================
 
   updatePaginatedSpells(): void {
     const filtered = this.filteredSpells();
     const start = (this.currentPage() - 1) * this.pageSize;
     const end = start + this.pageSize;
+
     this.paginatedSpells.set(filtered.slice(start, end));
   }
 
   goToPage(page: number): void {
     this.currentPage.set(page);
     this.updatePaginatedSpells();
+
+    const filters = this.filters();
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        searchName: filters.searchName || undefined,
+        schools: filters.schools.length ? filters.schools.join(',') : undefined,
+        level: filters.level !== 'all' ? filters.level : undefined,
+        ritual: filters.ritual !== null ? filters.ritual : undefined,
+        ranges: filters.ranges.length ? filters.ranges.join(',') : undefined,
+        source: filters.source !== 'all' ? filters.source : undefined,
+        page
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 
   get totalPages(): number {
@@ -138,19 +239,33 @@ export class Spells implements OnInit {
   get paginationPages(): (number | string)[] {
     const total = this.totalPages;
     const current = this.currentPage();
+
     if (total <= 5) {
       return Array.from({ length: total }, (_, i) => i + 1);
     }
+
     const pages: (number | string)[] = [];
+
     if (current > 3) pages.push(1);
     if (current > 4) pages.push('...');
-    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+
+    for (
+      let i = Math.max(2, current - 1);
+      i <= Math.min(total - 1, current + 1);
+      i++
+    ) {
       pages.push(i);
     }
+
     if (current < total - 3) pages.push('...');
     if (current < total - 2) pages.push(total);
+
     return pages;
   }
+
+  // =========================
+  // MODALES
+  // =========================
 
   onSchoolsConfirmed(schools: string[]): void {
     const currentFilters = this.filters();
@@ -166,9 +281,16 @@ export class Spells implements OnInit {
 
   onRitualChange(checked: boolean): void {
     const currentFilters = this.filters();
-    this.filters.set({ ...currentFilters, ritual: checked ? true : null });
+    this.filters.set({
+      ...currentFilters,
+      ritual: checked ? true : null
+    });
     this.onFilterChange();
   }
+
+  // =========================
+  // UTIL
+  // =========================
 
   getIdentifier(item: Spell): string {
     return item.id || item.index;
