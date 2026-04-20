@@ -124,22 +124,28 @@ export class Items implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.loadFiltersFromUrl();
+    await this.loadItems();
+  }
+
+  async loadItems(): Promise<void> {
+    this.loading.set(true);
+    this.indexSet.clear();
 
     try {
-      const items = await this.itemsService.getItems();
+      const items = await this.itemsService.getAllItems();
 
       const uniqueItems: Item[] = [];
 
-      items.forEach((item) => {
+      for (const item of items) {
         const id = this.itemsService.getIdentifier(item);
 
         if (this.indexSet.has(id)) {
-          return;
+          continue;
         }
 
         this.indexSet.add(id);
         uniqueItems.push(item);
-      });
+      }
 
       uniqueItems.sort((a, b) => a.name.localeCompare(b.name));
       this.allItems.set(uniqueItems);
@@ -151,7 +157,6 @@ export class Items implements OnInit {
       this.error.set('No se han podido cargar los items.');
     } finally {
       this.loading.set(false);
-      this.indexSet.clear();
     }
   }
 
@@ -236,7 +241,7 @@ export class Items implements OnInit {
   }
 
   goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) {
+    if (page < 1) {
       return;
     }
 

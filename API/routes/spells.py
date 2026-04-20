@@ -8,16 +8,13 @@ router = APIRouter(prefix="/spells", tags=["spells"])
 
 
 @router.get("/")
-async def get_spells() -> list:
-    """Get all spells, optionally filtered by criteria"""
-    spells = spells_service.get_all()
-    return spells
+async def get_spells(page: int = 1, page_size: int = 20) -> list:
+    return await spells_service.get_all(page=page, page_size=page_size)
 
 
 @router.get("/{spell_id}")
 async def get_spell(spell_id: str) -> dict:
-    """Get a specific spell by ID/index"""
-    spell = spells_service.get_by_id(spell_id)
+    spell = await spells_service.get_by_id(spell_id)
     if not spell:
         raise HTTPException(status_code=404, detail=f"Spell '{spell_id}' not found")
     return spell
@@ -25,9 +22,8 @@ async def get_spell(spell_id: str) -> dict:
 
 @router.post("/", status_code=201)
 async def create_spell(spell: dict = Body(...), current_user: dict = Depends(require_write_authorization)) -> dict:
-    """Create a new spell (requires Authorization header with valid access token)"""
     try:
-        return spells_service.create(spell)
+        return await spells_service.create(spell)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
@@ -36,14 +32,12 @@ async def create_spell(spell: dict = Body(...), current_user: dict = Depends(req
 
 @router.put("/{spell_id}")
 async def update_spell(spell_id: str, spell: dict = Body(...), current_user: dict = Depends(require_write_authorization)) -> dict:
-    """Update an existing spell (requires Authorization header with valid access token)"""
     try:
-        # Verify spell exists
-        existing = spells_service.get_by_id(spell_id)
+        existing = await spells_service.get_by_id(spell_id)
         if not existing:
             raise HTTPException(status_code=404, detail=f"Spell '{spell_id}' not found")
-        
-        return spells_service.update(spell_id, spell)
+
+        return await spells_service.update(spell_id, spell)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except HTTPException:
@@ -54,8 +48,7 @@ async def update_spell(spell_id: str, spell: dict = Body(...), current_user: dic
 
 @router.delete("/{spell_id}", status_code=204)
 async def delete_spell(spell_id: str, current_user: dict = Depends(require_write_authorization)):
-    """Delete a spell (requires Authorization header with valid access token)"""
-    success = spells_service.delete(spell_id)
+    success = await spells_service.delete(spell_id)
     if not success:
         raise HTTPException(status_code=404, detail=f"Spell '{spell_id}' not found")
     return None

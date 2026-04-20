@@ -2,25 +2,25 @@ from services import weapons_service, armors_service, mounts_service, tools_serv
 from services.equipment_repository import merge_docs
 from bson import ObjectId
 from fastapi import HTTPException
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-import requests
+from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import ValidationError
+from httpx import AsyncClient, RequestError
 from models.MagicItem import MagicItemSchema
 from models.Weapon import WeaponSchema
 from models.Armor import ArmorSchema
 from models.Mount import MountSchema
 from models.Tool import ToolSchema
 from models.AdventuringGear import AdventuringGearSchema
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from config import MONGODB_URI, MONGODB_DATABASE
+
+_client: AsyncIOMotorClient | None = None
 
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
-
-
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_items = _db["items"]
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
 
 def _normalize_type(type_value: str | None) -> str | None:
@@ -81,7 +81,6 @@ def _schema_for_doc(item_data: dict):
     if category == "armor":
         return ArmorSchema
     if category == "mounts-and-vehicles":
-        # Some docs in this category are not full mounts/vehicles.
         if "speed" in item_data and "capacity" in item_data and "vehicle_category" in item_data:
             return MountSchema
         return None
@@ -106,7 +105,6 @@ def _format_item_doc(item_data: dict) -> dict:
     try:
         return schema_class.model_validate(payload).model_dump(exclude_none=True)
     except ValidationError:
-        # Keep endpoint stable for mixed/partial payloads.
         return _json_safe(payload)
 
 
@@ -135,62 +133,86 @@ def _coerce_item(type: str | None, item_data: dict):
     return schema_class.model_validate(item_data)
 
 
-def get_all():
-    return [_format_item_doc(doc) for doc in merge_docs()]
+async def get_all(page: int = 1, page_size: int = 20):
+    return [_format_item_doc(doc) for doc in await merge_docs(page=page, page_size=page_size)]
 
 
-def get_by_type(type: str = None):
+async def get_by_type(type: str = None):
     normalized_type = _normalize_type(type)
 
     try:
         match normalized_type:
-            case "adventuringgear": return adventuringGears_service.get_all()
-            case "armor": return armors_service.get_all()
-            case "mount": return mounts_service.get_all()
-            case "tool": return tools_service.get_all()
-            case "weapon": return weapons_service.get_all()
-            case "magicitem": return magicItems_service.get_all()
-            case _: raise HTTPException(status_code=400, detail="Invalid item type")
-    except requests.RequestException as exc:
+            case "adventuringgear":
+                return await adventuringGears_service.get_all()
+            case "armor":
+                return await armors_service.get_all()
+            case "mount":
+                return await mounts_service.get_all()
+            case "tool":
+                return await tools_service.get_all()
+            case "weapon":
+                return await weapons_service.get_all()
+            case "magicitem":
+                return await magicItems_service.get_all()
+            case _:
+                raise HTTPException(status_code=400, detail="Invalid item type")
+    except RequestError as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving items from external API: {exc}") from exc
 
-def get_by_id(item_id: str, type: str = None):
+
+async def get_by_id(item_id: str, type: str = None):
     normalized_type = _normalize_type(type)
 
     try:
         match normalized_type:
-            case "adventuringgear": doc = adventuringGears_service.get_by_id(item_id)
-            case "armor": doc = armors_service.get_by_id(item_id)
-            case "mount": doc = mounts_service.get_by_id(item_id)
-            case "tool": doc = tools_service.get_by_id(item_id)
-            case "weapon": doc = weapons_service.get_by_id(item_id)
-            case "magicitem": doc = magicItems_service.get_by_id(item_id)
-            case _: raise HTTPException(status_code=400, detail="Invalid item type")
-    except requests.RequestException as exc:
+            case "adventuringgear":
+                doc = await adventuringGears_service.get_by_id(item_id)
+            case "armor":
+                doc = await armors_service.get_by_id(item_id)
+            case "mount":
+                doc = await mounts_service.get_by_id(item_id)
+            case "tool":
+                doc = await tools_service.get_by_id(item_id)
+            case "weapon":
+                doc = await weapons_service.get_by_id(item_id)
+            case "magicitem":
+                doc = await magicItems_service.get_by_id(item_id)
+            case _:
+                raise HTTPException(status_code=400, detail="Invalid item type")
+    except RequestError as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving item from external API: {exc}") from exc
     if not doc:
         raise HTTPException(status_code=404, detail="Item not found")
     return doc
 
-def create(item_data: dict, type: str = None, created_by: str = None) -> dict:
+
+async def create(item_data: dict, type: str = None, created_by: str = None) -> dict:
     normalized_type = _normalize_type(type)
 
     try:
         item_schema = _coerce_item(normalized_type, item_data)
         match normalized_type:
-            case "adventuringgear": return adventuringGears_service.create_adventuringgear(item_schema, created_by)
-            case "armor": return armors_service.create_armor(item_schema, created_by)
-            case "mount": return mounts_service.create_mount(item_schema, created_by)
-            case "tool": return tools_service.create_tool(item_schema, created_by)
-            case "weapon": return weapons_service.create_weapon(item_schema, created_by)
-            case "magicitem": return magicItems_service.create_magicItem(item_schema, created_by)
-            case _: raise HTTPException(status_code=400, detail="Invalid item type")
+            case "adventuringgear":
+                return await adventuringGears_service.create_adventuringgear(item_schema, created_by)
+            case "armor":
+                return await armors_service.create_armor(item_schema, created_by)
+            case "mount":
+                return await mounts_service.create_mount(item_schema, created_by)
+            case "tool":
+                return await tools_service.create_tool(item_schema, created_by)
+            case "weapon":
+                return await weapons_service.create_weapon(item_schema, created_by)
+            case "magicitem":
+                return await magicItems_service.create_magicItem(item_schema, created_by)
+            case _:
+                raise HTTPException(status_code=400, detail="Invalid item type")
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=exc.errors()) from exc
-    except requests.RequestException as exc:
+    except RequestError as exc:
         raise HTTPException(status_code=500, detail=f"Error creating item from external API: {exc}") from exc
 
-def update(item_id: str, item_data: dict, type: str = None) -> dict:
+
+async def update(item_id: str, item_data: dict, type: str = None) -> dict:
     if not ObjectId.is_valid(item_id):
         raise HTTPException(status_code=400, detail="Invalid item id")
 
@@ -199,25 +221,35 @@ def update(item_id: str, item_data: dict, type: str = None) -> dict:
     try:
         item_schema = _coerce_item(normalized_type, item_data)
         match normalized_type:
-            case "adventuringgear": return adventuringGears_service.update_adventuringgear(item_id, item_schema)
-            case "armor": return armors_service.update_armor(item_id, item_schema)
-            case "mount": return mounts_service.update_mount(item_id, item_schema)
-            case "tool": return tools_service.update_tool(item_id, item_schema)
-            case "weapon": return weapons_service.update_weapon(item_id, item_schema)
-            case "magicitem": return magicItems_service.update_magicItem(item_id, item_schema)
-            case _: raise HTTPException(status_code=400, detail="Invalid item type")
+            case "adventuringgear":
+                return await adventuringGears_service.update_adventuringgear(item_id, item_schema)
+            case "armor":
+                return await armors_service.update_armor(item_id, item_schema)
+            case "mount":
+                return await mounts_service.update_mount(item_id, item_schema)
+            case "tool":
+                return await tools_service.update_tool(item_id, item_schema)
+            case "weapon":
+                return await weapons_service.update_weapon(item_id, item_schema)
+            case "magicitem":
+                return await magicItems_service.update_magicItem(item_id, item_schema)
+            case _:
+                raise HTTPException(status_code=400, detail="Invalid item type")
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=exc.errors()) from exc
-    except requests.RequestException as exc:
+    except RequestError as exc:
         raise HTTPException(status_code=500, detail=f"Error updating item from external API: {exc}") from exc
 
-def delete(item_id: str) -> dict:
+
+async def delete(item_id: str) -> dict:
     if not ObjectId.is_valid(item_id):
         raise HTTPException(status_code=400, detail="Invalid item id")
 
+    db = await get_db()
+    collection = db["items"]
     try:
-        result = _items.delete_one({"_id": ObjectId(item_id)})
-    except PyMongoError as exc:
+        result = await collection.delete_one({"_id": ObjectId(item_id)})
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error deleting item: {exc}") from exc
 
     if result.deleted_count == 0:

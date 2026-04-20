@@ -1,62 +1,51 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Spell } from '../interfaces/spell';
 import { TokenHashService } from './token-hash.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class SpellsService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_URL;
-  private readonly apiToken = environment.API_TOKEN;
-  private readonly tokenHashService = new TokenHashService();
-  private cache: Spell[] | null = null;
+  private readonly tokenHashService = inject(TokenHashService);
+  private loadedPages = new Map<string, Spell[]>();
 
-  async getSpells(onItemLoaded?: (value: Spell) => void): Promise<Spell[]> {
-    if (this.cache) {
-      const cached = [...this.cache];
-      if (onItemLoaded) {
-        for (const spell of cached) {
-          onItemLoaded(spell);
-        }
-      }
-      return cached;
+  async getSpells(page: number = 1, pageSize: number = 25): Promise<Spell[]> {
+    const cacheKey = `${page}-${pageSize}`;
+    
+    if (this.loadedPages.has(cacheKey)) {
+      return this.loadedPages.get(cacheKey)!;
     }
 
-    const response = await fetch(`${this.apiUrl}/spells/`, {
-      headers: this.buildHeaders(),
-    });
+    const spells = await firstValueFrom(
+      this.http.get<Spell[]>(`${this.apiUrl}/spells/`, {
+        params: { page: page.toString(), page_size: pageSize.toString() },
+        headers: this.buildHeaders()
+      })
+    );
 
-    if (!response.ok) {
-      throw new Error(`No se han podido cargar los spells: ${response.status} ${response.statusText}`);
-    }
-
-    const spells = (await response.json()) as Spell[];
     spells.sort((a, b) => a.name.localeCompare(b.name));
-    this.cache = [...spells];
-    if (onItemLoaded) {
-      for (const spell of spells) {
-        onItemLoaded(spell);
-      }
-    }
+    this.loadedPages.set(cacheKey, [...spells]);
     return spells;
   }
 
-  async getSpell(id: string): Promise<Spell> {
-    const response = await fetch(`${this.apiUrl}/spells/${id}`, {
-      headers: this.buildHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar el spell ${id}: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as Spell;
+  async getAllSpells(): Promise<Spell[]> {
+    return await this.getSpells(1, 999);
   }
 
-  private buildHeaders(): HeadersInit {
+  async getSpell(id: string): Promise<Spell> {
+    return firstValueFrom(
+      this.http.get<Spell>(`${this.apiUrl}/spells/${id}`, {
+        headers: this.buildHeaders()
+      })
+    );
+  }
+
+  private buildHeaders(): { [header: string]: string } {
     return {
-      'X-API-Token': this.tokenHashService.generateHash(this.apiToken),
+      'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),
     };
   }
 }

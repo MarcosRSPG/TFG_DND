@@ -1,19 +1,19 @@
 from datetime import datetime, timezone
-
 from models.Background import BackgroundSchema
 from bson import ObjectId
 from fastapi import HTTPException
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import MONGODB_URI, MONGODB_DATABASE
 from services.backgrounds_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
-MONGODB_URI = F"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
+_client: AsyncIOMotorClient | None = None
 
 
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_backgrounds = _db["backgrounds"]
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
 
 def _to_schema(doc: dict) -> BackgroundSchema:
@@ -24,23 +24,23 @@ def _to_schema(doc: dict) -> BackgroundSchema:
     return BackgroundSchema(**payload)
 
 
-def get_all() -> list[BackgroundSchema]:
-    docs = merge_docs()
+async def get_all(page: int = 1, page_size: int = 20) -> list[BackgroundSchema]:
+    docs = await merge_docs(page=page, page_size=page_size)
     return [_to_schema(doc) for doc in docs]
 
 
-def get_by_id(background_id: str) -> BackgroundSchema:
-    doc = get_local_doc_by_id(background_id)
+async def get_by_id(background_id: str) -> BackgroundSchema:
+    doc = await get_local_doc_by_id(background_id)
     if doc is not None:
         return _to_schema(doc)
 
-    background_real = get_remote_doc_by_id(background_id)
+    background_real = await get_remote_doc_by_id(background_id)
     if background_real is None:
         raise HTTPException(status_code=404, detail="Background not found")
     return BackgroundSchema(**background_real)
 
 
-def create(background_schema: BackgroundSchema, created_by: str | None) -> BackgroundSchema:
+async def create(background_schema: BackgroundSchema, created_by: str | None) -> BackgroundSchema:
     background_data = background_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -58,15 +58,17 @@ def create(background_schema: BackgroundSchema, created_by: str | None) -> Backg
     meta["updated_at"] = now
     background_data["meta"] = meta
 
+    db = await get_db()
+    collection = db["backgrounds"]
     try:
-        result = _backgrounds.insert_one(background_data)
-        created = _backgrounds.find_one({"_id": result.inserted_id})
+        result = await collection.insert_one(background_data)
+        created = await collection.find_one({"_id": result.inserted_id})
         return _to_schema(created)
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating background: {exc}") from exc
 
 
-def update(background_id: str, background: BackgroundSchema) -> BackgroundSchema:
+async def update(background_id: str, background: BackgroundSchema) -> BackgroundSchema:
     if not ObjectId.is_valid(background_id):
         raise HTTPException(status_code=400, detail="Invalid background id")
 
@@ -83,19 +85,23 @@ def update(background_id: str, background: BackgroundSchema) -> BackgroundSchema
     meta["updated_at"] = now
     updates["meta"] = meta
 
-    result = _backgrounds.update_one({"_id": ObjectId(background_id)}, {"$set": updates})
+    db = await get_db()
+    collection = db["backgrounds"]
+    result = await collection.update_one({"_id": ObjectId(background_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Background not found")
 
-    updated = _backgrounds.find_one({"_id": ObjectId(background_id)})
+    updated = await collection.find_one({"_id": ObjectId(background_id)})
     return _to_schema(updated)
 
 
-def delete(background_id: str) -> dict:
+async def delete(background_id: str) -> dict:
     if not ObjectId.is_valid(background_id):
         raise HTTPException(status_code=400, detail="Invalid background id")
 
-    result = _backgrounds.delete_one({"_id": ObjectId(background_id)})
+    db = await get_db()
+    collection = db["backgrounds"]
+    result = await collection.delete_one({"_id": ObjectId(background_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Background not found")
 

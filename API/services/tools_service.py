@@ -1,21 +1,19 @@
 from datetime import datetime, timezone
-
 from models.Tool import ToolSchema
 from bson import ObjectId
 from fastapi import HTTPException
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import MONGODB_URI, MONGODB_DATABASE
 from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
+_client: AsyncIOMotorClient | None = None
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
-
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_tools = _db["items"]
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
 
 def _to_schema(doc: dict) -> ToolSchema:
@@ -26,19 +24,19 @@ def _to_schema(doc: dict) -> ToolSchema:
     return ToolSchema(**payload)
 
 
-def get_all() -> list[ToolSchema]:
-    docs = merge_docs("tool")
+async def get_all(page: int = 1, page_size: int = 20) -> list[ToolSchema]:
+    docs = await merge_docs("tool", page=page, page_size=page_size)
     return [_to_schema(doc) for doc in docs]
 
 
-def get_by_id(tool_id: str) -> ToolSchema:
-    doc = get_local_doc_by_id(tool_id)
+async def get_by_id(tool_id: str) -> ToolSchema:
+    doc = await get_local_doc_by_id(tool_id)
     if doc is not None:
         if doc.get("equipment_category", {}).get("index") != "tool":
             raise HTTPException(status_code=404, detail="Tool not found")
         return _to_schema(doc)
 
-    tool_real = get_remote_doc_by_id(tool_id)
+    tool_real = await get_remote_doc_by_id(tool_id)
     if tool_real is None:
         raise HTTPException(status_code=404, detail="Tool not found")
     if tool_real.get("equipment_category", {}).get("index") != "tool":
@@ -46,7 +44,7 @@ def get_by_id(tool_id: str) -> ToolSchema:
     return ToolSchema(**tool_real)
 
 
-def create(tool_schema: ToolSchema, created_by: str | None) -> ToolSchema:
+async def create(tool_schema: ToolSchema, created_by: str | None) -> ToolSchema:
     tool_data = tool_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -64,15 +62,17 @@ def create(tool_schema: ToolSchema, created_by: str | None) -> ToolSchema:
     meta["updated_at"] = now
     tool_data["meta"] = meta
 
+    db = await get_db()
+    collection = db["items"]
     try:
-        result = _tools.insert_one(tool_data)
-        created = _tools.find_one({"_id": result.inserted_id})
+        result = await collection.insert_one(tool_data)
+        created = await collection.find_one({"_id": result.inserted_id})
         return _to_schema(created)
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating tool: {exc}") from exc
 
 
-def update(tool_id: str, tool: ToolSchema) -> ToolSchema:
+async def update(tool_id: str, tool: ToolSchema) -> ToolSchema:
     if not ObjectId.is_valid(tool_id):
         raise HTTPException(status_code=400, detail="Invalid tool id")
 
@@ -89,35 +89,39 @@ def update(tool_id: str, tool: ToolSchema) -> ToolSchema:
     meta["updated_at"] = now
     updates["meta"] = meta
 
-    result = _tools.update_one({"_id": ObjectId(tool_id)}, {"$set": updates})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.update_one({"_id": ObjectId(tool_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Tool not found")
 
-    updated = _tools.find_one({"_id": ObjectId(tool_id)})
+    updated = await collection.find_one({"_id": ObjectId(tool_id)})
     return _to_schema(updated)
 
 
-def get_all_tools() -> list[ToolSchema]:
-    return get_all()
+async def get_all_tools() -> list[ToolSchema]:
+    return await get_all()
 
 
-def get_tool_by_id(tool_id: str) -> ToolSchema:
-    return get_by_id(tool_id)
+async def get_tool_by_id(tool_id: str) -> ToolSchema:
+    return await get_by_id(tool_id)
 
 
-def create_tool(tool: ToolSchema, created_by: str | None) -> ToolSchema:
-    return create(tool, created_by)
+async def create_tool(tool: ToolSchema, created_by: str | None) -> ToolSchema:
+    return await create(tool, created_by)
 
 
-def update_tool(tool_id: str, tool: ToolSchema) -> ToolSchema:
-    return update(tool_id, tool)
+async def update_tool(tool_id: str, tool: ToolSchema) -> ToolSchema:
+    return await update(tool_id, tool)
 
 
-def delete_tool(tool_id: str) -> dict:
+async def delete_tool(tool_id: str) -> dict:
     if not ObjectId.is_valid(tool_id):
         raise HTTPException(status_code=400, detail="Invalid tool id")
 
-    result = _tools.delete_one({"_id": ObjectId(tool_id)})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.delete_one({"_id": ObjectId(tool_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Tool not found")
 

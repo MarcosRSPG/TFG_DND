@@ -58,14 +58,21 @@ export class Backgrounds implements OnInit {
       });
 
       this.currentPage.set(Number(params['page']) || 1);
-      this.applyFilters();
     });
 
-    try {
-      await this.backgroundsService.getBackgrounds((item) => {
+    await this.loadBackgrounds();
+  }
 
+  async loadBackgrounds(): Promise<void> {
+    this.loading.set(true);
+    this.indexSet.clear();
+
+    try {
+      const backgrounds = await this.backgroundsService.getAllBackgrounds();
+
+      for (const item of backgrounds) {
         const id = this.getIdentifier(item);
-        if (this.indexSet.has(id)) return;
+        if (this.indexSet.has(id)) continue;
 
         this.indexSet.add(id);
 
@@ -73,16 +80,15 @@ export class Backgrounds implements OnInit {
           .sort((a, b) => a.name.localeCompare(b.name));
 
         this.allBackgrounds.set(sorted);
-        this.applyFilters();
+      }
 
-      });
+      this.applyFilters();
 
     } catch (error) {
       console.error('Error loading backgrounds:', error);
       this.error.set('No se han podido cargar los backgrounds.');
     } finally {
       this.loading.set(false);
-      this.indexSet.clear();
     }
   }
 

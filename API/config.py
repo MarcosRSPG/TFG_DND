@@ -16,11 +16,11 @@ MONGODB_DATABASE = os.getenv("MONGODB_DATABASE")
 MONGODB_PORT = os.getenv("MONGODB_PORT")
 MONGODB_PASSWORD = os.getenv("MONGODB_PASSWORD")
 MONGODB_USERNAME = os.getenv("MONGODB_USERNAME")
+MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
 API_DND5E = os.getenv("API_DND5E")
 
-# MongoDB collection names
-MONGODB_COLLECTION_ITEMS = "items"  # Weapons, armors, tools, mounts, adventuring gears, magic items
+MONGODB_COLLECTION_ITEMS = "items"
 MONGODB_COLLECTION_MONSTERS = "monsters"
 MONGODB_COLLECTION_SPELLS = "spells"
 MONGODB_COLLECTION_BACKGROUNDS = "backgrounds"

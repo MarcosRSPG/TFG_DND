@@ -93,8 +93,8 @@
       <li class="entity-item">
         <a [routerLink]="['/spells', getIdentifier(spell)]" class="entity-link">
           <h3>{{ spell.name }}</h3>
-          <p>Level: {{ spell.level }}</p>
-          <p>School: {{ spell.school?.name || 'N/A' }}</p>
+          <p>Level: {{ spell.level ?? 0 }}</p>
+          <p>School: {{ spell.school?.name || 'Unknown' }}</p>
           <p>Concentration: {{ spell.concentration ? 'Yes' : 'No' }}</p>
         </a>
       </li>

@@ -1,85 +1,86 @@
-from pymongo import MongoClient
-from config import API_DND5E, MONGODB_COLLECTION_MONSTERS, MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_DATABASE
+import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import MONGODB_URI, MONGODB_DATABASE, MONGODB_COLLECTION_MONSTERS
+from config import API_DND5E
 from services.remote_catalog_repository import RemoteCatalogRepository
 
-# Initialize MongoDB connection
-MONGODB_URI_LOCAL = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
-_mongo = MongoClient(MONGODB_URI_LOCAL)
-_db = _mongo[MONGODB_DATABASE]
+_client: AsyncIOMotorClient | None = None
 
-# Initialize remote catalog repository for monsters
+
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
+
+
 _remote_monsters = RemoteCatalogRepository(
     base_url=API_DND5E,
     list_endpoint="monsters"
 )
 
 
-def get_local_docs() -> list:
-    """Fetch all monsters from local MongoDB"""
+async def get_local_docs() -> list:
     try:
-        collection = _db[MONGODB_COLLECTION_MONSTERS]
-        monsters = list(collection.find({}))
-        return monsters
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_MONSTERS]
+        return await collection.find({}).to_list(length=None)
     except Exception as e:
         print(f"Error fetching monsters from MongoDB: {e}")
         return []
 
 
-def get_remote_docs() -> list:
-    """Fetch all monsters from remote D&D API"""
+async def get_remote_docs(page: int = 1, page_size: int = 20) -> list:
     try:
-        return list(_remote_monsters.get_catalog())
+        return await _remote_monsters.get_catalog(page=page, page_size=page_size)
     except Exception as e:
         print(f"Error fetching monsters from remote API: {e}")
         return []
 
 
-def merge_docs() -> list:
-    """Merge local and remote monster documents, avoiding duplicates"""
-    local_monsters = get_local_docs()
-    remote_monsters = get_remote_docs()
-    
-    # Create a dict indexed by 'index' for deduplication
+async def merge_docs(page: int = 1, page_size: int = 20) -> list:
+    local_monsters = await get_local_docs()
+    remote_monsters = await get_remote_docs(page=page, page_size=page_size)
+
     merged = {}
-    
-    # Add remote monsters first
+
     for monster in remote_monsters:
         if "index" in monster:
             merged[monster["index"]] = monster
-    
-    # Override with local monsters (local takes precedence)
+
     for monster in local_monsters:
         if "index" in monster:
             merged[monster["index"]] = monster
-    
-    return list(merged.values())
+
+    start = (page - 1) * page_size
+    end = start + page_size
+    return list(merged.values())[start:end]
 
 
-def get_local_doc_by_id(monster_id: str) -> dict:
-    """Fetch a specific monster from local MongoDB by index/id"""
+async def get_local_doc_by_id(monster_id: str) -> dict:
     try:
-        collection = _db[MONGODB_COLLECTION_MONSTERS]
-        monster = collection.find_one({"index": monster_id})
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_MONSTERS]
+        monster = await collection.find_one({"index": monster_id})
         return monster if monster else {}
     except Exception as e:
         print(f"Error fetching monster {monster_id} from MongoDB: {e}")
         return {}
 
 
-def get_remote_doc_by_id(monster_id: str) -> dict:
-    """Fetch a specific monster from remote D&D API by index"""
+async def get_remote_doc_by_id(monster_id: str) -> dict:
     try:
-        return _remote_monsters.get_by_index(monster_id)
+        return await _remote_monsters.get_by_index(monster_id)
     except Exception as e:
         print(f"Error fetching monster {monster_id} from remote API: {e}")
         return {}
 
 
-def save_local_monster(monster_data: dict) -> dict:
-    """Save a monster to local MongoDB"""
+async def save_local_monster(monster_data: dict) -> dict:
     try:
-        collection = _db[MONGODB_COLLECTION_MONSTERS]
-        result = collection.insert_one(monster_data)
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_MONSTERS]
+        result = await collection.insert_one(monster_data)
         monster_data["_id"] = result.inserted_id
         return monster_data
     except Exception as e:
@@ -87,27 +88,27 @@ def save_local_monster(monster_data: dict) -> dict:
         return {}
 
 
-def update_local_monster(monster_id: str, monster_data: dict) -> dict:
-    """Update a monster in local MongoDB"""
+async def update_local_monster(monster_id: str, monster_data: dict) -> dict:
     try:
-        collection = _db[MONGODB_COLLECTION_MONSTERS]
-        result = collection.update_one(
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_MONSTERS]
+        result = await collection.update_one(
             {"index": monster_id},
             {"$set": monster_data}
         )
         if result.modified_count > 0:
-            return collection.find_one({"index": monster_id})
+            return await collection.find_one({"index": monster_id})
         return {}
     except Exception as e:
         print(f"Error updating monster: {e}")
         return {}
 
 
-def delete_local_monster(monster_id: str) -> bool:
-    """Delete a monster from local MongoDB"""
+async def delete_local_monster(monster_id: str) -> bool:
     try:
-        collection = _db[MONGODB_COLLECTION_MONSTERS]
-        result = collection.delete_one({"index": monster_id})
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_MONSTERS]
+        result = await collection.delete_one({"index": monster_id})
         return result.deleted_count > 0
     except Exception as e:
         print(f"Error deleting monster: {e}")

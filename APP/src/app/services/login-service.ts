@@ -1,19 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { TokenHashService } from './token-hash.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class LoginService {
-  private url = environment.API_URL;
-  private apiToken = environment.API_TOKEN;
-  private tokenHashService: TokenHashService = new TokenHashService();
-  constructor() {}
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.API_URL;
+  private readonly apiToken = environment.API_TOKEN;
+  private readonly tokenHashService = inject(TokenHashService);
 
-  /**
-   * Obtiene el rol del usuario actual ("admin", "user", etc). Devuelve null si no hay usuario logueado.
-   */
   async getUserRole(): Promise<string | null> {
     const token = this.getToken();
     if (!token) return null;
@@ -22,105 +19,64 @@ export class LoginService {
   }
 
   async login(email: string, password: string) {
-    try {
-      const hashedToken = this.tokenHashService.generateHash(this.apiToken);
-      const response = await fetch(this.url + '/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Token': hashedToken
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
+    const hashedToken = this.tokenHashService.generateHash(this.apiToken);
 
-      if (response.status !== 200 && response.status !== 201) {
-        throw new Error('Invalid credentials');
-      }
+    const user = await firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/auth/login`,
+        { email, password },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Token': hashedToken
+          }
+        }
+      )
+    );
 
-      const user = await response.json();
-
-      // Guardar solo el token en localStorage
-      if (user && user.access_token) {
-        localStorage.setItem('token', user.access_token);
-      }
-
-      return user;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    if (user && user.access_token) {
+      localStorage.setItem('token', user.access_token);
     }
+
+    return user;
   }
+
   async register(name: string, email: string, password: string) {
-    try {
-      const hashedToken = this.tokenHashService.generateHash(this.apiToken);
-      const response = await fetch(this.url + '/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Token': hashedToken
-        },
-        body: JSON.stringify({
-          username: name,
-          email: email,
-          password: password,
-        }),
-      });
+    const hashedToken = this.tokenHashService.generateHash(this.apiToken);
 
-      if (response.status !== 200 && response.status !== 201) {
-        throw new Error('Registration failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
-    }
+    return firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/users`,
+        { username: name, email, password },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Token': hashedToken
+          }
+        }
+      )
+    );
   }
-
-
-
 
   async verifyToken(token: string) {
-    try {
-      const response = await fetch(this.url + `/auth/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Token': this.tokenHashService.generateHash(this.apiToken),
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-    
-      if (response.status !== 200 && response.status !== 201) {
-        return null;
-      }
+    const hashedToken = this.tokenHashService.generateHash(this.apiToken);
 
-      const data = await response.json();
-      return data.valid ? data.user : null;
-    } catch (error) {
-      console.error('Verify token error:', error);
-      return null;
-    }
+    const data = await firstValueFrom(
+      this.http.post<any>(`${this.apiUrl}/auth/verify`,
+        {},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Token': hashedToken,
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      )
+    );
+
+    return data.valid ? data.user : null;
   }
 
-  async logout() {
-    try {
-      const token = this.getToken();
-
-      if (!token) {
-        throw new Error('No token found');
-      }
-
-        localStorage.removeItem('token');
-        return true;
-    
-    } catch (error) {
-      console.error('Logout error:', error);
-      return false;
-    }
+  logout(): void {
+    localStorage.removeItem('token');
   }
 
   getToken(): string | null {

@@ -1,5 +1,6 @@
-
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Item } from '../interfaces/item';
 import { AdventuringGear } from '../interfaces/items/adventuring-gear';
@@ -10,7 +11,6 @@ import { Tool } from '../interfaces/items/tool';
 import { Mount } from '../interfaces/items/mount';
 import { TokenHashService } from './token-hash.service';
 
-// 🔹 Tipo de item
 export type ItemType =
   | 'adventuringgear'
   | 'armor'
@@ -19,7 +19,6 @@ export type ItemType =
   | 'tool'
   | 'mount';
 
-// 🔹 Unión de tipos específicos
 export type ItemSpecific =
   | AdventuringGear
   | Armor
@@ -28,95 +27,49 @@ export type ItemSpecific =
   | Tool
   | Mount;
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ItemsService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_URL;
-  private readonly apiToken = environment.API_TOKEN;
-  private readonly tokenHashService = new TokenHashService();
+  private readonly tokenHashService = inject(TokenHashService);
+  private loadedPages = new Map<string, Item[]>();
 
-  private cache: Item[] | null = null;
-
-  // 🔹 Obtener lista (genérica)
-  async getItems(): Promise<Item[]> {
-    if (this.cache) {
-      return [...this.cache];
+  async getItems(page: number = 1, pageSize: number = 25): Promise<Item[]> {
+    const cacheKey = `${page}-${pageSize}`;
+    
+    if (this.loadedPages.has(cacheKey)) {
+      return this.loadedPages.get(cacheKey)!;
     }
 
-    const response = await fetch(`${this.apiUrl}/items`, {
-      headers: this.buildHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `No se han podido cargar los items: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const items = (await response.json()) as Item[];
+    const items = await firstValueFrom(
+      this.http.get<Item[]>(`${this.apiUrl}/items`, {
+        params: { page: page.toString(), page_size: pageSize.toString() },
+        headers: this.buildHeaders()
+      })
+    );
 
     items.sort((a, b) => a.name.localeCompare(b.name));
-
-    this.cache = [...items];
-
+    this.loadedPages.set(cacheKey, [...items]);
     return items;
   }
 
-  // 🔥 MÉTODO CLAVE → tipado real por tipo
-
-  async getItem(id: string, type: ItemType): Promise<ItemSpecific> {
-    // El backend espera 'magicItem' (I mayúscula) como type
-      let apiType: string = type;
-    if (type === 'magicitem') {
-      apiType = 'magicitem';
-    }
-    const response = await fetch(
-      `${this.apiUrl}/items/${id}?type=${encodeURIComponent(apiType)}`,
-      {
-        headers: this.buildHeaders(),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `No se ha podido cargar el item ${id}: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const raw = await response.json();
-
-    // 🔥 discriminación por tipo (correcta)
-    switch (type) {
-      case 'weapon':
-        return raw as Weapon;
-
-      case 'armor':
-        return raw as Armor;
-
-      case 'adventuringgear':
-        return raw as AdventuringGear;
-
-      case 'magicitem':
-        return raw as MagicItem;
-
-      case 'tool':
-        return raw as Tool;
-
-      case 'mount':
-        return raw as Mount;
-
-      default:
-        throw new Error('Tipo no soportado: ' + type);
-    }
+  async getAllItems(): Promise<Item[]> {
+    return await this.getItems(1, 999);
   }
 
-  // 🔹 Obtener ID seguro
+  async getItem(id: string, type: ItemType): Promise<ItemSpecific> {
+    return firstValueFrom(
+      this.http.get<ItemSpecific>(
+        `${this.apiUrl}/items/${id}?type=${encodeURIComponent(type)}`,
+        { headers: this.buildHeaders() }
+      )
+    );
+  }
+
   getIdentifier(item: Item): string {
     return item['id'] || item.index;
   }
 
-  // 🔹 Inferir tipo desde datos (para listado)
   inferType(item: Item): ItemType | null {
     const rawType = (item['type'] || '').toLowerCase();
 
@@ -135,24 +88,18 @@ export class ItemsService {
     return null;
   }
 
-  // 🔹 Headers API
-  private buildHeaders(): HeadersInit {
-    return {
-      'X-API-Token': this.tokenHashService.generateHash(this.apiToken),
-    };
-  }
-    // Obtener todos los ids válidos de magic items
   async getMagicItemIds(): Promise<string[]> {
-    // El backend espera 'magicItem' (I mayúscula)
-    const response = await fetch(`${this.apiUrl}/items/type/magicitem`, {
-      headers: this.buildHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(`No se han podido cargar los magic items: ${response.status} ${response.statusText}`);
-    }
-    const items = await response.json();
-    // Devuelve el id o index según lo que tenga cada item
+    const items = await firstValueFrom(
+      this.http.get<any[]>(`${this.apiUrl}/items/type/magicitem`, {
+        headers: this.buildHeaders()
+      })
+    );
     return items.map((item: any) => item.id || item.index);
   }
-}
 
+  private buildHeaders(): { [header: string]: string } {
+    return {
+      'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),
+    };
+  }
+}

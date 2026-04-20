@@ -1,63 +1,51 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Background } from '../interfaces/background';
 import { TokenHashService } from './token-hash.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class BackgroundsService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_URL;
-  private readonly apiToken = environment.API_TOKEN;
-  private readonly tokenHashService = new TokenHashService();
-  private cache: Background[] | null = null;
+  private readonly tokenHashService = inject(TokenHashService);
+  private loadedPages = new Map<string, Background[]>();
 
-  async getBackgrounds(onItemLoaded?: (value: Background) => void): Promise<Background[]> {
-    if (this.cache) {
-      const cached = [...this.cache];
-      onItemLoaded?.(cached[0]);
-      if (onItemLoaded) {
-        for (const item of cached.slice(1)) {
-          onItemLoaded(item);
-        }
-      }
-      return cached;
+  async getBackgrounds(page: number = 1, pageSize: number = 25): Promise<Background[]> {
+    const cacheKey = `${page}-${pageSize}`;
+    
+    if (this.loadedPages.has(cacheKey)) {
+      return this.loadedPages.get(cacheKey)!;
     }
 
-    const response = await fetch(`${this.apiUrl}/backgrounds`, {
-      headers: this.buildHeaders(),
-    });
+    const backgrounds = await firstValueFrom(
+      this.http.get<Background[]>(`${this.apiUrl}/backgrounds`, {
+        params: { page: page.toString(), page_size: pageSize.toString() },
+        headers: this.buildHeaders()
+      })
+    );
 
-    if (!response.ok) {
-      throw new Error(`No se han podido cargar los backgrounds: ${response.status} ${response.statusText}`);
-    }
-
-    const backgrounds = (await response.json()) as Background[];
     backgrounds.sort((a, b) => a.name.localeCompare(b.name));
-    this.cache = [...backgrounds];
-    if (onItemLoaded) {
-      for (const bg of backgrounds) {
-        onItemLoaded(bg);
-      }
-    }
+    this.loadedPages.set(cacheKey, [...backgrounds]);
     return backgrounds;
   }
 
-  async getBackground(id: string): Promise<Background> {
-    const response = await fetch(`${this.apiUrl}/backgrounds/${id}`, {
-      headers: this.buildHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar el background ${id}: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as Background;
+  async getAllBackgrounds(): Promise<Background[]> {
+    return await this.getBackgrounds(1, 999);
   }
 
-  private buildHeaders(): HeadersInit {
+  async getBackground(id: string): Promise<Background> {
+    return firstValueFrom(
+      this.http.get<Background>(`${this.apiUrl}/backgrounds/${id}`, {
+        headers: this.buildHeaders()
+      })
+    );
+  }
+
+  private buildHeaders(): { [header: string]: string } {
     return {
-      'X-API-Token': this.tokenHashService.generateHash(this.apiToken),
+      'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),
     };
   }
 }

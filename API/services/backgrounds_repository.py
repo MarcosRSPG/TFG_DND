@@ -1,19 +1,19 @@
 from typing import Any
-
 from bson import ObjectId
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
-from config import API_DND5E, MONGODB_COLLECTION_BACKGROUNDS, MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import API_DND5E, MONGODB_COLLECTION_BACKGROUNDS, MONGODB_URI, MONGODB_DATABASE
 from services.remote_catalog_repository import RemoteCatalogRepository
 
+_client: AsyncIOMotorClient | None = None
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
+
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
 
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_backgrounds = _db[MONGODB_COLLECTION_BACKGROUNDS]
 _remote_backgrounds = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="backgrounds")
 
 
@@ -21,39 +21,59 @@ def _doc_key(doc: dict[str, Any]) -> str:
     return str(doc.get("index") or doc.get("id") or doc.get("_id"))
 
 
-def clear_remote_cache() -> None:
+async def _doc_key_async(doc: dict[str, Any]) -> str:
+    return str(doc.get("index") or doc.get("id") or doc.get("_id"))
+
+
+async def clear_remote_cache() -> None:
     _remote_backgrounds.clear_cache()
 
 
-def get_local_docs() -> list[dict[str, Any]]:
+async def get_local_docs() -> list[dict[str, Any]]:
     try:
-        return list(_backgrounds.find({}))
-    except PyMongoError as exc:
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_BACKGROUNDS]
+        return await collection.find({}).to_list(length=None)
+    except Exception as exc:
         from fastapi import HTTPException
-
         raise HTTPException(status_code=500, detail=f"Error retrieving backgrounds: {exc}") from exc
 
 
-def get_remote_docs() -> list[dict[str, Any]]:
-    return list(_remote_backgrounds.get_catalog())
+async def get_remote_docs(page: int = 1, page_size: int = 20) -> list[dict[str, Any]]:
+    try:
+        return await _remote_backgrounds.get_catalog(page=page, page_size=page_size)
+    except Exception as e:
+        print(f"Error fetching remote backgrounds: {e}")
+        return []
 
 
-def merge_docs() -> list[dict[str, Any]]:
-    local_docs = get_local_docs()
+async def merge_docs(page: int = 1, page_size: int = 20) -> list[dict[str, Any]]:
+    local_docs = await get_local_docs()
     local_keys = {_doc_key(doc) for doc in local_docs}
     merged_docs = list(local_docs)
-    for doc in get_remote_docs():
-        if _doc_key(doc) in local_keys:
-            continue
-        merged_docs.append({**doc, "_id": doc.get("index")})
-    return merged_docs
+    
+    try:
+        remote_docs = await get_remote_docs(page=page, page_size=page_size)
+        for doc in remote_docs:
+            key = _doc_key(doc)
+            if key in local_keys:
+                continue
+            merged_docs.append({**doc, "_id": doc.get("index")})
+    except Exception as e:
+        print(f"Error merging background docs: {e}")
+    
+    start = (page - 1) * page_size
+    end = start + page_size
+    return merged_docs[start:end]
 
 
-def get_local_doc_by_id(background_id: str) -> dict[str, Any] | None:
+async def get_local_doc_by_id(background_id: str) -> dict[str, Any] | None:
     if not ObjectId.is_valid(background_id):
         return None
-    return _backgrounds.find_one({"_id": ObjectId(background_id)})
+    db = await get_db()
+    collection = db[MONGODB_COLLECTION_BACKGROUNDS]
+    return await collection.find_one({"_id": ObjectId(background_id)})
 
 
-def get_remote_doc_by_id(background_id: str) -> dict[str, Any] | None:
-    return _remote_backgrounds.get_by_index(background_id)
+async def get_remote_doc_by_id(background_id: str) -> dict[str, Any] | None:
+    return await _remote_backgrounds.get_by_index(background_id)

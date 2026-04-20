@@ -1,62 +1,53 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Monster } from '../interfaces/monster';
 import { TokenHashService } from './token-hash.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class MonstersService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_URL;
-  private readonly apiToken = environment.API_TOKEN;
-  private readonly tokenHashService = new TokenHashService();
-  private cache: Monster[] | null = null;
+  private readonly tokenHashService = inject(TokenHashService);
+  private loadedPages = new Map<string, Monster[]>();
 
-  async getMonsters(onItemLoaded?: (value: Monster) => void): Promise<Monster[]> {
-    if (this.cache) {
-      const cached = [...this.cache];
-      if (onItemLoaded) {
-        for (const monster of cached) {
-          onItemLoaded(monster);
-        }
-      }
-      return cached;
+  async getMonsters(page: number = 1, pageSize: number = 25): Promise<Monster[]> {
+    const cacheKey = `${page}-${pageSize}`;
+    
+    if (this.loadedPages.has(cacheKey)) {
+      return this.loadedPages.get(cacheKey)!;
     }
 
-    const response = await fetch(`${this.apiUrl}/monsters/`, {
-      headers: this.buildHeaders(),
-    });
+    // Fetch full data for this page - API returns full monsters
+    const monsters = await firstValueFrom(
+      this.http.get<Monster[]>(`${this.apiUrl}/monsters/`, {
+        params: { page: page.toString(), page_size: pageSize.toString() },
+        headers: this.buildHeaders()
+      })
+    );
 
-    if (!response.ok) {
-      throw new Error(`No se han podido cargar los monsters: ${response.status} ${response.statusText}`);
-    }
-
-    const monsters = (await response.json()) as Monster[];
     monsters.sort((a, b) => a.name.localeCompare(b.name));
-    this.cache = [...monsters];
-    if (onItemLoaded) {
-      for (const monster of monsters) {
-        onItemLoaded(monster);
-      }
-    }
+    this.loadedPages.set(cacheKey, [...monsters]);
     return monsters;
   }
 
-  async getMonster(id: string): Promise<Monster> {
-    const response = await fetch(`${this.apiUrl}/monsters/${id}`, {
-      headers: this.buildHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar el monster ${id}: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as Monster;
+  async getAllMonsters(): Promise<Monster[]> {
+    // Fetch ALL at once with page_size=999 to get full data
+    return await this.getMonsters(1, 999);
   }
 
-  private buildHeaders(): HeadersInit {
+  async getMonster(id: string): Promise<Monster> {
+    return firstValueFrom(
+      this.http.get<Monster>(`${this.apiUrl}/monsters/${id}`, {
+        headers: this.buildHeaders()
+      })
+    );
+  }
+
+  private buildHeaders(): { [header: string]: string } {
     return {
-      'X-API-Token': this.tokenHashService.generateHash(this.apiToken),
+      'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),
     };
   }
 }

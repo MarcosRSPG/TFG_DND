@@ -1,13 +1,10 @@
 from datetime import datetime, timezone
 from typing import Any
-
 from bson import ObjectId
 from fastapi import HTTPException
 from pydantic import ValidationError
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
-from config import API_DND5E, MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import API_DND5E, MONGODB_URI, MONGODB_DATABASE
 from models.Character import (
     ApiReferenceSchema,
     CharacterSchema,
@@ -22,13 +19,15 @@ from services.characters_repository import (
 )
 from services.remote_catalog_repository import RemoteCatalogRepository
 
+_client: AsyncIOMotorClient | None = None
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_items = _db["items"]
 
 _remote_classes = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="classes")
 _remote_subclasses = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="subclasses")
@@ -69,7 +68,7 @@ def _to_schema(doc: dict) -> CharacterSchema:
     return CharacterSchema.model_validate(payload)
 
 
-def _resolve_reference(reference_data: Any, repository: RemoteCatalogRepository | None = None) -> dict:
+async def _resolve_reference(reference_data: Any, repository: RemoteCatalogRepository | None = None) -> dict:
     if reference_data is None:
         raise HTTPException(status_code=422, detail="Missing reference data")
 
@@ -84,7 +83,7 @@ def _resolve_reference(reference_data: Any, repository: RemoteCatalogRepository 
         raise HTTPException(status_code=422, detail="Reference index is required")
 
     if repository is not None:
-        remote_doc = repository.get_by_index(index)
+        remote_doc = await repository.get_by_index(index)
         if remote_doc is not None:
             return {
                 "index": remote_doc.get("index", index),
@@ -99,7 +98,7 @@ def _resolve_reference(reference_data: Any, repository: RemoteCatalogRepository 
     }
 
 
-def _resolve_background(reference_data: Any) -> dict:
+async def _resolve_background(reference_data: Any) -> dict:
     if reference_data is None:
         raise HTTPException(status_code=422, detail="Missing background reference")
 
@@ -113,7 +112,7 @@ def _resolve_background(reference_data: Any) -> dict:
     if not index:
         raise HTTPException(status_code=422, detail="Background index is required")
 
-    remote_doc = get_remote_background_by_id(index)
+    remote_doc = await get_remote_background_by_id(index)
     if remote_doc is not None:
         return {
             "index": remote_doc.get("index", index),
@@ -128,7 +127,7 @@ def _resolve_background(reference_data: Any) -> dict:
     }
 
 
-def _existing_item_refs(item_refs: list[str]) -> list[str]:
+async def _existing_item_refs(item_refs: list[str]) -> list[str]:
     if not item_refs:
         return []
 
@@ -146,7 +145,9 @@ def _existing_item_refs(item_refs: list[str]) -> list[str]:
     if not query_parts:
         return []
 
-    docs = list(_items.find({"$or": query_parts}, {"_id": 1, "index": 1, "url": 1}))
+    db = await get_db()
+    collection = db["items"]
+    docs = await collection.find({"$or": query_parts}, {"_id": 1, "index": 1, "url": 1}).to_list(length=None)
     valid_refs = set()
     for doc in docs:
         if doc.get("_id") is not None:
@@ -159,7 +160,7 @@ def _existing_item_refs(item_refs: list[str]) -> list[str]:
     return [ref for ref in unique_refs if ref in valid_refs]
 
 
-def _normalize_character_payload(character_data: dict, *, created_by: str | None = None, strict_items: bool = False) -> dict:
+async def _normalize_character_payload(character_data: dict, *, created_by: str | None = None, strict_items: bool = False) -> dict:
     payload = dict(character_data)
 
     for managed_field in ("id", "created_by", "created_at", "updated_at"):
@@ -171,13 +172,13 @@ def _normalize_character_payload(character_data: dict, *, created_by: str | None
     if created_by:
         payload["player"] = created_by
 
-    payload["class"] = _resolve_reference(payload.get("class"), _remote_classes)
+    payload["class"] = await _resolve_reference(payload.get("class"), _remote_classes)
     if payload.get("subclass") is not None:
-        payload["subclass"] = _resolve_reference(payload.get("subclass"), _remote_subclasses)
-    payload["race"] = _resolve_reference(payload.get("race"), _remote_races)
+        payload["subclass"] = await _resolve_reference(payload.get("subclass"), _remote_subclasses)
+    payload["race"] = await _resolve_reference(payload.get("race"), _remote_races)
     if payload.get("subrace") is not None:
-        payload["subrace"] = _resolve_reference(payload.get("subrace"), _remote_subraces)
-    payload["background"] = _resolve_background(payload.get("background"))
+        payload["subrace"] = await _resolve_reference(payload.get("subrace"), _remote_subraces)
+    payload["background"] = await _resolve_background(payload.get("background"))
 
     inventory = payload.get("inventory") or {}
     if hasattr(inventory, "model_dump"):
@@ -189,7 +190,7 @@ def _normalize_character_payload(character_data: dict, *, created_by: str | None
     if not isinstance(item_refs, list):
         raise HTTPException(status_code=422, detail="inventory.items must be a list")
 
-    existing_refs = _existing_item_refs(item_refs)
+    existing_refs = await _existing_item_refs(item_refs)
     if strict_items:
         missing_refs = [ref for ref in item_refs if ref not in existing_refs]
         if missing_refs:
@@ -204,31 +205,42 @@ def _normalize_character_payload(character_data: dict, *, created_by: str | None
 
 def _format_character_doc(doc: dict) -> dict:
     try:
-        payload = _normalize_character_payload(doc, strict_items=False)
+        import asyncio
+        payload = asyncio.get_event_loop().run_until_complete(_normalize_character_payload(doc, strict_items=False))
         return payload
     except ValidationError:
         return _json_safe(doc)
 
 
-def get_all() -> list[dict]:
-    docs = get_local_docs()
-    return [_format_character_doc(doc) for doc in docs]
+async def get_all() -> list[dict]:
+    docs = await get_local_docs()
+    result = []
+    for doc in docs:
+        result.append(await _format_character_doc_async(doc))
+    return result
 
 
-def get_by_id(character_id: str) -> dict:
-    doc = get_local_doc_by_id(character_id)
+async def _format_character_doc_async(doc: dict) -> dict:
+    try:
+        return await _normalize_character_payload(doc, strict_items=False)
+    except ValidationError:
+        return _json_safe(doc)
+
+
+async def get_by_id(character_id: str) -> dict:
+    doc = await get_local_doc_by_id(character_id)
     if doc is None:
         raise HTTPException(status_code=404, detail="Character not found")
-    return _format_character_doc(doc)
+    return await _format_character_doc_async(doc)
 
 
-def create(character: dict, created_by: str | None) -> dict:
+async def create(character: dict, created_by: str | None) -> dict:
     if not created_by:
         raise HTTPException(status_code=401, detail="Unauthorized user")
 
     try:
         now = datetime.now(timezone.utc).isoformat()
-        character_data = _normalize_character_payload(character, created_by=created_by, strict_items=True)
+        character_data = await _normalize_character_payload(character, created_by=created_by, strict_items=True)
         character_data["created_by"] = created_by or character_data.get("created_by") or "api"
         character_data["created_at"] = now
         character_data["updated_at"] = now
@@ -241,25 +253,23 @@ def create(character: dict, created_by: str | None) -> dict:
         meta["updated_at"] = now
         character_data["_meta"] = meta
 
-        result = save_local_character(character_data)
-        return _format_character_doc(result)
+        result = await save_local_character(character_data)
+        return await _format_character_doc_async(result)
     except HTTPException:
         raise
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating character: {exc}") from exc
-    except ValidationError as exc:
-        raise HTTPException(status_code=422, detail=exc.errors()) from exc
 
 
-def update(character_id: str, character: dict, updated_by: str | None) -> dict:
+async def update(character_id: str, character: dict, updated_by: str | None) -> dict:
     if not updated_by:
         raise HTTPException(status_code=401, detail="Unauthorized user")
 
-    if not ObjectId.is_valid(character_id) and not get_local_doc_by_id(character_id):
+    if not ObjectId.is_valid(character_id) and not await get_local_doc_by_id(character_id):
         raise HTTPException(status_code=400, detail="Invalid character id")
 
     try:
-        character_data = _normalize_character_payload(character, created_by=updated_by, strict_items=True)
+        character_data = await _normalize_character_payload(character, created_by=updated_by, strict_items=True)
         character_data["updated_at"] = datetime.now(timezone.utc).isoformat()
 
         meta = character_data.get("_meta")
@@ -268,17 +278,15 @@ def update(character_id: str, character: dict, updated_by: str | None) -> dict:
         meta["updated_at"] = character_data["updated_at"]
         character_data["_meta"] = meta
 
-        result = update_local_character(character_id, character_data)
+        result = await update_local_character(character_id, character_data)
         if not result:
             raise HTTPException(status_code=404, detail="Character not found")
-        return _format_character_doc(result)
+        return await _format_character_doc_async(result)
     except HTTPException:
         raise
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error updating character: {exc}") from exc
-    except ValidationError as exc:
-        raise HTTPException(status_code=422, detail=exc.errors()) from exc
 
 
-def delete(character_id: str) -> bool:
-    return delete_local_character(character_id)
+async def delete(character_id: str) -> bool:
+    return await delete_local_character(character_id)

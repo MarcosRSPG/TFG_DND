@@ -72,7 +72,6 @@ export class Spells implements OnInit {
   // =========================
   async ngOnInit(): Promise<void> {
 
-    // 🔹 Leer query params
     this.route.queryParams.subscribe(params => {
       this.filters.set({
         searchName: params['searchName'] || '',
@@ -89,15 +88,22 @@ export class Spells implements OnInit {
       });
 
       this.currentPage.set(Number(params['page']) || 1);
-      this.applyFilters();
     });
 
-    // 🔹 Carga de datos
+    await this.loadSpells();
+  }
+
+  async loadSpells(): Promise<void> {
+    this.loading.set(true);
+    this.indexSet.clear();
+
     try {
-      await this.spellsService.getSpells((item) => {
+      const spells = await this.spellsService.getAllSpells();
+      
+      for (const item of spells) {
         const id = this.getIdentifier(item);
 
-        if (this.indexSet.has(id)) return;
+        if (this.indexSet.has(id)) continue;
         this.indexSet.add(id);
 
         const sorted = [...this.allSpells(), item].sort((a, b) =>
@@ -105,16 +111,16 @@ export class Spells implements OnInit {
         );
 
         this.allSpells.set(sorted);
-        this.updateFiltersOptions();
-        this.applyFilters();
-      });
+      }
+
+      this.updateFiltersOptions();
+      this.applyFilters();
 
     } catch (error) {
       console.error('Error loading spells:', error);
       this.error.set('No se han podido cargar los spells.');
     } finally {
       this.loading.set(false);
-      this.indexSet.clear();
     }
   }
 

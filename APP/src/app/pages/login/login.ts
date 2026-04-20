@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { LoginService } from '../../services/login-service';
@@ -10,10 +10,11 @@ import { LoginService } from '../../services/login-service';
   styleUrls: ['./login.css', '../../css/boards.css'],
 })
 export class Login {
-  email: string = '';
-  password: string = '';
+  private readonly loginService = inject(LoginService);
+  private readonly router = inject(Router);
 
-  constructor(private loginService: LoginService, private router: Router) {}
+  email = '';
+  password = '';
 
   async login() {
     try {

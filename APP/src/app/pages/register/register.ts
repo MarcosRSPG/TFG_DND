@@ -1,41 +1,36 @@
-import { Component } from '@angular/core';
-import { LoginService } from '../../services/login-service';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { LoginService } from '../../services/login-service';
 
 @Component({
   selector: 'app-register',
-  imports: [FormsModule,],
+  imports: [FormsModule],
   templateUrl: './register.html',
   styleUrls: ['./register.css', '../../css/boards.css'],
 })
 export class Register {
+  private readonly loginService = inject(LoginService);
+  private readonly router = inject(Router);
 
-email: string = '';
-  password: string = '';
-  confirmPassword: string = '';
-  name: string = '';
+  email = '';
+  password = '';
+  confirmPassword = '';
+  name = '';
 
-  constructor(private loginService: LoginService, private router: Router) {}
-
-    async register() {
-
+  async register() {
     if (this.password !== this.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
 
-    await this.loginService.register(this.name, this.email, this.password)
-      .then(() => {
-        alert('Registration successful!');
-        this.loginService.login(this.email, this.password)
-          .then(() => {
-            this.router.navigate(['/']);
-          });
-      })
-      .catch((error) => {
-        alert('Registration failed: ' + error.message);
-      });
-        
-    }        
+    try {
+      await this.loginService.register(this.name, this.email, this.password);
+      alert('Registration successful!');
+      await this.loginService.login(this.email, this.password);
+      this.router.navigate(['/']);
+    } catch (error: any) {
+      alert('Registration failed: ' + error.message);
+    }
+  }
 }

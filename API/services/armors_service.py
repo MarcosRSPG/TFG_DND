@@ -1,21 +1,19 @@
 from datetime import datetime, timezone
-
 from models.Armor import ArmorSchema
 from bson import ObjectId
 from fastapi import HTTPException
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import MONGODB_URI, MONGODB_DATABASE
 from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
+_client: AsyncIOMotorClient | None = None
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
-
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_armors = _db["items"]
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
 
 def _to_schema(doc: dict) -> ArmorSchema:
@@ -26,19 +24,19 @@ def _to_schema(doc: dict) -> ArmorSchema:
     return ArmorSchema(**payload)
 
 
-def get_all() -> list[ArmorSchema]:
-    docs = merge_docs("armor")
+async def get_all(page: int = 1, page_size: int = 20) -> list[ArmorSchema]:
+    docs = await merge_docs("armor", page=page, page_size=page_size)
     return [_to_schema(doc) for doc in docs]
 
 
-def get_by_id(armor_id: str) -> ArmorSchema:
-    doc = get_local_doc_by_id(armor_id)
+async def get_by_id(armor_id: str) -> ArmorSchema:
+    doc = await get_local_doc_by_id(armor_id)
     if doc is not None:
         if doc.get("equipment_category", {}).get("index") != "armor":
             raise HTTPException(status_code=404, detail="Armor not found")
         return _to_schema(doc)
 
-    armor_real = get_remote_doc_by_id(armor_id)
+    armor_real = await get_remote_doc_by_id(armor_id)
     if armor_real is None:
         raise HTTPException(status_code=404, detail="Armor not found")
     if armor_real.get("equipment_category", {}).get("index") != "armor":
@@ -46,7 +44,7 @@ def get_by_id(armor_id: str) -> ArmorSchema:
     return ArmorSchema(**armor_real)
 
 
-def create(armor_schema: ArmorSchema, created_by: str | None) -> ArmorSchema:
+async def create(armor_schema: ArmorSchema, created_by: str | None) -> ArmorSchema:
     armor_data = armor_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -64,15 +62,17 @@ def create(armor_schema: ArmorSchema, created_by: str | None) -> ArmorSchema:
     meta["updated_at"] = now
     armor_data["meta"] = meta
 
+    db = await get_db()
+    collection = db["items"]
     try:
-        result = _armors.insert_one(armor_data)
-        created = _armors.find_one({"_id": result.inserted_id})
+        result = await collection.insert_one(armor_data)
+        created = await collection.find_one({"_id": result.inserted_id})
         return _to_schema(created)
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating armor: {exc}") from exc
 
 
-def update(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
+async def update(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
     if not ObjectId.is_valid(armor_id):
         raise HTTPException(status_code=400, detail="Invalid armor id")
 
@@ -89,35 +89,39 @@ def update(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
     meta["updated_at"] = now
     updates["meta"] = meta
 
-    result = _armors.update_one({"_id": ObjectId(armor_id)}, {"$set": updates})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.update_one({"_id": ObjectId(armor_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Armor not found")
 
-    updated = _armors.find_one({"_id": ObjectId(armor_id)})
+    updated = await collection.find_one({"_id": ObjectId(armor_id)})
     return _to_schema(updated)
 
 
-def get_all_armors() -> list[ArmorSchema]:
-    return get_all()
+async def get_all_armors() -> list[ArmorSchema]:
+    return await get_all()
 
 
-def get_armor_by_id(armor_id: str) -> ArmorSchema:
-    return get_by_id(armor_id)
+async def get_armor_by_id(armor_id: str) -> ArmorSchema:
+    return await get_by_id(armor_id)
 
 
-def create_armor(armor: ArmorSchema, created_by: str | None) -> ArmorSchema:
-    return create(armor, created_by)
+async def create_armor(armor: ArmorSchema, created_by: str | None) -> ArmorSchema:
+    return await create(armor, created_by)
 
 
-def update_armor(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
-    return update(armor_id, armor)
+async def update_armor(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
+    return await update(armor_id, armor)
 
 
-def delete_armor(armor_id: str) -> dict:
+async def delete_armor(armor_id: str) -> dict:
     if not ObjectId.is_valid(armor_id):
         raise HTTPException(status_code=400, detail="Invalid armor id")
 
-    result = _armors.delete_one({"_id": ObjectId(armor_id)})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.delete_one({"_id": ObjectId(armor_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Armor not found")
 

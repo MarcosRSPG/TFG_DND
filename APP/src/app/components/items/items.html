@@ -69,8 +69,8 @@
       <li class="entity-item" (click)="onSelectItem(item)" style="cursor: pointer;">
         <div class="entity-link">
           <h3>{{ item.name }}</h3>
-          <p>Category: {{ item.equipment_category?.name || 'N/A' }}</p>
-          <p>Cost: {{ item.cost?.quantity || '-' }} {{ item.cost?.unit || '' }}</p>
+          <p>Category: {{ item.equipment_category?.name || 'Unknown' }}</p>
+          <p>Cost: {{ item.cost?.quantity ?? 0 }} {{ item.cost?.unit || 'gp' }}</p>
         </div>
       </li>
     }

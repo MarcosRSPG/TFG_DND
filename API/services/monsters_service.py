@@ -6,7 +6,6 @@ from pydantic import ValidationError
 
 
 def _json_safe(value):
-    """Recursively convert ObjectId and other non-JSON types to JSON-safe types"""
     if isinstance(value, ObjectId):
         return str(value)
     elif isinstance(value, dict):
@@ -31,67 +30,56 @@ def _format_monster(monster_data: dict) -> dict:
         return _json_safe(monster_data)
 
 
-def get_all() -> list:
-    """Get all monsters from merged local and remote sources"""
+async def get_all(page: int = 1, page_size: int = 20) -> list:
     try:
-        monsters = monsters_repository.merge_docs()
+        monsters = await monsters_repository.merge_docs(page=page, page_size=page_size)
         return [_format_monster(m) for m in monsters]
     except Exception as e:
         print(f"Error getting all monsters: {e}")
         return []
 
 
-def get_by_id(monster_id: str) -> dict:
-    """Get a specific monster by ID/index"""
+async def get_by_id(monster_id: str) -> dict:
     try:
-        # Check local first
-        local_monster = monsters_repository.get_local_doc_by_id(monster_id)
+        local_monster = await monsters_repository.get_local_doc_by_id(monster_id)
         if local_monster:
             return _format_monster(local_monster)
-        
-        # Then check remote
-        remote_monster = monsters_repository.get_remote_doc_by_id(monster_id)
+
+        remote_monster = await monsters_repository.get_remote_doc_by_id(monster_id)
         if remote_monster:
             return _format_monster(remote_monster)
-        
+
         return {}
     except Exception as e:
         print(f"Error getting monster {monster_id}: {e}")
         return {}
 
 
-def create(monster: dict) -> dict:
-    """Create a new monster in local MongoDB"""
+async def create(monster: dict) -> dict:
     try:
-        # Validate against schema
         validated_monster = Monster.model_validate(monster)
-        # Convert back to dict for MongoDB
         monster_dict = validated_monster.model_dump(exclude_none=True)
-        result = monsters_repository.save_local_monster(monster_dict)
+        result = await monsters_repository.save_local_monster(monster_dict)
         return _format_monster(result)
     except Exception as e:
         print(f"Error creating monster: {e}")
         raise
 
 
-def update(monster_id: str, monster: dict) -> dict:
-    """Update an existing monster in local MongoDB"""
+async def update(monster_id: str, monster: dict) -> dict:
     try:
-        # Validate against schema
         validated_monster = Monster.model_validate(monster)
-        # Convert back to dict for MongoDB
         monster_dict = validated_monster.model_dump(exclude_none=True)
-        result = monsters_repository.update_local_monster(monster_id, monster_dict)
+        result = await monsters_repository.update_local_monster(monster_id, monster_dict)
         return _format_monster(result)
     except Exception as e:
         print(f"Error updating monster: {e}")
         raise
 
 
-def delete(monster_id: str) -> bool:
-    """Delete a monster from local MongoDB"""
+async def delete(monster_id: str) -> bool:
     try:
-        return monsters_repository.delete_local_monster(monster_id)
+        return await monsters_repository.delete_local_monster(monster_id)
     except Exception as e:
         print(f"Error deleting monster: {e}")
         return False

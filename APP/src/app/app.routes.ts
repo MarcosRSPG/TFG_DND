@@ -1,64 +1,54 @@
 import { Routes } from '@angular/router';
-import { Login } from './pages/login/login';
-import { Register } from './pages/register/register';
-import { Home } from './pages/home/home';
-import { BackgroundDetail } from './pages/background-detail/background-detail';
-import { Manual } from './pages/manual/manual';
-import { ClassDetail } from './pages/class-detail/class-detail';
-import { MonsterDetail } from './pages/monster-detail/monster-detail';
-import { RaceDetail } from './pages/race-detail/race-detail';
-import { SpellDetail } from './pages/spell-detail/spell-detail';
-import { ItemDetailPageComponent } from './pages/item_pages/item-detail-page/item-detail-page';
 
 export const routes: Routes = [
-    {
+  {
     path: 'login',
-    component: Login,
+    loadComponent: () => import('./pages/login/login').then(m => m.Login),
     title: 'Login',
   },
   {
     path: 'register',
-    component: Register,
+    loadComponent: () => import('./pages/register/register').then(m => m.Register),
     title: 'Register',
   },
   {
     path: '',
-    component: Home,
+    loadComponent: () => import('./pages/home/home').then(m => m.Home),
     title: 'Home',
   },
   {
     path: 'manual',
-    component: Manual,
+    loadComponent: () => import('./pages/manual/manual').then(m => m.Manual),
     title: 'Manual',
   },
   {
     path: 'races/:index',
-    component: RaceDetail,
+    loadComponent: () => import('./pages/race-detail/race-detail').then(m => m.RaceDetail),
     title: 'Race Details',
   },
   {
     path: 'classes/:index',
-    component: ClassDetail,
+    loadComponent: () => import('./pages/class-detail/class-detail').then(m => m.ClassDetail),
     title: 'Class Details',
   },
   {
     path: 'backgrounds/:id',
-    component: BackgroundDetail,
+    loadComponent: () => import('./pages/background-detail/background-detail').then(m => m.BackgroundDetail),
     title: 'Background Details',
   },
   {
     path: 'spells/:id',
-    component: SpellDetail,
+    loadComponent: () => import('./pages/spell-detail/spell-detail').then(m => m.SpellDetail),
     title: 'Spell Details',
   },
   {
     path: 'monsters/:id',
-    component: MonsterDetail,
+    loadComponent: () => import('./pages/monster-detail/monster-detail').then(m => m.MonsterDetail),
     title: 'Monster Details',
   },
-  { path: 'items/:type/:id', 
-    component: ItemDetailPageComponent, 
-    title: 'Item Details' 
+  {
+    path: 'items/:type/:id',
+    loadComponent: () => import('./pages/item_pages/item-detail-page/item-detail-page').then(m => m.ItemDetailPageComponent),
+    title: 'Item Details',
   },
-
 ];

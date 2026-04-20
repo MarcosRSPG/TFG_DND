@@ -1,12 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ClassReference, DndClass, DndClassLevel, DndClassListResponse, FeatureDetail, LeveledFeature } from '../interfaces/class';
 import { Subclass, SubclassLevel } from '../interfaces/subclass';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ClassesService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_DND_OFICIAL;
   private classesCache: DndClass[] | null = null;
 
@@ -21,13 +22,9 @@ export class ClassesService {
       return cached;
     }
 
-    const response = await fetch(this.apiUrl + '/classes');
-
-    if (!response.ok) {
-      throw new Error(`No se han podido cargar las clases: ${response.status} ${response.statusText}`);
-    }
-
-    const data = (await response.json()) as DndClassListResponse;
+    const data = await firstValueFrom(
+      this.http.get<DndClassListResponse>(`${this.apiUrl}/classes`)
+    );
 
     if (!data.results?.length) {
       return [];
@@ -44,7 +41,7 @@ export class ClassesService {
         } catch (error) {
           console.error(`Error loading class ${classPreview.index}:`, error);
         }
-      }),
+      })
     );
 
     classes.sort((a, b) => a.name.localeCompare(b.name));
@@ -54,35 +51,22 @@ export class ClassesService {
   }
 
   async getClass(index: string): Promise<DndClass> {
-    const response = await fetch(this.buildUrl(`/classes/${index}`));
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar la clase ${index}: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as DndClass;
+    return firstValueFrom(
+      this.http.get<DndClass>(this.buildUrl(`/classes/${index}`))
+    );
   }
 
   async getClassLevels(index: string): Promise<DndClassLevel[]> {
-    const response = await fetch(this.buildUrl(`/classes/${index}/levels`));
-
-    if (!response.ok) {
-      throw new Error(`No se han podido cargar los niveles de ${index}: ${response.status} ${response.statusText}`);
-    }
-
-    const levels = (await response.json()) as DndClassLevel[];
-
+    const levels = await firstValueFrom(
+      this.http.get<DndClassLevel[]>(this.buildUrl(`/classes/${index}/levels`))
+    );
     return levels.sort((a, b) => a.level - b.level);
   }
 
   async getSubclass(index: string): Promise<Subclass> {
-    const response = await fetch(this.buildUrl(`/subclasses/${index}`));
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar la subclase ${index}: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as Subclass;
+    return firstValueFrom(
+      this.http.get<Subclass>(this.buildUrl(`/subclasses/${index}`))
+    );
   }
 
   async getSubclassesByClass(classIndex: string): Promise<Subclass[]> {
@@ -117,13 +101,9 @@ export class ClassesService {
   }
 
   private async getSubclassLevels(subclassIndex: string): Promise<SubclassLevel[]> {
-    const response = await fetch(this.buildUrl(`/subclasses/${subclassIndex}/levels`));
-
-    if (!response.ok) {
-      throw new Error(`No se han podido cargar los niveles de subclase ${subclassIndex}: ${response.status} ${response.statusText}`);
-    }
-
-    const levels = (await response.json()) as SubclassLevel[];
+    const levels = await firstValueFrom(
+      this.http.get<SubclassLevel[]>(this.buildUrl(`/subclasses/${subclassIndex}/levels`))
+    );
     return levels.sort((a, b) => a.level - b.level);
   }
 
@@ -140,7 +120,7 @@ export class ClassesService {
             console.error(`Error loading feature ${featureRef.index}:`, error);
             return null;
           }
-        }),
+        })
       );
 
       for (const detail of featureResults) {
@@ -165,13 +145,9 @@ export class ClassesService {
   }
 
   private async getFeature(featureRef: ClassReference): Promise<FeatureDetail> {
-    const response = await fetch(this.buildUrl(featureRef.url));
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar la feature ${featureRef.index}: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as FeatureDetail;
+    return firstValueFrom(
+      this.http.get<FeatureDetail>(this.buildUrl(featureRef.url))
+    );
   }
 
   private buildUrl(path: string): string {

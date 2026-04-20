@@ -1,22 +1,20 @@
 from datetime import datetime, timezone
-
 from models.Weapon import WeaponSchema
 from bson import ObjectId
 from fastapi import HTTPException
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
+from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import ValidationError
-
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from config import MONGODB_URI, MONGODB_DATABASE
 from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
+_client: AsyncIOMotorClient | None = None
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
-
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_weapons = _db["items"]
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
 
 def _is_magic_item_doc(doc: dict) -> bool:
@@ -41,8 +39,8 @@ def _to_schema(doc: dict) -> WeaponSchema:
     return WeaponSchema(**payload)
 
 
-def get_all() -> list[WeaponSchema]:
-    docs = merge_docs("weapon")
+async def get_all(page: int = 1, page_size: int = 20) -> list[WeaponSchema]:
+    docs = await merge_docs("weapon", page=page, page_size=page_size)
     weapons: list[WeaponSchema] = []
     for doc in docs:
         if _is_magic_item_doc(doc):
@@ -54,8 +52,8 @@ def get_all() -> list[WeaponSchema]:
     return weapons
 
 
-def get_by_id(weapon_id: str) -> WeaponSchema:
-    doc = get_local_doc_by_id(weapon_id)
+async def get_by_id(weapon_id: str) -> WeaponSchema:
+    doc = await get_local_doc_by_id(weapon_id)
     if doc is not None:
         if doc.get("equipment_category", {}).get("index") != "weapon" or _is_magic_item_doc(doc):
             raise HTTPException(status_code=404, detail="Weapon not found")
@@ -64,7 +62,7 @@ def get_by_id(weapon_id: str) -> WeaponSchema:
         except ValidationError as exc:
             raise HTTPException(status_code=404, detail="Weapon not found") from exc
 
-    weapon_real = get_remote_doc_by_id(weapon_id)
+    weapon_real = await get_remote_doc_by_id(weapon_id)
     if weapon_real is None:
         raise HTTPException(status_code=404, detail="Weapon not found")
     if weapon_real.get("equipment_category", {}).get("index") != "weapon" or _is_magic_item_doc(weapon_real):
@@ -75,7 +73,7 @@ def get_by_id(weapon_id: str) -> WeaponSchema:
         raise HTTPException(status_code=404, detail="Weapon not found") from exc
 
 
-def create(weapon_schema: WeaponSchema, created_by: str | None) -> WeaponSchema:
+async def create(weapon_schema: WeaponSchema, created_by: str | None) -> WeaponSchema:
     weapon_data = weapon_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -93,15 +91,17 @@ def create(weapon_schema: WeaponSchema, created_by: str | None) -> WeaponSchema:
     meta["updated_at"] = now
     weapon_data["meta"] = meta
 
+    db = await get_db()
+    collection = db["items"]
     try:
-        result = _weapons.insert_one(weapon_data)
-        created = _weapons.find_one({"_id": result.inserted_id})
+        result = await collection.insert_one(weapon_data)
+        created = await collection.find_one({"_id": result.inserted_id})
         return _to_schema(created)
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating weapon: {exc}") from exc
 
 
-def update(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
+async def update(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
     if not ObjectId.is_valid(weapon_id):
         raise HTTPException(status_code=400, detail="Invalid weapon id")
 
@@ -118,39 +118,43 @@ def update(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
     meta["updated_at"] = now
     updates["meta"] = meta
 
-    result = _weapons.update_one({"_id": ObjectId(weapon_id)}, {"$set": updates})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.update_one({"_id": ObjectId(weapon_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Weapon not found")
 
-    updated = _weapons.find_one({"_id": ObjectId(weapon_id)})
+    updated = await collection.find_one({"_id": ObjectId(weapon_id)})
     return _to_schema(updated)
 
 
-def get_all_weapons() -> list[WeaponSchema]:
-    return get_all()
+async def get_all_weapons() -> list[WeaponSchema]:
+    return await get_all()
 
 
-def get_weapon_by_id(weapon_id: str) -> WeaponSchema:
-    return get_by_id(weapon_id)
+async def get_weapon_by_id(weapon_id: str) -> WeaponSchema:
+    return await get_by_id(weapon_id)
 
 
-def create_weapon(weapon: WeaponSchema, created_by: str | None) -> WeaponSchema:
-    return create(weapon, created_by)
+async def create_weapon(weapon: WeaponSchema, created_by: str | None) -> WeaponSchema:
+    return await create(weapon, created_by)
 
 
-def update_weapon(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
-    return update(weapon_id, weapon)
+async def update_weapon(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
+    return await update(weapon_id, weapon)
 
 
-def delete_weapon(weapon_id: str) -> dict:
-    return delete(weapon_id)
+async def delete_weapon(weapon_id: str) -> dict:
+    return await delete(weapon_id)
 
 
-def delete(weapon_id: str) -> dict:
+async def delete(weapon_id: str) -> dict:
     if not ObjectId.is_valid(weapon_id):
         raise HTTPException(status_code=400, detail="Invalid weapon id")
 
-    result = _weapons.delete_one({"_id": ObjectId(weapon_id)})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.delete_one({"_id": ObjectId(weapon_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Weapon not found")
 

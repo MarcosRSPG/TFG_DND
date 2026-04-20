@@ -25,10 +25,6 @@ interface MonsterFilters {
   styleUrl: './monsters.css',
 })
 export class Monsters implements OnInit {
-
-  // =========================
-  // SERVICES
-  // =========================
   private readonly monstersService = inject(MonstersService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -36,9 +32,6 @@ export class Monsters implements OnInit {
   @ViewChild('typesModal') typesModal!: FilterModalComponent;
   @ViewChild('sizesModal') sizesModal!: FilterModalComponent;
 
-  // =========================
-  // STATE
-  // =========================
   allMonsters = signal<Monster[]>([]);
   filteredMonsters = signal<Monster[]>([]);
   paginatedMonsters = signal<Monster[]>([]);
@@ -65,15 +58,9 @@ export class Monsters implements OnInit {
   types = signal<Set<string>>(new Set());
   sizes = signal<Set<string>>(new Set());
 
-  // Para template
   Array = Array;
 
-  // =========================
-  // INIT
-  // =========================
   async ngOnInit(): Promise<void> {
-
-    // Leer query params
     this.route.queryParams.subscribe(params => {
       this.filters.set({
         searchName: params['searchName'] || '',
@@ -87,39 +74,40 @@ export class Monsters implements OnInit {
       });
 
       this.currentPage.set(Number(params['page']) || 1);
-      this.applyFilters();
     });
 
+    await this.loadMonsters();
+  }
+
+  async loadMonsters(): Promise<void> {
+    this.loading.set(true);
+    this.indexSet.clear();
+
     try {
-      await this.monstersService.getMonsters((item) => {
+      const monsters = await this.monstersService.getAllMonsters();
 
-        const id = this.getIdentifier(item);
-        if (this.indexSet.has(id)) return;
-
+      const newMonsters: Monster[] = [];
+      for (const monster of monsters) {
+        const id = this.getIdentifier(monster);
+        if (this.indexSet.has(id)) continue;
         this.indexSet.add(id);
+        newMonsters.push(monster);
+      }
 
-        const sorted = [...this.allMonsters(), item]
-          .sort((a, b) => a.name.localeCompare(b.name));
+      newMonsters.sort((a, b) => a.name.localeCompare(b.name));
+      this.allMonsters.set(newMonsters);
 
-        this.allMonsters.set(sorted);
-
-        this.updateFiltersOptions();
-        this.applyFilters();
-
-      });
+      this.updateFiltersOptions();
+      this.applyFilters();
 
     } catch (error) {
       console.error('Error loading monsters:', error);
       this.error.set('No se han podido cargar los monsters.');
     } finally {
       this.loading.set(false);
-      this.indexSet.clear();
     }
   }
 
-  // =========================
-  // FILTERS
-  // =========================
   onFilterChange(): void {
     this.currentPage.set(1);
     this.applyFilters();
@@ -197,9 +185,6 @@ export class Monsters implements OnInit {
     this.updatePaginatedMonsters();
   }
 
-  // =========================
-  // PAGINATION
-  // =========================
   updatePaginatedMonsters(): void {
     const filtered = this.filteredMonsters();
     const start = (this.currentPage() - 1) * this.pageSize;
@@ -208,7 +193,7 @@ export class Monsters implements OnInit {
     this.paginatedMonsters.set(filtered.slice(start, end));
   }
 
-  goToPage(page: number): void {
+goToPage(page: number): void {
     this.currentPage.set(page);
     this.updatePaginatedMonsters();
 
@@ -258,9 +243,6 @@ export class Monsters implements OnInit {
     return pages;
   }
 
-  // =========================
-  // MODALS
-  // =========================
   onTypesConfirmed(types: string[]): void {
     const currentFilters = this.filters();
     this.filters.set({ ...currentFilters, types });
@@ -273,9 +255,6 @@ export class Monsters implements OnInit {
     this.onFilterChange();
   }
 
-  // =========================
-  // HELPERS
-  // =========================
   getIdentifier(item: Monster): string {
     return item.id || item.index;
   }

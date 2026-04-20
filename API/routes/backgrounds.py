@@ -6,28 +6,28 @@ from services import backgrounds_service
 
 router = fastapi.APIRouter(prefix="/backgrounds", tags=["backgrounds"])
 
+
 @router.get("", response_model_exclude_none=True)
-def get_backgrounds() -> list[BackgroundSchema]:
-    """Get all backgrounds (requires X-API-Token)"""
-    return backgrounds_service.get_all()
+async def get_backgrounds(page: int = 1, page_size: int = 20) -> list[BackgroundSchema]:
+    return await backgrounds_service.get_all(page=page, page_size=page_size)
+
 
 @router.get("/{id}", response_model_exclude_none=True)
-def get_background(id: str):
-    """Get a specific background by ID (requires X-API-Token)"""
-    return backgrounds_service.get_by_id(id)
+async def get_background(id: str):
+    return await backgrounds_service.get_by_id(id)
+
 
 @router.post("", response_model_exclude_none=True)
-def create_background(background: BackgroundSchema, current_user: dict = Depends(require_write_authorization)) -> BackgroundSchema:
-    """Create a new background (requires Authorization header with valid access token)"""
+async def create_background(background: BackgroundSchema, current_user: dict = Depends(require_write_authorization)) -> BackgroundSchema:
     user_id = current_user.get("user_id") or current_user.get("_id") or current_user.get("email")
-    return backgrounds_service.create(background, user_id)
+    return await backgrounds_service.create(background, user_id)
+
 
 @router.put("/{id}", response_model_exclude_none=True)
-def update_background(id: str, background: BackgroundSchema, current_user: dict = Depends(require_write_authorization)):
-    """Update a background (requires Authorization header with valid access token)"""
-    return backgrounds_service.update(id, background)
+async def update_background(id: str, background: BackgroundSchema, current_user: dict = Depends(require_write_authorization)):
+    return await backgrounds_service.update(id, background)
+
 
 @router.delete("/{id}")
-def delete_background(id: str, current_user: dict = Depends(require_write_authorization)):
-    """Delete a background (requires Authorization header with valid access token)"""
-    return backgrounds_service.delete(id)
+async def delete_background(id: str, current_user: dict = Depends(require_write_authorization)):
+    return await backgrounds_service.delete(id)

@@ -47,12 +47,25 @@ async def trace_http(request: Request, call_next):
     )
     return response
 
+@app.on_event("startup")
+async def startup():
+    print("Starting API...")
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    from db import close_db
+    await close_db()
+    print("API shut down")
+
+
 @app.get("/")
-def read_root():
+async def read_root():
     return {"message": "API running"}
 
+
 @app.get("/health")
-def health():
+async def health():
     return {"status": "ok"}
 
 from routes import login, users, backgrounds, items, monsters, spells, characters

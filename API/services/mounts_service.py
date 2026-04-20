@@ -1,25 +1,22 @@
 from datetime import datetime, timezone
-
 from models.Mount import MountSchema
 from bson import ObjectId
 from fastapi import HTTPException
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import MONGODB_URI, MONGODB_DATABASE
 from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
+_client: AsyncIOMotorClient | None = None
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
-
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_mounts = _db["items"]
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
 
 def _is_mount_doc(doc: dict) -> bool:
-    # Mostrar absolutamente todo lo que sea de la categoría mounts-and-vehicles
     return doc.get("equipment_category", {}).get("index") == "mounts-and-vehicles"
 
 
@@ -31,9 +28,8 @@ def _to_schema(doc: dict) -> MountSchema:
     return MountSchema(**payload)
 
 
-def get_all() -> list[MountSchema]:
-    docs = merge_docs("mounts-and-vehicles")
-    # Solo exponer mounts con un id/index válido y únicos
+async def get_all(page: int = 1, page_size: int = 20) -> list[MountSchema]:
+    docs = await merge_docs("mounts-and-vehicles", page=page, page_size=page_size)
     seen_ids = set()
     valid_mounts = []
     for doc in docs:
@@ -47,14 +43,14 @@ def get_all() -> list[MountSchema]:
     return valid_mounts
 
 
-def get_by_id(mount_id: str) -> MountSchema:
-    doc = get_local_doc_by_id(mount_id)
+async def get_by_id(mount_id: str) -> MountSchema:
+    doc = await get_local_doc_by_id(mount_id)
     if doc is not None:
         if not _is_mount_doc(doc):
             raise HTTPException(status_code=404, detail="Mount not found")
         return _to_schema(doc)
 
-    mount_real = get_remote_doc_by_id(mount_id)
+    mount_real = await get_remote_doc_by_id(mount_id)
     if mount_real is None:
         raise HTTPException(status_code=404, detail="Mount not found")
     if not _is_mount_doc(mount_real):
@@ -62,7 +58,7 @@ def get_by_id(mount_id: str) -> MountSchema:
     return MountSchema(**mount_real)
 
 
-def create(mount_schema: MountSchema, created_by: str | None) -> MountSchema:
+async def create(mount_schema: MountSchema, created_by: str | None) -> MountSchema:
     mount_data = mount_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -80,15 +76,17 @@ def create(mount_schema: MountSchema, created_by: str | None) -> MountSchema:
     meta["updated_at"] = now
     mount_data["meta"] = meta
 
+    db = await get_db()
+    collection = db["items"]
     try:
-        result = _mounts.insert_one(mount_data)
-        created = _mounts.find_one({"_id": result.inserted_id})
+        result = await collection.insert_one(mount_data)
+        created = await collection.find_one({"_id": result.inserted_id})
         return _to_schema(created)
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating mount: {exc}") from exc
 
 
-def update(mount_id: str, mount: MountSchema) -> MountSchema:
+async def update(mount_id: str, mount: MountSchema) -> MountSchema:
     if not ObjectId.is_valid(mount_id):
         raise HTTPException(status_code=400, detail="Invalid mount id")
 
@@ -105,35 +103,39 @@ def update(mount_id: str, mount: MountSchema) -> MountSchema:
     meta["updated_at"] = now
     updates["meta"] = meta
 
-    result = _mounts.update_one({"_id": ObjectId(mount_id)}, {"$set": updates})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.update_one({"_id": ObjectId(mount_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Mount not found")
 
-    updated = _mounts.find_one({"_id": ObjectId(mount_id)})
+    updated = await collection.find_one({"_id": ObjectId(mount_id)})
     return _to_schema(updated)
 
 
-def get_all_mounts() -> list[MountSchema]:
-    return get_all()
+async def get_all_mounts() -> list[MountSchema]:
+    return await get_all()
 
 
-def get_mount_by_id(mount_id: str) -> MountSchema:
-    return get_by_id(mount_id)
+async def get_mount_by_id(mount_id: str) -> MountSchema:
+    return await get_by_id(mount_id)
 
 
-def create_mount(mount: MountSchema, created_by: str | None) -> MountSchema:
-    return create(mount, created_by)
+async def create_mount(mount: MountSchema, created_by: str | None) -> MountSchema:
+    return await create(mount, created_by)
 
 
-def update_mount(mount_id: str, mount: MountSchema) -> MountSchema:
-    return update(mount_id, mount)
+async def update_mount(mount_id: str, mount: MountSchema) -> MountSchema:
+    return await update(mount_id, mount)
 
 
-def delete_mount(mount_id: str) -> dict:
+async def delete_mount(mount_id: str) -> dict:
     if not ObjectId.is_valid(mount_id):
         raise HTTPException(status_code=400, detail="Invalid mount id")
 
-    result = _mounts.delete_one({"_id": ObjectId(mount_id)})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.delete_one({"_id": ObjectId(mount_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Mount not found")
 

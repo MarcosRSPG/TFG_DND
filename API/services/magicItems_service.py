@@ -1,21 +1,19 @@
 from datetime import datetime, timezone
-
 from models.MagicItem import MagicItemSchema
 from bson import ObjectId
 from fastapi import HTTPException
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import MONGODB_URI, MONGODB_DATABASE
 from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
 
+_client: AsyncIOMotorClient | None = None
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
 
-
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_magicItems = _db["items"]
+async def get_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGODB_URI)
+    return _client[MONGODB_DATABASE]
 
 
 def _is_magic_item(doc: dict) -> bool:
@@ -40,19 +38,19 @@ def _to_schema(doc: dict) -> MagicItemSchema:
     return MagicItemSchema(**payload)
 
 
-def get_all() -> list[MagicItemSchema]:
-    docs = merge_docs("magic-items")
+async def get_all(page: int = 1, page_size: int = 20) -> list[MagicItemSchema]:
+    docs = await merge_docs("magic-items", page=page, page_size=page_size)
     return [_to_schema(doc) for doc in docs]
 
 
-def get_by_id(magicItem_id: str) -> MagicItemSchema:
-    doc = get_local_doc_by_id(magicItem_id)
+async def get_by_id(magicItem_id: str) -> MagicItemSchema:
+    doc = await get_local_doc_by_id(magicItem_id)
     if doc is not None:
         if not _is_magic_item(doc):
             raise HTTPException(status_code=404, detail="MagicItem not found")
         return _to_schema(doc)
 
-    magicItem_real = get_remote_doc_by_id(magicItem_id)
+    magicItem_real = await get_remote_doc_by_id(magicItem_id)
     if magicItem_real is None:
         raise HTTPException(status_code=404, detail="MagicItem not found")
     if not _is_magic_item(magicItem_real):
@@ -60,7 +58,7 @@ def get_by_id(magicItem_id: str) -> MagicItemSchema:
     return MagicItemSchema(**magicItem_real)
 
 
-def create(magicItem_schema: MagicItemSchema, created_by: str | None) -> MagicItemSchema:
+async def create(magicItem_schema: MagicItemSchema, created_by: str | None) -> MagicItemSchema:
     magicItem_data = magicItem_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -78,15 +76,17 @@ def create(magicItem_schema: MagicItemSchema, created_by: str | None) -> MagicIt
     meta["updated_at"] = now
     magicItem_data["meta"] = meta
 
+    db = await get_db()
+    collection = db["items"]
     try:
-        result = _magicItems.insert_one(magicItem_data)
-        created = _magicItems.find_one({"_id": result.inserted_id})
+        result = await collection.insert_one(magicItem_data)
+        created = await collection.find_one({"_id": result.inserted_id})
         return _to_schema(created)
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating magicItem: {exc}") from exc
 
 
-def update(magicItem_id: str, magicItem: MagicItemSchema) -> MagicItemSchema:
+async def update(magicItem_id: str, magicItem: MagicItemSchema) -> MagicItemSchema:
     if not ObjectId.is_valid(magicItem_id):
         raise HTTPException(status_code=400, detail="Invalid magicItem id")
 
@@ -103,35 +103,39 @@ def update(magicItem_id: str, magicItem: MagicItemSchema) -> MagicItemSchema:
     meta["updated_at"] = now
     updates["meta"] = meta
 
-    result = _magicItems.update_one({"_id": ObjectId(magicItem_id)}, {"$set": updates})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.update_one({"_id": ObjectId(magicItem_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="MagicItem not found")
 
-    updated = _magicItems.find_one({"_id": ObjectId(magicItem_id)})
+    updated = await collection.find_one({"_id": ObjectId(magicItem_id)})
     return _to_schema(updated)
 
 
-def get_all_magicItems() -> list[MagicItemSchema]:
-    return get_all()
+async def get_all_magicItems() -> list[MagicItemSchema]:
+    return await get_all()
 
 
-def get_magicItem_by_id(magicItem_id: str) -> MagicItemSchema:
-    return get_by_id(magicItem_id)
+async def get_magicItem_by_id(magicItem_id: str) -> MagicItemSchema:
+    return await get_by_id(magicItem_id)
 
 
-def create_magicItem(magicItem: MagicItemSchema, created_by: str | None) -> MagicItemSchema:
-    return create(magicItem, created_by)
+async def create_magicItem(magicItem: MagicItemSchema, created_by: str | None) -> MagicItemSchema:
+    return await create(magicItem, created_by)
 
 
-def update_magicItem(magicItem_id: str, magicItem: MagicItemSchema) -> MagicItemSchema:
-    return update(magicItem_id, magicItem)
+async def update_magicItem(magicItem_id: str, magicItem: MagicItemSchema) -> MagicItemSchema:
+    return await update(magicItem_id, magicItem)
 
 
-def delete_magicItem(magicItem_id: str) -> dict:
+async def delete_magicItem(magicItem_id: str) -> dict:
     if not ObjectId.is_valid(magicItem_id):
         raise HTTPException(status_code=400, detail="Invalid magicItem id")
 
-    result = _magicItems.delete_one({"_id": ObjectId(magicItem_id)})
+    db = await get_db()
+    collection = db["items"]
+    result = await collection.delete_one({"_id": ObjectId(magicItem_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="MagicItem not found")
 

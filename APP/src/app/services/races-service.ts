@@ -1,12 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Race, RaceListResponse, RaceTraitDetail } from '../interfaces/race';
 import { Subrace } from '../interfaces/subrace';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class RacesService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_DND_OFICIAL;
   private racesCache: Race[] | null = null;
   private readonly traitCache = new Map<string, RaceTraitDetail>();
@@ -22,17 +23,14 @@ export class RacesService {
       return cached;
     }
 
-    const response = await fetch(this.apiUrl + '/races');
-
-    if (!response.ok) {
-      throw new Error(`No se han podido cargar las razas: ${response.status} ${response.statusText}`);
-    }
-
-    const data = (await response.json()) as RaceListResponse;
+    const data = await firstValueFrom(
+      this.http.get<RaceListResponse>(`${this.apiUrl}/races`)
+    );
 
     if (!data.results?.length) {
       return [];
     }
+
     const races: Race[] = [];
     await Promise.all(
       data.results.map(async (racePreview) => {
@@ -43,7 +41,7 @@ export class RacesService {
         } catch (error) {
           console.error(`Error loading race ${racePreview.index}:`, error);
         }
-      }),
+      })
     );
 
     races.sort((a, b) => a.name.localeCompare(b.name));
@@ -53,28 +51,20 @@ export class RacesService {
   }
 
   async getRace(index: string): Promise<Race> {
-    const response = await fetch(this.apiUrl + `/races/${index}`);
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar la raza ${index}: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as Race;
+    return firstValueFrom(
+      this.http.get<Race>(`${this.apiUrl}/races/${index}`)
+    );
   }
 
   async getSubrace(index: string): Promise<Subrace> {
-    const response = await fetch(this.apiUrl + `/subraces/${index}`);
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar la subraza ${index}: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as Subrace;
+    return firstValueFrom(
+      this.http.get<Subrace>(`${this.apiUrl}/subraces/${index}`)
+    );
   }
 
   async getSubracesByRace(raceIndex: string): Promise<Subrace[]> {
     const race = await this.getRace(raceIndex);
-    
+
     if (!race.subraces?.length) {
       return [];
     }
@@ -97,13 +87,9 @@ export class RacesService {
       return cached;
     }
 
-    const response = await fetch(this.apiUrl + `/traits/${index}`);
-
-    if (!response.ok) {
-      throw new Error(`No se ha podido cargar el rasgo ${index}: ${response.status} ${response.statusText}`);
-    }
-
-    const trait = (await response.json()) as RaceTraitDetail;
+    const trait = await firstValueFrom(
+      this.http.get<RaceTraitDetail>(`${this.apiUrl}/traits/${index}`)
+    );
     this.traitCache.set(index, trait);
 
     return trait;
