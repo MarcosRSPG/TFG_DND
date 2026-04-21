@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import ValidationError
 from config import MONGODB_URI, MONGODB_DATABASE
-from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
+from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, get_all as merge_docs
 
 _client: AsyncIOMotorClient | None = None
 
@@ -39,8 +39,8 @@ def _to_schema(doc: dict) -> WeaponSchema:
     return WeaponSchema(**payload)
 
 
-async def get_all(page: int = 1, page_size: int = 20) -> list[WeaponSchema]:
-    docs = await merge_docs("weapon", page=page, page_size=page_size)
+async def get_all() -> list[WeaponSchema]:
+    docs = await merge_docs("weapon")
     weapons: list[WeaponSchema] = []
     for doc in docs:
         if _is_magic_item_doc(doc):

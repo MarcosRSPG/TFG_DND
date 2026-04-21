@@ -7,8 +7,8 @@ router = fastapi.APIRouter(prefix="/items", tags=["items"])
 
 
 @router.get("", response_model_exclude_none=True)
-async def get_items(page: int = 1, page_size: int = 20):
-    return await items_service.get_all(page=page, page_size=page_size)
+async def get_items():
+    return await items_service.get_all()
 
 
 @router.get("/{id}", response_model_exclude_none=True)

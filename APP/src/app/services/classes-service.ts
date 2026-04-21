@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -9,11 +9,20 @@ import { Subclass, SubclassLevel } from '../interfaces/subclass';
 export class ClassesService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_DND_OFICIAL;
-  private classesCache: DndClass[] | null = null;
+
+  // === SIGNALS ===
+  private _classes = signal<DndClass[]>([]);
+  private _isLoading = signal<boolean>(false);
+  private _error = signal<string | null>(null);
+
+  // Readonly signals
+  readonly classes = this._classes.asReadonly();
+  readonly isLoading = this._isLoading.asReadonly();
+  readonly error = this._error.asReadonly();
 
   async getClasses(onItemLoaded?: (value: DndClass) => void): Promise<DndClass[]> {
-    if (this.classesCache) {
-      const cached = [...this.classesCache];
+    if (this._classes().length > 0) {
+      const cached = [...this._classes()];
       if (onItemLoaded) {
         for (const item of cached) {
           onItemLoaded(item);
@@ -22,32 +31,43 @@ export class ClassesService {
       return cached;
     }
 
-    const data = await firstValueFrom(
-      this.http.get<DndClassListResponse>(`${this.apiUrl}/classes`)
-    );
+    this._isLoading.set(true);
+    this._error.set(null);
 
-    if (!data.results?.length) {
+    try {
+      const data = await firstValueFrom(
+        this.http.get<DndClassListResponse>(`${this.apiUrl}/classes`)
+      );
+
+      if (!data.results?.length) {
+        this._classes.set([]);
+        return [];
+      }
+
+      const classes: DndClass[] = [];
+
+      await Promise.all(
+        data.results.map(async (classPreview) => {
+          try {
+            const classData = await this.getClass(classPreview.index);
+            classes.push(classData);
+            onItemLoaded?.(classData);
+          } catch (error) {
+            console.error(`Error loading class ${classPreview.index}:`, error);
+          }
+        })
+      );
+
+      classes.sort((a, b) => a.name.localeCompare(b.name));
+      this._classes.set([...classes]);
+
+      return classes;
+    } catch (err) {
+      this._error.set('Failed to load classes');
       return [];
+    } finally {
+      this._isLoading.set(false);
     }
-
-    const classes: DndClass[] = [];
-
-    await Promise.all(
-      data.results.map(async (classPreview) => {
-        try {
-          const classData = await this.getClass(classPreview.index);
-          classes.push(classData);
-          onItemLoaded?.(classData);
-        } catch (error) {
-          console.error(`Error loading class ${classPreview.index}:`, error);
-        }
-      })
-    );
-
-    classes.sort((a, b) => a.name.localeCompare(b.name));
-    this.classesCache = [...classes];
-
-    return classes;
   }
 
   async getClass(index: string): Promise<DndClass> {

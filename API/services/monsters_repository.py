@@ -30,17 +30,17 @@ async def get_local_docs() -> list:
         return []
 
 
-async def get_remote_docs(page: int = 1, page_size: int = 20) -> list:
+async def get_remote_docs() -> list:
     try:
-        return await _remote_monsters.get_catalog(page=page, page_size=page_size)
+        return await _remote_monsters.get_all()
     except Exception as e:
         print(f"Error fetching monsters from remote API: {e}")
         return []
 
 
-async def merge_docs(page: int = 1, page_size: int = 20) -> list:
+async def get_all() -> list:
     local_monsters = await get_local_docs()
-    remote_monsters = await get_remote_docs(page=page, page_size=page_size)
+    remote_monsters = await get_remote_docs()
 
     merged = {}
 
@@ -52,9 +52,7 @@ async def merge_docs(page: int = 1, page_size: int = 20) -> list:
         if "index" in monster:
             merged[monster["index"]] = monster
 
-    start = (page - 1) * page_size
-    end = start + page_size
-    return list(merged.values())[start:end]
+    return list(merged.values())
 
 
 async def get_local_doc_by_id(monster_id: str) -> dict:

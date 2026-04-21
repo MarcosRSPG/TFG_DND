@@ -8,8 +8,8 @@ router = fastapi.APIRouter(prefix="/backgrounds", tags=["backgrounds"])
 
 
 @router.get("", response_model_exclude_none=True)
-async def get_backgrounds(page: int = 1, page_size: int = 20) -> list[BackgroundSchema]:
-    return await backgrounds_service.get_all(page=page, page_size=page_size)
+async def get_backgrounds() -> list[BackgroundSchema]:
+    return await backgrounds_service.get_all()
 
 
 @router.get("/{id}", response_model_exclude_none=True)

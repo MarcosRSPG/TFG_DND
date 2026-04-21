@@ -30,9 +30,9 @@ def _format_monster(monster_data: dict) -> dict:
         return _json_safe(monster_data)
 
 
-async def get_all(page: int = 1, page_size: int = 20) -> list:
+async def get_all() -> list:
     try:
-        monsters = await monsters_repository.merge_docs(page=page, page_size=page_size)
+        monsters = await monsters_repository.get_all()
         return [_format_monster(m) for m in monsters]
     except Exception as e:
         print(f"Error getting all monsters: {e}")

@@ -44,9 +44,9 @@ def _doc_key(doc: dict[str, Any]) -> str:
     return str(doc.get("index") or doc.get("id") or doc.get("_id"))
 
 
-async def get_remote_catalog(page: int = 1, page_size: int = 20) -> list[dict[str, Any]]:
-    equipment_docs = await _remote_equipment.get_catalog(page=page, page_size=page_size)
-    magic_docs = await _remote_magic_items.get_catalog(page=page, page_size=page_size)
+async def get_remote_catalog() -> list[dict[str, Any]]:
+    equipment_docs = await _remote_equipment.get_all()
+    magic_docs = await _remote_magic_items.get_all()
 
     combined: list[dict[str, Any]] = []
     seen_keys: set[str] = set()
@@ -82,29 +82,27 @@ async def get_local_docs(category: str | None = None) -> list[dict[str, Any]]:
         raise HTTPException(status_code=500, detail=f"Error retrieving items: {exc}") from exc
 
 
-async def get_remote_docs(category: str | None = None, page: int = 1, page_size: int = 20) -> list[dict[str, Any]]:
+async def get_remote_docs(category: str | None = None) -> list[dict[str, Any]]:
     normalized_category = normalize_category(category)
     if normalized_category == "magic-items":
-        return await _remote_magic_items.get_catalog(page=page, page_size=page_size)
+        return await _remote_magic_items.get_all()
 
-    docs = await get_remote_catalog(page=page, page_size=page_size)
+    docs = await get_remote_catalog()
     if normalized_category is None:
         return docs
     return [doc for doc in docs if doc.get("equipment_category", {}).get("index") == normalized_category]
 
 
-async def merge_docs(category: str | None = None, page: int = 1, page_size: int = 20) -> list[dict[str, Any]]:
+async def get_all(category: str | None = None) -> list[dict[str, Any]]:
     local_docs = await get_local_docs(category)
     local_keys = {_doc_key(doc) for doc in local_docs}
     merged_docs = list(local_docs)
-    for doc in await get_remote_docs(category, page=page, page_size=page_size):
+    for doc in await get_remote_docs(category):
         if _doc_key(doc) in local_keys:
             continue
         merged_docs.append({**doc, "_id": doc.get("index")})
     
-    start = (page - 1) * page_size
-    end = start + page_size
-    return merged_docs[start:end]
+    return merged_docs
 
 
 async def get_local_doc_by_id(item_id: str) -> dict[str, Any] | None:

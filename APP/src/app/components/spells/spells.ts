@@ -45,7 +45,7 @@ export class Spells implements OnInit {
   filteredSpells = signal<Spell[]>([]);
   paginatedSpells = signal<Spell[]>([]);
   currentPage = signal(1);
-  readonly pageSize = 25;
+  readonly pageSize = 10;
 
   filters = signal<SpellFilters>({
     searchName: '',
@@ -64,7 +64,7 @@ export class Spells implements OnInit {
 
   private indexSet = new Set<string>();
 
-  // Para template
+  // Para usar en template
   Array = Array;
 
   // =========================
@@ -86,8 +86,6 @@ export class Spells implements OnInit {
         ranges: params['ranges'] ? params['ranges'].split(',') : [],
         source: params['source'] || 'all',
       });
-
-      this.currentPage.set(Number(params['page']) || 1);
     });
 
     await this.loadSpells();
@@ -98,7 +96,7 @@ export class Spells implements OnInit {
     this.indexSet.clear();
 
     try {
-      const spells = await this.spellsService.getAllSpells();
+      const spells = await this.spellsService.getSpells();
       
       for (const item of spells) {
         const id = this.getIdentifier(item);
@@ -129,7 +127,6 @@ export class Spells implements OnInit {
   // =========================
 
   onFilterChange(): void {
-    this.currentPage.set(1);
     this.applyFilters();
 
     const filters = this.filters();
@@ -143,7 +140,6 @@ export class Spells implements OnInit {
         ritual: filters.ritual !== null ? filters.ritual : undefined,
         ranges: filters.ranges.length ? filters.ranges.join(',') : undefined,
         source: filters.source !== 'all' ? filters.source : undefined,
-        page: 1
       },
       queryParamsHandling: 'merge',
     });
@@ -205,68 +201,11 @@ export class Spells implements OnInit {
     this.updatePaginatedSpells();
   }
 
-  // =========================
-  // PAGINACIÓN
-  // =========================
-
-  updatePaginatedSpells(): void {
+  private updatePaginatedSpells(): void {
     const filtered = this.filteredSpells();
     const start = (this.currentPage() - 1) * this.pageSize;
     const end = start + this.pageSize;
-
     this.paginatedSpells.set(filtered.slice(start, end));
-  }
-
-  goToPage(page: number): void {
-    this.currentPage.set(page);
-    this.updatePaginatedSpells();
-
-    const filters = this.filters();
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        searchName: filters.searchName || undefined,
-        schools: filters.schools.length ? filters.schools.join(',') : undefined,
-        level: filters.level !== 'all' ? filters.level : undefined,
-        ritual: filters.ritual !== null ? filters.ritual : undefined,
-        ranges: filters.ranges.length ? filters.ranges.join(',') : undefined,
-        source: filters.source !== 'all' ? filters.source : undefined,
-        page
-      },
-      queryParamsHandling: 'merge',
-    });
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.filteredSpells().length / this.pageSize) || 1;
-  }
-
-  get paginationPages(): (number | string)[] {
-    const total = this.totalPages;
-    const current = this.currentPage();
-
-    if (total <= 5) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    const pages: (number | string)[] = [];
-
-    if (current > 3) pages.push(1);
-    if (current > 4) pages.push('...');
-
-    for (
-      let i = Math.max(2, current - 1);
-      i <= Math.min(total - 1, current + 1);
-      i++
-    ) {
-      pages.push(i);
-    }
-
-    if (current < total - 3) pages.push('...');
-    if (current < total - 2) pages.push(total);
-
-    return pages;
   }
 
   // =========================
@@ -292,6 +231,39 @@ export class Spells implements OnInit {
       ritual: checked ? true : null
     });
     this.onFilterChange();
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage.set(page);
+    this.updatePaginatedSpells();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredSpells().length / this.pageSize) || 1;
+  }
+
+  get paginationPages(): (number | string)[] {
+    const total = this.totalPages;
+    const current = this.currentPage();
+
+    if (total <= 5) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const pages: (number | string)[] = [];
+
+    if (current > 3) pages.push(1);
+    if (current > 4) pages.push('...');
+
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      pages.push(i);
+    }
+
+    if (current < total - 3) pages.push('...');
+    if (current < total - 2) pages.push(total);
+
+    return pages;
   }
 
   // =========================

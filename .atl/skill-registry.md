@@ -6,12 +6,12 @@
 
 | Trigger | Skill | Path |
 |---------|-------|------|
-| When writing Angular code | angular | C:\Users\34652\Documents\TFG\TFG_DND\.atl\skills\angular\SKILL.md |
-| When writing FastAPI/Python code | fastapi | C:\Users\34652\Documents\TFG\TFG_DND\.atl\skills\fastapi\SKILL.md |
-| When creating a pull request | branch-pr | C:\Users\34652\.config\opencode\skills\branch-pr\SKILL.md |
-| When writing Go tests | go-testing | C:\Users\34652\.config\opencode\skills\go-testing\SKILL.md |
-| When creating a GitHub issue | issue-creation | C:\Users\34652\.config\opencode\skills\issue-creation\SKILL.md |
-| judgmental day, judgment-day | judgment-day | C:\Users\34652\.config\opencode\skills\judgment-day\SKILL.md |
+| When writing Angular code | angular | .atl/skills/angular/SKILL.md |
+| When writing FastAPI/Python code | fastapi | .atl/skills/fastapi/SKILL.md |
+| When creating a pull request | branch-pr | ../../../.config/opencode/skills/branch-pr/SKILL.md |
+| When writing Go tests | go-testing | ../../../.config/opencode/skills/go-testing/SKILL.md |
+| When creating a GitHub issue | issue-creation | ../../../.config/opencode/skills/issue-creation/SKILL.md |
+| judgmental day, judgment-day | judgment-day | ../../../.config/opencode/skills/judgment-day/SKILL.md |
 
 ## Compact Rules
 
@@ -42,6 +42,6 @@
 
 | File | Path | Notes |
 |------|------|-------|
-| AGENTS.md | C:\Users\34652\Documents\TFG\TFG_DND\AGENTS.md | Project-level conventions |
+| AGENTS.md | AGENTS.md | Project-level conventions |
 
 Read the convention files listed above for project-specific patterns and rules. All referenced paths have been extracted — no need to read index files to discover more.

@@ -8,8 +8,8 @@ router = APIRouter(prefix="/monsters", tags=["monsters"])
 
 
 @router.get("/")
-async def get_monsters(page: int = 1, page_size: int = 20) -> list:
-    return await monsters_service.get_all(page=page, page_size=page_size)
+async def get_monsters() -> list:
+    return await monsters_service.get_all()
 
 
 @router.get("/{monster_id}")

@@ -34,7 +34,7 @@ export class Backgrounds implements OnInit {
   paginatedBackgrounds = signal<Background[]>([]);
 
   currentPage = signal(1);
-  readonly pageSize = 25;
+  readonly pageSize = 10;
 
   filters = signal<BackgroundFilters>({
     searchName: '',
@@ -68,7 +68,7 @@ export class Backgrounds implements OnInit {
     this.indexSet.clear();
 
     try {
-      const backgrounds = await this.backgroundsService.getAllBackgrounds();
+      const backgrounds = await this.backgroundsService.getBackgrounds();
 
       for (const item of backgrounds) {
         const id = this.getIdentifier(item);

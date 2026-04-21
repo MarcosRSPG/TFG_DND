@@ -1,44 +1,58 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Spell } from '../interfaces/spell';
-import { TokenHashService } from './token-hash.service';
+import { TokenHashService } from './token-hash-service';
 
 @Injectable({ providedIn: 'root' })
 export class SpellsService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_URL;
   private readonly tokenHashService = inject(TokenHashService);
-  private loadedPages = new Map<string, Spell[]>();
 
-  async getSpells(page: number = 1, pageSize: number = 25): Promise<Spell[]> {
-    const cacheKey = `${page}-${pageSize}`;
-    
-    if (this.loadedPages.has(cacheKey)) {
-      return this.loadedPages.get(cacheKey)!;
+  // === SIGNALS ===
+  private _spells = signal<Spell[]>([]);
+  private _isLoading = signal<boolean>(false);
+  private _error = signal<string | null>(null);
+
+  // Readonly signals
+  readonly spells = this._spells.asReadonly();
+  readonly isLoading = this._isLoading.asReadonly();
+  readonly error = this._error.asReadonly();
+
+  async getSpells(): Promise<Spell[]> {
+    // Retorna cache si ya existe
+    if (this._spells().length > 0) {
+      return [...this._spells()];
     }
 
-    const spells = await firstValueFrom(
-      this.http.get<Spell[]>(`${this.apiUrl}/spells/`, {
-        params: { page: page.toString(), page_size: pageSize.toString() },
-        headers: this.buildHeaders()
-      })
-    );
+    this._isLoading.set(true);
+    this._error.set(null);
 
-    spells.sort((a, b) => a.name.localeCompare(b.name));
-    this.loadedPages.set(cacheKey, [...spells]);
-    return spells;
-  }
+    try {
+      const spells = await firstValueFrom(
+        this.http.get<Spell[]>(`${this.apiUrl}/spells/`, {
+          headers: this.buildHeaders(),
+        })
+      );
 
-  async getAllSpells(): Promise<Spell[]> {
-    return await this.getSpells(1, 999);
+      spells.sort((a, b) => a.name.localeCompare(b.name));
+      this._spells.set([...spells]);
+
+      return spells;
+    } catch (err) {
+      this._error.set('Failed to load spells');
+      return [];
+    } finally {
+      this._isLoading.set(false);
+    }
   }
 
   async getSpell(id: string): Promise<Spell> {
     return firstValueFrom(
       this.http.get<Spell>(`${this.apiUrl}/spells/${id}`, {
-        headers: this.buildHeaders()
+        headers: this.buildHeaders(),
       })
     );
   }

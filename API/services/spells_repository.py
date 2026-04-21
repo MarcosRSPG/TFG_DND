@@ -29,17 +29,17 @@ async def get_local_docs() -> list:
         return []
 
 
-async def get_remote_docs(page: int = 1, page_size: int = 20) -> list:
+async def get_remote_docs() -> list:
     try:
-        return await _remote_spells.get_catalog(page=page, page_size=page_size)
+        return await _remote_spells.get_all()
     except Exception as e:
         print(f"Error fetching spells from remote API: {e}")
         return []
 
 
-async def merge_docs(page: int = 1, page_size: int = 20) -> list:
+async def get_all() -> list:
     local_spells = await get_local_docs()
-    remote_spells = await get_remote_docs(page=page, page_size=page_size)
+    remote_spells = await get_remote_docs()
 
     merged = {}
     for spell in remote_spells:
@@ -49,9 +49,7 @@ async def merge_docs(page: int = 1, page_size: int = 20) -> list:
         if "index" in spell:
             merged[spell["index"]] = spell
 
-    start = (page - 1) * page_size
-    end = start + page_size
-    return list(merged.values())[start:end]
+    return list(merged.values())
 
 
 async def get_local_doc_by_id(spell_id: str) -> dict:

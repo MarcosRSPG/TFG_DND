@@ -25,13 +25,13 @@ export class Races implements OnInit {
 
   races = signal<Race[]>([]);
   filteredRaces = signal<Race[]>([]);
+  paginatedRaces = signal<Race[]>([]);
+  currentPage = signal(1);
+  readonly pageSize = 10;
   private raceIndexSet = new Set<string>();
 
   loading = signal(true);
   error = signal<string | null>(null);
-
-  currentPage = signal(1);
-  readonly pageSize = 25;
 
   filters = signal<RaceFilters>({
     searchName: '',
@@ -63,10 +63,8 @@ export class Races implements OnInit {
     const params = this.route.snapshot.queryParamMap;
     const searchName = params.get('searchName') || '';
     const size = params.get('size') || '';
-    const page = params.get('page');
 
     this.filters.set({ searchName, size });
-    if (page) this.currentPage.set(Number(page) || 1);
     this.applyFilters();
   }
 
@@ -84,6 +82,14 @@ export class Races implements OnInit {
     }
 
     this.filteredRaces.set(filtered);
+    this.updatePaginatedRaces();
+  }
+
+  private updatePaginatedRaces(): void {
+    const filtered = this.filteredRaces();
+    const start = (this.currentPage() - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.paginatedRaces.set(filtered.slice(start, end));
   }
 
   onFilterChange(): void {
@@ -92,32 +98,14 @@ export class Races implements OnInit {
     this.updateUrl();
   }
 
-  private updateUrl(): void {
-    const f = this.filters();
-    this.router.navigate([], {
-      queryParams: {
-        searchName: f.searchName || null,
-        size: f.size || null,
-        page: this.currentPage() > 1 ? this.currentPage() : null,
-      },
-      queryParamsHandling: 'merge',
-    });
-  }
-
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage.set(page);
-    this.updateUrl();
+    this.updatePaginatedRaces();
   }
 
   get totalPages(): number {
     return Math.ceil(this.filteredRaces().length / this.pageSize) || 1;
-  }
-
-  get paginatedRaces(): Race[] {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    return this.filteredRaces().slice(start, end);
   }
 
   get paginationPages(): (number | string)[] {
@@ -141,5 +129,16 @@ export class Races implements OnInit {
     if (current < total - 2) pages.push(total);
 
     return pages;
+  }
+
+  private updateUrl(): void {
+    const f = this.filters();
+    this.router.navigate([], {
+      queryParams: {
+        searchName: f.searchName || null,
+        size: f.size || null,
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 }

@@ -1,5 +1,5 @@
 from services import weapons_service, armors_service, mounts_service, tools_service, adventuringGears_service, magicItems_service
-from services.equipment_repository import merge_docs
+from services.equipment_repository import get_all
 from bson import ObjectId
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -133,8 +133,9 @@ def _coerce_item(type: str | None, item_data: dict):
     return schema_class.model_validate(item_data)
 
 
-async def get_all(page: int = 1, page_size: int = 20):
-    return [_format_item_doc(doc) for doc in await merge_docs(page=page, page_size=page_size)]
+async def get_all():
+    from services.equipment_repository import get_all as get_all_items
+    return [_format_item_doc(doc) for doc in await get_all_items()]
 
 
 async def get_by_type(type: str = None):

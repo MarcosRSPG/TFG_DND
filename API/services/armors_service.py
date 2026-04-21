@@ -4,7 +4,7 @@ from bson import ObjectId
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from config import MONGODB_URI, MONGODB_DATABASE
-from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, merge_docs
+from services.equipment_repository import get_local_doc_by_id, get_remote_doc_by_id, get_all as merge_docs
 
 _client: AsyncIOMotorClient | None = None
 
@@ -24,8 +24,8 @@ def _to_schema(doc: dict) -> ArmorSchema:
     return ArmorSchema(**payload)
 
 
-async def get_all(page: int = 1, page_size: int = 20) -> list[ArmorSchema]:
-    docs = await merge_docs("armor", page=page, page_size=page_size)
+async def get_all() -> list[ArmorSchema]:
+    docs = await merge_docs("armor")
     return [_to_schema(doc) for doc in docs]
 
 

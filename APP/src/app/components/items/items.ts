@@ -43,7 +43,7 @@ export class Items implements OnInit {
   filteredItems = signal<Item[]>([]);
   paginatedItems = signal<Item[]>([]);
   currentPage = signal(1);
-  readonly pageSize = 25;
+  readonly pageSize = 10;
 
   filters = signal<ItemFilters>({
     searchName: '',
@@ -132,7 +132,7 @@ export class Items implements OnInit {
     this.indexSet.clear();
 
     try {
-      const items = await this.itemsService.getAllItems();
+      const items = await this.itemsService.getItems();
 
       const uniqueItems: Item[] = [];
 

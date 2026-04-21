@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -9,7 +9,7 @@ import { Weapon } from '../interfaces/items/weapon';
 import { MagicItem } from '../interfaces/items/magic-item';
 import { Tool } from '../interfaces/items/tool';
 import { Mount } from '../interfaces/items/mount';
-import { TokenHashService } from './token-hash.service';
+import { TokenHashService } from './token-hash-service';
 
 export type ItemType =
   | 'adventuringgear'
@@ -32,37 +32,50 @@ export class ItemsService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.API_URL;
   private readonly tokenHashService = inject(TokenHashService);
-  private loadedPages = new Map<string, Item[]>();
 
-  async getItems(page: number = 1, pageSize: number = 25): Promise<Item[]> {
-    const cacheKey = `${page}-${pageSize}`;
-    
-    if (this.loadedPages.has(cacheKey)) {
-      return this.loadedPages.get(cacheKey)!;
+  // === SIGNALS ===
+  private _items = signal<Item[]>([]);
+  private _isLoading = signal<boolean>(false);
+  private _error = signal<string | null>(null);
+
+  // Readonly signals
+  readonly items = this._items.asReadonly();
+  readonly isLoading = this._isLoading.asReadonly();
+  readonly error = this._error.asReadonly();
+
+  async getItems(): Promise<Item[]> {
+    // Retorna cache si ya existe
+    if (this._items().length > 0) {
+      return [...this._items()];
     }
 
-    const items = await firstValueFrom(
-      this.http.get<Item[]>(`${this.apiUrl}/items`, {
-        params: { page: page.toString(), page_size: pageSize.toString() },
-        headers: this.buildHeaders()
-      })
-    );
+    this._isLoading.set(true);
+    this._error.set(null);
 
-    items.sort((a, b) => a.name.localeCompare(b.name));
-    this.loadedPages.set(cacheKey, [...items]);
-    return items;
-  }
+    try {
+      const items = await firstValueFrom(
+        this.http.get<Item[]>(`${this.apiUrl}/items`, {
+          headers: this.buildHeaders(),
+        })
+      );
 
-  async getAllItems(): Promise<Item[]> {
-    return await this.getItems(1, 999);
+      items.sort((a, b) => a.name.localeCompare(b.name));
+      this._items.set([...items]);
+
+      return items;
+    } catch (err) {
+      this._error.set('Failed to load items');
+      return [];
+    } finally {
+      this._isLoading.set(false);
+    }
   }
 
   async getItem(id: string, type: ItemType): Promise<ItemSpecific> {
     return firstValueFrom(
-      this.http.get<ItemSpecific>(
-        `${this.apiUrl}/items/${id}?type=${encodeURIComponent(type)}`,
-        { headers: this.buildHeaders() }
-      )
+      this.http.get<ItemSpecific>(`${this.apiUrl}/items/${id}?type=${encodeURIComponent(type)}`, {
+        headers: this.buildHeaders(),
+      })
     );
   }
 
@@ -91,7 +104,7 @@ export class ItemsService {
   async getMagicItemIds(): Promise<string[]> {
     const items = await firstValueFrom(
       this.http.get<any[]>(`${this.apiUrl}/items/type/magicitem`, {
-        headers: this.buildHeaders()
+        headers: this.buildHeaders(),
       })
     );
     return items.map((item: any) => item.id || item.index);

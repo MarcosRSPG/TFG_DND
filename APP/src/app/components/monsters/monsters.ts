@@ -35,9 +35,8 @@ export class Monsters implements OnInit {
   allMonsters = signal<Monster[]>([]);
   filteredMonsters = signal<Monster[]>([]);
   paginatedMonsters = signal<Monster[]>([]);
-
   currentPage = signal(1);
-  readonly pageSize = 25;
+  readonly pageSize = 10;
 
   filters = signal<MonsterFilters>({
     searchName: '',
@@ -72,8 +71,6 @@ export class Monsters implements OnInit {
         hpMax: params['hpMax'] || '',
         source: params['source'] || 'all',
       });
-
-      this.currentPage.set(Number(params['page']) || 1);
     });
 
     await this.loadMonsters();
@@ -84,7 +81,7 @@ export class Monsters implements OnInit {
     this.indexSet.clear();
 
     try {
-      const monsters = await this.monstersService.getAllMonsters();
+      const monsters = await this.monstersService.getMonsters();
 
       const newMonsters: Monster[] = [];
       for (const monster of monsters) {
@@ -111,6 +108,7 @@ export class Monsters implements OnInit {
   onFilterChange(): void {
     this.currentPage.set(1);
     this.applyFilters();
+    this.updateUrl();
 
     const filters = this.filters();
 
@@ -125,7 +123,24 @@ export class Monsters implements OnInit {
         hpMin: filters.hpMin !== '' ? filters.hpMin : undefined,
         hpMax: filters.hpMax !== '' ? filters.hpMax : undefined,
         source: filters.source !== 'all' ? filters.source : undefined,
-        page: 1
+      },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  private updateUrl(): void {
+    const filters = this.filters();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        searchName: filters.searchName || undefined,
+        types: filters.types.length ? filters.types.join(',') : undefined,
+        sizes: filters.sizes.length ? filters.sizes.join(',') : undefined,
+        crMin: filters.crMin !== '' ? filters.crMin : undefined,
+        crMax: filters.crMax !== '' ? filters.crMax : undefined,
+        hpMin: filters.hpMin !== '' ? filters.hpMin : undefined,
+        hpMax: filters.hpMax !== '' ? filters.hpMax : undefined,
+        source: filters.source !== 'all' ? filters.source : undefined,
       },
       queryParamsHandling: 'merge',
     });
@@ -185,35 +200,17 @@ export class Monsters implements OnInit {
     this.updatePaginatedMonsters();
   }
 
-  updatePaginatedMonsters(): void {
+  private updatePaginatedMonsters(): void {
     const filtered = this.filteredMonsters();
     const start = (this.currentPage() - 1) * this.pageSize;
     const end = start + this.pageSize;
-
     this.paginatedMonsters.set(filtered.slice(start, end));
   }
 
-goToPage(page: number): void {
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
     this.currentPage.set(page);
     this.updatePaginatedMonsters();
-
-    const filters = this.filters();
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: {
-        searchName: filters.searchName || undefined,
-        types: filters.types.length ? filters.types.join(',') : undefined,
-        sizes: filters.sizes.length ? filters.sizes.join(',') : undefined,
-        crMin: filters.crMin !== '' ? filters.crMin : undefined,
-        crMax: filters.crMax !== '' ? filters.crMax : undefined,
-        hpMin: filters.hpMin !== '' ? filters.hpMin : undefined,
-        hpMax: filters.hpMax !== '' ? filters.hpMax : undefined,
-        source: filters.source !== 'all' ? filters.source : undefined,
-        page
-      },
-      queryParamsHandling: 'merge',
-    });
   }
 
   get totalPages(): number {
@@ -229,17 +226,13 @@ goToPage(page: number): void {
     }
 
     const pages: (number | string)[] = [];
-
     if (current > 3) pages.push(1);
     if (current > 4) pages.push('...');
-
     for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
       pages.push(i);
     }
-
     if (current < total - 3) pages.push('...');
     if (current < total - 2) pages.push(total);
-
     return pages;
   }
 
@@ -255,7 +248,7 @@ goToPage(page: number): void {
     this.onFilterChange();
   }
 
-  getIdentifier(item: Monster): string {
-    return item.id || item.index;
+  getIdentifier(monster: Monster): string {
+    return monster.id || monster.index;
   }
 }

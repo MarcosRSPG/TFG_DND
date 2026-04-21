@@ -58,17 +58,39 @@ class RemoteCatalogRepository:
 
     async def _fetch_all(self) -> list[dict[str, Any]]:
         try:
-            async with httpx.AsyncClient(timeout=self.timeout_seconds, follow_redirects=True) as client:
-                response = await client.get(self.base_url + self.list_endpoint)
+            url = self.base_url + self.list_endpoint
+            print(f"Fetching {url}...")
+            
+            # Deshabilitar verificación SSL para APIs con certificados inválidos
+            async with httpx.AsyncClient(
+                timeout=self.timeout_seconds, 
+                follow_redirects=True,
+                verify=False
+            ) as client:
+                response = await client.get(url)
                 
                 if response.status_code != 200:
-                    print(f"Error fetching {self.list_endpoint}: {response.status_code}")
+                    print(f"Error fetching {self.list_endpoint}: HTTP {response.status_code}")
                     return []
 
                 data = response.json()
+                print(f"Got data, keys: {list(data.keys())}")
+                
+                # Intentar distintos results_key
                 summaries = data.get(self.results_key, [])
                 if not summaries:
+                    # Probar con otras keys comunes
+                    for alt_key in ['results', 'data', 'spells', 'monsters']:
+                        summaries = data.get(alt_key, [])
+                        if summaries:
+                            print(f"Found results with key '{alt_key}'")
+                            break
+                
+                if not summaries:
+                    print(f"No results found, data: {str(data)[:200]}")
                     return []
+
+            print(f"Found {len(summaries)} summaries, fetching details...")
 
             indexes = [summary.get(self.index_field) for summary in summaries if summary.get(self.index_field)]
             
@@ -76,7 +98,11 @@ class RemoteCatalogRepository:
                 return []
 
             docs = []
-            async with httpx.AsyncClient(timeout=self.timeout_seconds, follow_redirects=True) as client:
+            async with httpx.AsyncClient(
+                timeout=self.timeout_seconds, 
+                follow_redirects=True,
+                verify=False
+            ) as client:
                 for batch_start in range(0, len(indexes), 20):
                     batch = indexes[batch_start:batch_start + 20]
                     tasks = [self._fetch_single(client, idx) for idx in batch]
@@ -92,6 +118,8 @@ class RemoteCatalogRepository:
 
         except Exception as e:
             print(f"Error fetching catalog {self.list_endpoint}: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     async def get_catalog(self, page: int = 1, page_size: int = 20) -> list[dict[str, Any]]:
@@ -106,6 +134,14 @@ class RemoteCatalogRepository:
         start = (page - 1) * page_size
         end = start + page_size
         return self._catalog_cache[start:end]
+
+    async def get_all(self) -> list[dict[str, Any]]:
+        # Devuelve todos los elementos sin paginación
+        if self._catalog_cache is not None:
+            return self._catalog_cache
+
+        self._catalog_cache = await self._fetch_all()
+        return self._catalog_cache
 
     async def get_by_index(self, index: str) -> dict[str, Any] | None:
         for doc in await self.get_catalog(page_size=999999):

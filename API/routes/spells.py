@@ -8,8 +8,8 @@ router = APIRouter(prefix="/spells", tags=["spells"])
 
 
 @router.get("/")
-async def get_spells(page: int = 1, page_size: int = 20) -> list:
-    return await spells_service.get_all(page=page, page_size=page_size)
+async def get_spells() -> list:
+    return await spells_service.get_all()
 
 
 @router.get("/{spell_id}")

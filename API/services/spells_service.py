@@ -13,9 +13,9 @@ def _json_safe(value):
     return value
 
 
-async def get_all(page: int = 1, page_size: int = 20) -> list:
+async def get_all() -> list:
     try:
-        spells = await spells_repository.merge_docs(page=page, page_size=page_size)
+        spells = await spells_repository.get_all()
         spells = [_json_safe(s) for s in spells]
         return spells
     except Exception as e:
