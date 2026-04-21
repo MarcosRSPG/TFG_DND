@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
+  // Static routes first
   {
     path: 'login',
     loadComponent: () => import('./pages/login/login').then(m => m.Login),
@@ -21,6 +22,54 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/manual/manual').then(m => m.Manual),
     title: 'Manual',
   },
+  // Create routes BEFORE detail routes
+  {
+    path: 'backgrounds/new',
+    loadComponent: () => import('./pages/background-form/background-form').then(m => m.BackgroundForm),
+    title: 'Create Background',
+  },
+  {
+    path: 'spells/new',
+    loadComponent: () => import('./pages/spell-form/spell-form').then(m => m.SpellForm),
+    title: 'Create Spell',
+  },
+  {
+    path: 'monsters/new',
+    loadComponent: () => import('./pages/monster-form/monster-form').then(m => m.MonsterForm),
+    title: 'Create Monster',
+  },
+  // Item create routes - one per type
+  {
+    path: 'items/adventuringgear/new',
+    loadComponent: () => import('./pages/item-forms/adventuring-gear-form/adventuring-gear-form').then(m => m.AdventuringGearForm),
+    title: 'Create Adventuring Gear',
+  },
+  {
+    path: 'items/armor/new',
+    loadComponent: () => import('./pages/item-forms/armor-form/armor-form').then(m => m.ArmorForm),
+    title: 'Create Armor',
+  },
+  {
+    path: 'items/weapon/new',
+    loadComponent: () => import('./pages/item-forms/weapon-form/weapon-form').then(m => m.WeaponForm),
+    title: 'Create Weapon',
+  },
+  {
+    path: 'items/magicitem/new',
+    loadComponent: () => import('./pages/item-forms/magic-item-form/magic-item-form').then(m => m.MagicItemForm),
+    title: 'Create Magic Item',
+  },
+  {
+    path: 'items/tool/new',
+    loadComponent: () => import('./pages/item-forms/tool-form/tool-form').then(m => m.ToolForm),
+    title: 'Create Tool',
+  },
+  {
+    path: 'items/mount/new',
+    loadComponent: () => import('./pages/item-forms/mount-form/mount-form').then(m => m.MountForm),
+    title: 'Create Mount/Vehicle',
+  },
+  // Detail routes with parameters (must come AFTER specific routes)
   {
     path: 'races/:index',
     loadComponent: () => import('./pages/race-detail/race-detail').then(m => m.RaceDetail),

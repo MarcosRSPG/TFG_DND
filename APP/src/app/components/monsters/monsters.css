@@ -1,3 +1,30 @@
+/* CREATE BUTTON STYLES */
+.create-section {
+  margin-bottom: 2rem;
+  width: min(35vw, 100%) !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.create-btn {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: rgba(20, 12, 7, 0.5);
+  border: 1px solid rgba(201, 162, 90, 0.22);
+  border-radius: 6px;
+  color: #eadab8;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.create-btn:hover {
+  background: rgba(201, 162, 90, 0.18);
+  border-color: rgba(201, 162, 90, 0.5);
+  color: #f0d8b0;
+}
+
 /* PAGINATION STYLES */
 .pagination {
   display: flex;
@@ -198,6 +225,10 @@
   }
 
   .filters-section {
+    width: min(60vw, 100%);
+  }
+
+  .create-section {
     width: min(60vw, 100%);
   }
 }

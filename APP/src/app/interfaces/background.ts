@@ -8,17 +8,22 @@ export interface Background {
   feature?: {
     name: string;
     desc?: string[];
+    is_variant?: boolean;
   };
   personality_traits?: {
+    options?: string[];
     desc?: string;
   };
   ideals?: {
+    options?: string[];
     desc?: string;
   };
   bonds?: {
+    options?: string[];
     desc?: string;
   };
   flaws?: {
+    options?: string[];
     desc?: string;
   };
   created_by?: string;

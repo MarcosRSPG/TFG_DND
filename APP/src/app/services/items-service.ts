@@ -80,7 +80,11 @@ export class ItemsService {
   }
 
   getIdentifier(item: Item): string {
-    return item['id'] || item.index;
+    return item['id'] || item['index'];
+  }
+
+  async getAll(): Promise<Item[]> {
+    return this.getItems();
   }
 
   inferType(item: Item): ItemType | null {
@@ -108,6 +112,14 @@ export class ItemsService {
       })
     );
     return items.map((item: any) => item.id || item.index);
+  }
+
+  async create(item: Partial<ItemSpecific>, type: ItemType): Promise<ItemSpecific> {
+    return firstValueFrom(
+      this.http.post<ItemSpecific>(`${this.apiUrl}/items?type=${type}`, item, {
+        headers: this.buildHeaders(),
+      })
+    );
   }
 
   private buildHeaders(): { [header: string]: string } {

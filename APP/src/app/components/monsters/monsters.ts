@@ -251,4 +251,8 @@ export class Monsters implements OnInit {
   getIdentifier(monster: Monster): string {
     return monster.id || monster.index;
   }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/monsters/new']);
+  }
 }

@@ -1,0 +1,142 @@
+<div class="form-container">
+  <h2>Create Weapon</h2>
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-section">
+      <h3>Basic Information</h3>
+
+      <div class="form-group">
+        <label for="name">Name *</label>
+        <input
+          id="name"
+          type="text"
+          [(ngModel)]="formData().name"
+          name="name"
+          required
+          placeholder="e.g. Longsword, Shortbow..."
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="weapon-category">Weapon Category *</label>
+          <select id="weapon-category" [(ngModel)]="formData().weapon_category" name="weaponCategory" required>
+            <option value="">Select category...</option>
+            @for (cat of weaponCategories; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="weapon-range">Range Type *</label>
+          <select id="weapon-range" [(ngModel)]="formData().weapon_range" name="weaponRange" required>
+            @for (range of weaponRanges; track range) {
+              <option [value]="range">{{ range }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Damage</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="damage-dice">Damage Dice *</label>
+          <select id="damage-dice" [(ngModel)]="formData().damage!.damage_dice" name="damageDice" required>
+            @for (die of damageDice; track die) {
+              <option [value]="die">{{ die }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="range-normal">Normal Range</label>
+          <input
+            id="range-normal"
+            type="number"
+            [(ngModel)]="formData().range!.normal"
+            name="rangeNormal"
+            min="0"
+            placeholder="e.g. 5"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="range-long">Long Range</label>
+          <input
+            id="range-long"
+            type="number"
+            [(ngModel)]="formData().range!.long"
+            name="rangeLong"
+            min="0"
+            placeholder="e.g. 10"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Details</h3>
+
+      <div class="form-group">
+        <label for="desc">Description</label>
+        <textarea
+          id="desc"
+          class="description-textarea"
+          [(ngModel)]="formData().desc![0]"
+          name="desc"
+          rows="8"
+          placeholder="Describe the weapon..."
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cost-quantity">Cost</label>
+          <div class="cost-input-group">
+            <input
+              id="cost-quantity"
+              type="number"
+              [(ngModel)]="formData().cost!.quantity"
+              name="costQuantity"
+              min="0"
+              placeholder="0"
+            />
+            <select [(ngModel)]="formData().cost!.unit" name="costUnit">
+              @for (unit of costUnits; track unit) {
+                <option [value]="unit">{{ unit }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="weight">Weight</label>
+          <input
+            id="weight"
+            type="number"
+            [(ngModel)]="formData().weight"
+            name="weight"
+            min="0"
+            step="0.1"
+            placeholder="0"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
+      <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Creating...' : 'Create Weapon' }}
+      </button>
+    </div>
+  </form>
+</div>

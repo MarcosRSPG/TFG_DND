@@ -186,4 +186,8 @@ export class Backgrounds implements OnInit {
   getIdentifier(item: Background): string {
     return item.id || item.index;
   }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/backgrounds/new']);
+  }
 }

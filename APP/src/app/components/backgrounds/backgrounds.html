@@ -28,6 +28,10 @@
     </div>
   </div>
 
+  <div class="create-section">
+    <button class="create-btn" (click)="navigateToCreate()">+ Create Background</button>
+  </div>
+
   <ul class="entity-list" aria-label="Listado de backgrounds">
     @for (background of paginatedBackgrounds(); track getIdentifier(background)) {
       <li class="entity-item">

@@ -1,0 +1,92 @@
+<div class="form-container">
+  <h2>Create Tool</h2>
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-section">
+      <h3>Basic Information</h3>
+
+      <div class="form-group">
+        <label for="name">Name *</label>
+        <input
+          id="name"
+          type="text"
+          [(ngModel)]="formData().name"
+          name="name"
+          required
+          placeholder="e.g. Thieves' Tools, Smith's Hammer..."
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="tool-category">Tool Category</label>
+        <select id="tool-category" [(ngModel)]="formData().tool_category" name="toolCategory">
+          <option value="">Select category...</option>
+          @for (cat of toolCategories; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Details</h3>
+
+      <div class="form-group">
+        <label for="desc">Description</label>
+        <textarea
+          id="desc"
+          class="description-textarea"
+          [(ngModel)]="formData().desc![0]"
+          name="desc"
+          rows="8"
+          placeholder="Describe the tool..."
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cost-quantity">Cost</label>
+          <div class="cost-input-group">
+            <input
+              id="cost-quantity"
+              type="number"
+              [(ngModel)]="formData().cost!.quantity"
+              name="costQuantity"
+              min="0"
+              placeholder="0"
+            />
+            <select [(ngModel)]="formData().cost!.unit" name="costUnit">
+              @for (unit of costUnits; track unit) {
+                <option [value]="unit">{{ unit }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="weight">Weight</label>
+          <input
+            id="weight"
+            type="number"
+            [(ngModel)]="formData().weight"
+            name="weight"
+            min="0"
+            step="0.1"
+            placeholder="0"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
+      <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Creating...' : 'Create Tool' }}
+      </button>
+    </div>
+  </form>
+</div>

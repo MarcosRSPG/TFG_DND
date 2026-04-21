@@ -10,7 +10,7 @@ export interface CostSchema {
 }
 
 export interface Item {
-  index: string;
+  id?: string;
   name: string;
   desc?: string[];
   special?: string[];
@@ -18,5 +18,37 @@ export interface Item {
   cost?: CostSchema;
   weight?: number;
   url?: string;
+  // Weapon specific
+  weapon_category?: string;
+  weapon_range?: string;
+  damage?: {
+    damage_dice?: string;
+    damage_type?: ResourceReference;
+  };
+  range?: {
+    normal?: number;
+    long?: number;
+  };
+  properties?: ResourceReference[];
+  // Armor specific
+  armor_category?: string;
+  armor_class?: {
+    base: number;
+    dex_bonus?: boolean;
+  };
+  str_minimum?: number;
+  stealth_disadvantage?: boolean;
+  // Tool specific
+  tool_category?: string;
+  // Mount/Vehicle specific
+  vehicle_category?: string;
+  capacity?: string;
+  speed?: {
+    quantity: number;
+    unit: string;
+  };
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
   [key: string]: any;
 }

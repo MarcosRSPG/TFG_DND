@@ -1,0 +1,259 @@
+<div class="form-container">
+  <h2>{{ isEditMode() ? 'Edit' : 'Create' }} Spell</h2>
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-section">
+      <h3>Basic Information</h3>
+
+      <div class="form-group">
+        <label for="name">Name *</label>
+        <input
+          id="name"
+          type="text"
+          [(ngModel)]="formData().name"
+          name="name"
+          required
+          placeholder="e.g. Fireball"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="index">Index (URL slug)</label>
+        <input
+          id="index"
+          type="text"
+          [(ngModel)]="formData().index"
+          name="index"
+          placeholder="e.g. fireball"
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="level">Spell Level *</label>
+          <select id="level" [(ngModel)]="formData().level" name="level" required>
+            <option [value]="0">0 (Cantrip)</option>
+            <option [value]="1">1</option>
+            <option [value]="2">2</option>
+            <option [value]="3">3</option>
+            <option [value]="4">4</option>
+            <option [value]="5">5</option>
+            <option [value]="6">6</option>
+            <option [value]="7">7</option>
+            <option [value]="8">8</option>
+            <option [value]="9">9</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="school">School *</label>
+          <select
+            id="school"
+            [ngModel]="formData().school?.index"
+            (ngModelChange)="formData.update(d => ({ ...d, school: { index: $event, name: '', url: '' } }))"
+            name="school"
+            required
+          >
+            <option value="">Select school...</option>
+            @for (school of schools; track school.index) {
+              <option [value]="school.index">{{ school.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Casting</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="casting-time-unit">Casting Time *</label>
+          <select
+            id="casting-time-unit"
+            [(ngModel)]="castingTimeUnit"
+            name="castingTimeUnit"
+          >
+            @for (unit of castingUnits; track unit.value) {
+              <option [value]="unit.value">{{ unit.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="range-unit">Range *</label>
+          <div class="unit-input-group">
+            @if (rangeUnit() !== 'self' && rangeUnit() !== 'touch' && rangeUnit() !== 'special') {
+              <input
+                id="range-number"
+                type="number"
+                [(ngModel)]="rangeNumber"
+                name="rangeNumber"
+                min="0"
+                placeholder="0"
+              />
+            }
+            <select
+              id="range-unit"
+              [(ngModel)]="rangeUnit"
+              name="rangeUnit"
+            >
+              @for (unit of rangeUnits; track unit.value) {
+                <option [value]="unit.value">{{ unit.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="duration-unit">Duration *</label>
+          <div class="unit-input-group">
+            @if (durationUnit() !== 'instantaneous' && durationUnit() !== 'special') {
+              <input
+                id="duration-number"
+                type="number"
+                [(ngModel)]="durationNumber"
+                name="durationNumber"
+                min="0"
+                placeholder="0"
+              />
+            }
+            <select
+              id="duration-unit"
+              [(ngModel)]="durationUnit"
+              name="durationUnit"
+            >
+              @for (unit of durationUnits; track unit.value) {
+                <option [value]="unit.value">{{ unit.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Components</label>
+          <div class="components-row">
+            <div class="component-item">
+              <app-viking-check
+                [checked]="hasVerbal()"
+                (checkedChange)="onComponentChange('V', $event)"
+                ariaLabel="Verbal component"
+              ></app-viking-check>
+              <span class="component-label" (click)="onComponentChange('V', !hasVerbal())">V</span>
+            </div>
+            <div class="component-item">
+              <app-viking-check
+                [checked]="hasSomatic()"
+                (checkedChange)="onComponentChange('S', $event)"
+                ariaLabel="Somatic component"
+              ></app-viking-check>
+              <span class="component-label" (click)="onComponentChange('S', !hasSomatic())">S</span>
+            </div>
+            <div class="component-item">
+              <app-viking-check
+                [checked]="hasMaterial()"
+                (checkedChange)="onComponentChange('M', $event)"
+                ariaLabel="Material component"
+              ></app-viking-check>
+              <span class="component-label" (click)="onComponentChange('M', !hasMaterial())">M</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (hasMaterial()) {
+        <div class="form-group">
+          <label for="material">Material Components</label>
+          <input
+            id="material"
+            type="text"
+            [(ngModel)]="formData().material"
+            name="material"
+            placeholder="e.g. a tiny ball of bat guano and sulfur"
+          />
+        </div>
+      }
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Concentration</label>
+          <app-viking-check
+            [checked]="formData().concentration ?? false"
+            (checkedChange)="formData.update(d => ({ ...d, concentration: $event }))"
+            ariaLabel="Concentration"
+          ></app-viking-check>
+        </div>
+
+        <div class="form-group">
+          <label>Ritual</label>
+          <app-viking-check
+            [checked]="formData().ritual ?? false"
+            (checkedChange)="formData.update(d => ({ ...d, ritual: $event }))"
+            ariaLabel="Ritual"
+          ></app-viking-check>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Description</h3>
+
+      <div class="form-group">
+        <label for="desc">Description *</label>
+        <textarea
+          id="desc"
+          class="description-textarea"
+          [(ngModel)]="formData().desc![0]"
+          name="desc"
+          rows="12"
+          required
+          placeholder="Describe what the spell does..."
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="higher-level">At Higher Levels</label>
+        <textarea
+          id="higher-level"
+          [(ngModel)]="formData().higher_level![0]"
+          name="higherLevel"
+          rows="3"
+          placeholder="Describe the effect at higher spell levels..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Classes</h3>
+
+      <div class="form-group">
+        <label>Spellcasting Classes</label>
+        <div class="checkbox-group checkbox-grid">
+          @for (cls of classes; track cls.index) {
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                [checked]="isClassSelected(cls.index)"
+                (change)="toggleClass(cls)"
+              />
+              <span>{{ cls.name }}</span>
+            </label>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
+      <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Creating...' : 'Create Spell' }}
+      </button>
+    </div>
+  </form>
+</div>

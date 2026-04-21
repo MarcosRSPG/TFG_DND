@@ -1,0 +1,297 @@
+<div class="form-container">
+  <h2>{{ isEditMode() ? 'Edit' : 'Create' }} Background</h2>
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-section">
+      <h3>Basic Information</h3>
+
+      <div class="form-group">
+        <label for="name">Name *</label>
+        <input
+          id="name"
+          type="text"
+          [(ngModel)]="formData().name"
+          name="name"
+          required
+          placeholder="e.g. Sage, Soldier..."
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="index">Index (URL slug)</label>
+        <input
+          id="index"
+          type="text"
+          [(ngModel)]="formData().index"
+          name="index"
+          placeholder="e.g. sage, soldier..."
+        />
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Starting Proficiencies</h3>
+      <p class="hint">Select the proficiencies your character gains from this background.</p>
+
+      @for (i of Array.from({ length: proficiencyCount() }, (_, idx) => idx); track i) {
+        <div class="form-group proficiency-select">
+          <label>Proficiency {{ i + 1 }}</label>
+          <select
+            [value]="selectedProficiencies()[i] || ''"
+            (change)="onProficiencyChange(i, $event)"
+          >
+            <option value="">Select a proficiency...</option>
+            @for (prof of proficiencies; track prof.index) {
+              <option [value]="prof.index">{{ prof.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="proficiency-buttons">
+        <button type="button" class="add-btn" (click)="addProficiencyField()">+ Add Proficiency</button>
+        @if (proficiencyCount() > 1) {
+          <button type="button" class="remove-btn" (click)="removeProficiencyField()">- Remove</button>
+        }
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Starting Equipment</h3>
+      <p class="hint">Select equipment items for this background.</p>
+
+      <div class="form-group">
+        <label for="equipment-search">Add Equipment</label>
+        <select id="equipment-search" (change)="addEquipment($any($event.target).value); $any($event.target).value = ''">
+          <option value="">Select an item...</option>
+          @for (item of filteredItems(); track item['index']) {
+            <option [value]="item['index']">{{ item.name }}</option>
+          }
+        </select>
+      </div>
+
+      @if (selectedEquipment().length > 0) {
+        <div class="equipment-list">
+          @for (eq of selectedEquipment(); track eq.index; let idx = $index) {
+            <div class="equipment-item">
+              <span>{{ eq.name }}</span>
+              <input
+                type="number"
+                [value]="eq.quantity"
+                (change)="updateEquipmentQuantity(idx, +$any($event.target).value)"
+                min="1"
+                class="quantity-input"
+              />
+              <button type="button" class="remove-btn" (click)="removeEquipment(idx)">Remove</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="form-section">
+      <h3>Feature</h3>
+      <p class="hint">The special ability granted by this background.</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="feature-search">Search Feature</label>
+          <input
+            id="feature-search"
+            type="text"
+            [value]="featureSearchQuery()"
+            (input)="onFeatureSearchChange($event)"
+            placeholder="Search feature..."
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="feature-name">Or Select Feature</label>
+          <select (change)="onFeatureSelect($event)">
+            <option value="">Select a feature...</option>
+            @for (feature of availableFeatures; track feature) {
+              <option [value]="feature" [selected]="formData().feature?.name === feature">{{ feature }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="feature-name-custom">Feature Name *</label>
+        <input
+          id="feature-name-custom"
+          type="text"
+          [(ngModel)]="formData().feature!.name"
+          name="featureName"
+          required
+          placeholder="e.g. Researcher"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="feature-desc">Feature Description</label>
+        <textarea
+          id="feature-desc"
+          [(ngModel)]="formData().feature!.desc"
+          name="featureDesc"
+          rows="4"
+          placeholder="Describe what this feature does..."
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <app-viking-check
+            [checked]="formData().feature?.is_variant ?? false"
+            (checkedChange)="formData.update(d => ({ ...d, feature: { ...d.feature!, is_variant: $event } }))"
+            ariaLabel="Is variant feature"
+          ></app-viking-check>
+          <span>Is Variant Feature</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Personality Traits</h3>
+
+      @for (option of personalityTraitsOptions(); track $index; let idx = $index) {
+        <div class="form-group option-row">
+          <label>Option {{ idx + 1 }}</label>
+          <div class="option-input-group">
+            <input
+              type="text"
+              [value]="option"
+              (input)="updateOption('personality_traits', idx, $any($event.target).value)"
+              placeholder="Enter a personality trait..."
+            />
+            @if (personalityTraitsOptions().length > 1) {
+              <button type="button" class="remove-btn" (click)="removeOption('personality_traits', idx)">X</button>
+            }
+          </div>
+        </div>
+      }
+      <button type="button" class="add-btn" (click)="addOption('personality_traits')">+ Add Option</button>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="personality-traits">Or enter a single description</label>
+        <textarea
+          id="personality-traits"
+          [(ngModel)]="formData().personality_traits!.desc"
+          name="personalityTraits"
+          rows="3"
+          placeholder="Describe your personality traits..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Ideals</h3>
+
+      @for (option of idealsOptions(); track $index; let idx = $index) {
+        <div class="form-group option-row">
+          <label>Option {{ idx + 1 }}</label>
+          <div class="option-input-group">
+            <input
+              type="text"
+              [value]="option"
+              (input)="updateOption('ideals', idx, $any($event.target).value)"
+              placeholder="Enter an ideal..."
+            />
+            @if (idealsOptions().length > 1) {
+              <button type="button" class="remove-btn" (click)="removeOption('ideals', idx)">X</button>
+            }
+          </div>
+        </div>
+      }
+      <button type="button" class="add-btn" (click)="addOption('ideals')">+ Add Option</button>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="ideals">Or enter a single description</label>
+        <textarea
+          id="ideals"
+          [(ngModel)]="formData().ideals!.desc"
+          name="ideals"
+          rows="3"
+          placeholder="Describe your ideals..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Bonds</h3>
+
+      @for (option of bondsOptions(); track $index; let idx = $index) {
+        <div class="form-group option-row">
+          <label>Option {{ idx + 1 }}</label>
+          <div class="option-input-group">
+            <input
+              type="text"
+              [value]="option"
+              (input)="updateOption('bonds', idx, $any($event.target).value)"
+              placeholder="Enter a bond..."
+            />
+            @if (bondsOptions().length > 1) {
+              <button type="button" class="remove-btn" (click)="removeOption('bonds', idx)">X</button>
+            }
+          </div>
+        </div>
+      }
+      <button type="button" class="add-btn" (click)="addOption('bonds')">+ Add Option</button>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="bonds">Or enter a single description</label>
+        <textarea
+          id="bonds"
+          [(ngModel)]="formData().bonds!.desc"
+          name="bonds"
+          rows="3"
+          placeholder="Describe your bonds..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Flaws</h3>
+
+      @for (option of flawsOptions(); track $index; let idx = $index) {
+        <div class="form-group option-row">
+          <label>Option {{ idx + 1 }}</label>
+          <div class="option-input-group">
+            <input
+              type="text"
+              [value]="option"
+              (input)="updateOption('flaws', idx, $any($event.target).value)"
+              placeholder="Enter a flaw..."
+            />
+            @if (flawsOptions().length > 1) {
+              <button type="button" class="remove-btn" (click)="removeOption('flaws', idx)">X</button>
+            }
+          </div>
+        </div>
+      }
+      <button type="button" class="add-btn" (click)="addOption('flaws')">+ Add Option</button>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="flaws">Or enter a single description</label>
+        <textarea
+          id="flaws"
+          [(ngModel)]="formData().flaws!.desc"
+          name="flaws"
+          rows="3"
+          placeholder="Describe your flaws..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
+      <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Creating...' : 'Create Background' }}
+      </button>
+    </div>
+  </form>
+</div>

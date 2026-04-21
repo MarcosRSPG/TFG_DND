@@ -64,6 +64,9 @@ export class Items implements OnInit {
   loadingDetail = signal(false);
   errorDetail = signal<string | null>(null);
 
+  // For create button
+  selectedCreateType: string = '';
+
   // Expose Array constructor for template
   Array = Array;
 
@@ -300,5 +303,11 @@ export class Items implements OnInit {
 
     this.filteredItems.set(filtered);
     this.updatePaginatedItems();
+  }
+
+  navigateToCreate(): void {
+    if (this.selectedCreateType) {
+      this.router.navigate(['/items', this.selectedCreateType, 'new']);
+    }
   }
 }

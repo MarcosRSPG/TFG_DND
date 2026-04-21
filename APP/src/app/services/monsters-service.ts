@@ -57,6 +57,14 @@ export class MonstersService {
     );
   }
 
+  async create(monster: Partial<Monster>): Promise<Monster> {
+    return firstValueFrom(
+      this.http.post<Monster>(`${this.apiUrl}/monsters`, monster, {
+        headers: this.buildHeaders(),
+      })
+    );
+  }
+
   private buildHeaders(): { [header: string]: string } {
     return {
       'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),

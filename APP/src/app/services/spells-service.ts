@@ -57,6 +57,14 @@ export class SpellsService {
     );
   }
 
+  async create(spell: Partial<Spell>): Promise<Spell> {
+    return firstValueFrom(
+      this.http.post<Spell>(`${this.apiUrl}/spells`, spell, {
+        headers: this.buildHeaders(),
+      })
+    );
+  }
+
   private buildHeaders(): { [header: string]: string } {
     return {
       'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),

@@ -86,6 +86,10 @@
     </div>
   </div>
 
+  <div class="create-section">
+    <button class="create-btn" (click)="navigateToCreate()">+ Create Monster</button>
+  </div>
+
   <ul class="entity-list" aria-label="List of monsters">
     @for (monster of paginatedMonsters(); track getIdentifier(monster)) {
       <li class="entity-item">

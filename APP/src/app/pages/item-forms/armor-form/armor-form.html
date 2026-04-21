@@ -1,0 +1,143 @@
+<div class="form-container">
+  <h2>Create Armor</h2>
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-section">
+      <h3>Basic Information</h3>
+
+      <div class="form-group">
+        <label for="name">Name *</label>
+        <input
+          id="name"
+          type="text"
+          [(ngModel)]="formData().name"
+          name="name"
+          required
+          placeholder="e.g. Chain Shirt, Plate Armor..."
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="armor-category">Armor Category *</label>
+          <select id="armor-category" [(ngModel)]="formData().armor_category" name="armorCategory" required>
+            <option value="">Select category...</option>
+            @for (cat of armorCategories; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="ac">Armor Class *</label>
+          <input
+            id="ac"
+            type="number"
+            [(ngModel)]="formData().armor_class!.base"
+            name="armorClass"
+            required
+            min="0"
+            placeholder="e.g. 16"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <app-viking-check
+            [checked]="formData().armor_class?.dex_bonus ?? false"
+            (checkedChange)="formData.update(d => ({ ...d, armor_class: { ...d.armor_class!, dex_bonus: $event } }))"
+            ariaLabel="Dexterity bonus"
+          ></app-viking-check>
+          <span>Allow Dexterity Bonus</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Details</h3>
+
+      <div class="form-group">
+        <label for="desc">Description</label>
+        <textarea
+          id="desc"
+          class="description-textarea"
+          [(ngModel)]="formData().desc![0]"
+          name="desc"
+          rows="8"
+          placeholder="Describe the armor..."
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cost-quantity">Cost</label>
+          <div class="cost-input-group">
+            <input
+              id="cost-quantity"
+              type="number"
+              [(ngModel)]="formData().cost!.quantity"
+              name="costQuantity"
+              min="0"
+              placeholder="0"
+            />
+            <select [(ngModel)]="formData().cost!.unit" name="costUnit">
+              @for (unit of costUnits; track unit) {
+                <option [value]="unit">{{ unit }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="weight">Weight</label>
+          <input
+            id="weight"
+            type="number"
+            [(ngModel)]="formData().weight"
+            name="weight"
+            min="0"
+            step="0.1"
+            placeholder="0"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="str-min">Minimum Strength</label>
+          <input
+            id="str-min"
+            type="number"
+            [(ngModel)]="formData().str_minimum"
+            name="strMinimum"
+            min="0"
+            placeholder="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>
+            <app-viking-check
+              [checked]="formData().stealth_disadvantage ?? false"
+              (checkedChange)="formData.update(d => ({ ...d, stealth_disadvantage: $event }))"
+              ariaLabel="Stealth disadvantage"
+            ></app-viking-check>
+            <span>Stealth Disadvantage</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
+      <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Creating...' : 'Create Armor' }}
+      </button>
+    </div>
+  </form>
+</div>

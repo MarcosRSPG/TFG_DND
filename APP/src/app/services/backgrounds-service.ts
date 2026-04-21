@@ -57,6 +57,14 @@ export class BackgroundsService {
     );
   }
 
+  async create(background: Partial<Background>): Promise<Background> {
+    return firstValueFrom(
+      this.http.post<Background>(`${this.apiUrl}/backgrounds`, background, {
+        headers: this.buildHeaders(),
+      })
+    );
+  }
+
   private buildHeaders(): { [header: string]: string } {
     return {
       'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),

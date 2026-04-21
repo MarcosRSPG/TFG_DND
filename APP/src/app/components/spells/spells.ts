@@ -273,4 +273,8 @@ export class Spells implements OnInit {
   getIdentifier(item: Spell): string {
     return item.id || item.index;
   }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/spells/new']);
+  }
 }

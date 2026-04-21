@@ -56,6 +56,22 @@
     </div>
   </div>
 
+  <div class="create-section">
+    <div class="create-type-selector">
+      <label for="create-item-type">Item type:</label>
+      <select id="create-item-type" [(ngModel)]="selectedCreateType">
+        <option value="">Select type...</option>
+        <option value="adventuringgear">Adventuring Gear</option>
+        <option value="armor">Armor</option>
+        <option value="weapon">Weapon</option>
+        <option value="magicitem">Magic Item</option>
+        <option value="tool">Tool</option>
+        <option value="mount">Mount/Vehicle</option>
+      </select>
+    </div>
+    <button class="create-btn" (click)="navigateToCreate()" [disabled]="!selectedCreateType">+ Create Item</button>
+  </div>
+
   <app-filter-modal
     #typesModal
     title="Select Types"
