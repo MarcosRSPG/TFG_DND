@@ -28,6 +28,7 @@ export class DndOptionsService {
   readonly proficiencies = signal<DndProficiency[]>([]);
   readonly schools = signal<DndSchool[]>([]);
   readonly classes = signal<DndClass[]>([]);
+  readonly subclasses = signal<DndClass[]>([]);
   readonly alignments = signal<DndAlignment[]>([]);
   readonly equipmentCategories = signal<DndEquipmentCategory[]>([]);
 
@@ -81,6 +82,17 @@ export class DndOptionsService {
       this.classes.set(data.results);
     } catch (error) {
       console.error('Error loading classes:', error);
+    }
+  }
+
+  async loadSubclasses(): Promise<void> {
+    try {
+      const data = await firstValueFrom(
+        this.http.get<{ results: DndClass[] }>(`${this.dndApiUrl}/subclasses`)
+      );
+      this.subclasses.set(data.results);
+    } catch (error) {
+      console.error('Error loading subclasses:', error);
     }
   }
 

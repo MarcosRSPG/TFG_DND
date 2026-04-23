@@ -49,6 +49,11 @@ export class SpellsService {
     }
   }
 
+  // Alias for getSpells (used in monster form)
+  async getAll(): Promise<Spell[]> {
+    return this.getSpells();
+  }
+
   async getSpell(id: string): Promise<Spell> {
     return firstValueFrom(
       this.http.get<Spell>(`${this.apiUrl}/spells/${id}`, {

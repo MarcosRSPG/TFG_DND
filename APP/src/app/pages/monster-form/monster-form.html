@@ -45,7 +45,7 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group form-group--narrow">
           <label for="subtype">Subtype</label>
           <input
             id="subtype"
@@ -74,26 +74,40 @@
           </datalist>
         </div>
       </div>
+
+      @if (formData().alignment) {
+        <p class="alignment-desc">{{ getAlignmentDesc(formData().alignment!) }}</p>
+      }
+
+      <div class="form-group">
+        <label for="image">Image URL</label>
+        <input
+          id="image"
+          type="text"
+          [(ngModel)]="formData().image"
+          name="image"
+          placeholder="e.g. /assets/monsters/archmage.png"
+        />
+      </div>
     </div>
 
     <div class="form-section">
       <h3>Combat Statistics</h3>
 
       <div class="form-row">
-        <div class="form-group">
-          <label for="hp">Hit Points *</label>
+        <div class="form-group form-group--small">
+          <label for="hp">Hit Points</label>
           <input
             id="hp"
             type="number"
             [(ngModel)]="formData().hit_points"
             name="hitPoints"
-            required
             min="1"
             placeholder="e.g. 99"
           />
         </div>
 
-        <div class="form-group">
+        <div class="form-group form-group--small">
           <label>Hit Dice *</label>
           <div class="hit-dice-group">
             <input
@@ -114,45 +128,56 @@
           </div>
         </div>
 
+        <div class="form-group form-group--small">
+          <label for="hp-roll">Hit Points Roll</label>
+          <input
+            id="hp-roll"
+            type="text"
+            [(ngModel)]="formData().hit_points_roll"
+            name="hitPointsRoll"
+            placeholder="e.g. 18d8+18"
+          />
+        </div>
+
         <div class="form-group">
           <label for="cr">Challenge Rating *</label>
-          <input
-            id="cr"
-            type="number"
-            [(ngModel)]="formData().challenge_rating"
-            name="challengeRating"
-            required
-            min="0"
-            step="0.125"
-            placeholder="e.g. 12"
-          />
+          <select id="cr" [(ngModel)]="formData().challenge_rating" name="challengeRating" required>
+            @for (cr of challengeRatings; track cr) {
+              <option [value]="cr">{{ cr }}</option>
+            }
+          </select>
         </div>
       </div>
 
       <div class="form-section">
         <h4>Speed</h4>
         @for (entry of speedEntries(); track $index; let idx = $index) {
-          <div class="speed-row">
+          <div class="speed-entry-row">
             <select
               [value]="entry.type"
               (change)="updateSpeedType(idx, $any($event.target).value)"
+              class="speed-type-select"
             >
               @for (type of speedTypes; track type.value) {
                 <option [value]="type.value">{{ type.label }}</option>
               }
             </select>
-            <input
-              type="text"
-              [value]="entry.value"
-              (input)="updateSpeedValue(idx, $any($event.target).value)"
-              placeholder="e.g. 30 ft."
-            />
+            <div class="speed-value-group">
+              <input
+                type="number"
+                [value]="entry.value"
+                (input)="updateSpeedValue(idx, +$any($event.target).value)"
+                min="0"
+                class="speed-input"
+              />
+              <span class="speed-unit">ft</span>
+            </div>
             @if (idx > 0) {
-              <button type="button" class="remove-btn" (click)="removeSpeedType(idx)">X</button>
+              <button type="button" class="remove-btn small" (click)="removeSpeedType(idx)">X</button>
             }
           </div>
         }
-        <button type="button" class="add-btn" (click)="addSpeedType()">+ Add Speed Type</button>
+        <button type="button" class="add-btn" (click)="addSpeedType()">+ Add Speed</button>
       </div>
 
       <div class="form-section">
@@ -202,7 +227,7 @@
           class="description-textarea"
           [(ngModel)]="formData().desc"
           name="desc"
-          rows="8"
+          rows="6"
           placeholder="Describe the monster..."
         ></textarea>
       </div>
@@ -218,39 +243,55 @@
         />
       </div>
 
-      <div class="form-row">
+      <div class="damage-section">
+        <h4>Damage Vulnerabilities</h4>
         <div class="form-group">
-          <label for="damage-vuln">Damage Vulnerabilities</label>
           <input
-            id="damage-vuln"
             type="text"
-            [(ngModel)]="formData().damage_vulnerabilities"
-            name="damageVulnerabilities"
-            placeholder="e.g. fire, cold..."
+            placeholder="Type and press Enter..."
+            (keydown.enter)="addDamageEntry('vulnerabilities', $any($event.target).value); $any($event.target).value = ''"
           />
         </div>
+        @for (dmg of damageVulnerabilitiesList(); track $index; let idx = $index) {
+          <div class="damage-tag">
+            <span>{{ dmg }}</span>
+            <button type="button" class="remove-btn" (click)="removeDamageEntry('vulnerabilities', idx)">X</button>
+          </div>
+        }
+      </div>
 
+      <div class="damage-section">
+        <h4>Damage Resistances</h4>
         <div class="form-group">
-          <label for="damage-resist">Damage Resistances</label>
           <input
-            id="damage-resist"
             type="text"
-            [(ngModel)]="formData().damage_resistances"
-            name="damageResistances"
-            placeholder="e.g. bludgeoning..."
+            placeholder="Type and press Enter..."
+            (keydown.enter)="addDamageEntry('resistances', $any($event.target).value); $any($event.target).value = ''"
           />
         </div>
+        @for (dmg of damageResistancesList(); track $index; let idx = $index) {
+          <div class="damage-tag">
+            <span>{{ dmg }}</span>
+            <button type="button" class="remove-btn" (click)="removeDamageEntry('resistances', idx)">X</button>
+          </div>
+        }
+      </div>
 
+      <div class="damage-section">
+        <h4>Damage Immunities</h4>
         <div class="form-group">
-          <label for="damage-immun">Damage Immunities</label>
           <input
-            id="damage-immun"
             type="text"
-            [(ngModel)]="formData().damage_immunities"
-            name="damageImmunities"
-            placeholder="e.g. poison..."
+            placeholder="Type and press Enter..."
+            (keydown.enter)="addDamageEntry('immunities', $any($event.target).value); $any($event.target).value = ''"
           />
         </div>
+        @for (dmg of damageImmunitiesList(); track $index; let idx = $index) {
+          <div class="damage-tag">
+            <span>{{ dmg }}</span>
+            <button type="button" class="remove-btn" (click)="removeDamageEntry('immunities', idx)">X</button>
+          </div>
+        }
       </div>
     </div>
 
@@ -276,17 +317,123 @@
       }
       <button type="button" class="add-btn" (click)="addAbility()">+ Add Special Ability</button>
 
-      <div class="form-group" style="margin-top: 1rem;">
+      <div class="form-group" style="margin-top: 1.5rem;">
         <label>
           <app-viking-check
             [checked]="hasSpellcasting()"
             (checkedChange)="toggleSpellcasting()"
             ariaLabel="Has spellcasting"
           ></app-viking-check>
-          <span>Has Spellcasting</span>
+          <span>Can Cast Spells</span>
         </label>
       </div>
     </div>
+
+    @if (hasSpellcasting()) {
+      <div class="form-section spellcasting-section">
+        <h4>Spellcasting</h4>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="spell-level">Spell Level</label>
+            <input
+              id="spell-level"
+              type="number"
+              [(ngModel)]="spellcastingLevel"
+              name="spellLevel"
+              min="0"
+              max="9"
+              placeholder="0-9"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="spell-ability">Ability</label>
+            <select id="spell-ability" [(ngModel)]="spellcastingAbility" name="spellAbility">
+              @for (ability of abilityScores; track ability.index) {
+                <option [value]="ability.index">{{ ability.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="spell-school">School</label>
+            <select id="spell-school" [(ngModel)]="spellcastingSchool" name="spellSchool">
+              @for (school of spellSchools; track school) {
+                <option [value]="school">{{ spellSchoolNames[school] }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Components</label>
+          <div class="components-row">
+            @for (comp of ['V', 'S', 'M']; track comp) {
+              <label class="checkbox-label">
+                <app-viking-check
+                  [checked]="spellcastingComponents().includes(comp)"
+                  (checkedChange)="toggleSpellcastingComponent(comp)"
+                  [ariaLabel]="comp + ' component'"
+                ></app-viking-check>
+                <span (click)="toggleSpellcastingComponent(comp)">{{ comp }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Spell Slots</label>
+          <div class="slots-grid">
+            @for (slot of spellSlots(); track slot.level) {
+              <div class="slot-item">
+                <span>L{{ slot.level }}</span>
+                <input
+                  type="number"
+                  [value]="slot.slots"
+                  (change)="updateSpellSlot(slot.level, +$any($event.target).value)"
+                  min="0"
+                  max="10"
+                />
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Known/Prepared Spells</label>
+          <p class="hint">Search and add spells known by this monster:</p>
+          <input
+            type="text"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            placeholder="Type to search spells..."
+            class="search-input"
+          />
+
+          @if (searchQuery() && filteredSpells.length > 0) {
+            <div class="filtered-dropdown">
+              @for (spell of filteredSpells; track spell.name) {
+                <button type="button" class="dropdown-item" (click)="addSpellToKnown(spell)">
+                  {{ spell.name }} ({{ spell.level }})
+                </button>
+              }
+            </div>
+          }
+
+          @if (selectedSpells().length > 0) {
+            <div class="selected-items">
+              @for (spell of selectedSpells(); track $index; let idx = $index) {
+                <div class="item-tag">
+                  <span>{{ spell.name }} (Lv{{ spell.level }})</span>
+                  <button type="button" class="remove-btn" (click)="removeSpellFromKnown(idx)">X</button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
 
     <div class="form-section">
       <h3>Actions</h3>
@@ -305,7 +452,35 @@
             placeholder="Action description..."
             rows="3"
           ></textarea>
-          <button type="button" class="remove-btn" (click)="removeAction('actions', idx)">Remove</button>
+
+          <div class="damage-section" style="margin-top: 0.5rem;">
+            <h4>Damage</h4>
+            @for (dmg of action.damage || []; track $index; let dmgIdx = $index) {
+              <div class="damage-edit-row">
+                <input
+                  type="text"
+                  [value]="dmg.damage_dice"
+                  (input)="updateActionDamage('actions', idx, dmgIdx, 'damage_dice', $any($event.target).value)"
+                  placeholder="e.g. 1d4+2"
+                  class="damage-dice-input"
+                />
+                <select
+                  [value]="dmg.damage_type?.index || ''"
+                  (change)="updateActionDamage('actions', idx, dmgIdx, 'damage_type', { index: $any($event.target).value, name: $any($event.target).options[$any($event.target).selectedIndex].text, url: '/api/2014/damage-types/' + $any($event.target).value })"
+                  class="damage-type-select"
+                >
+                  <option value="">Select type...</option>
+                  @for (dtype of damageTypes; track dtype.index) {
+                    <option [value]="dtype.index">{{ dtype.name }}</option>
+                  }
+                </select>
+                <button type="button" class="remove-btn small" (click)="removeActionDamage('actions', idx, dmgIdx)">X</button>
+              </div>
+            }
+            <button type="button" class="add-btn" (click)="addDamageToAction('actions', idx)">+ Add Damage</button>
+          </div>
+
+          <button type="button" class="remove-btn" (click)="removeAction('actions', idx)">Remove Action</button>
         </div>
       }
       <button type="button" class="add-btn" (click)="addAction('actions')">+ Add Action</button>

@@ -22,9 +22,17 @@ export class MagicItemForm implements OnInit {
   formData = signal<Partial<Item>>({
     name: '',
     desc: [],
+    special: [],
     cost: { quantity: 0, unit: 'gp' },
     weight: 0,
+    image: '',
+    rarity: { name: 'Uncommon' },
+    variants: [],
+    variant: false,
   });
+
+  // Rarity options
+  rarityOptions = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary', 'Artifact'];
 
   // Cost units
   costUnits = ['cp', 'sp', 'ep', 'gp', 'pp'];
@@ -39,9 +47,9 @@ export class MagicItemForm implements OnInit {
       const data: Partial<Item> = {
         ...this.formData(),
         equipment_category: {
-          index: 'magic-items',
-          name: 'Magic Item',
-          url: '/api/2014/equipment-categories/magic-items',
+          index: 'wondrous-items',
+          name: 'Wondrous Items',
+          url: '/api/2014/equipment-categories/wondrous-items',
         },
       };
 

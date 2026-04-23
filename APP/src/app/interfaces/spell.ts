@@ -1,6 +1,5 @@
 export interface Spell {
   id?: string;
-  index: string;
   name: string;
   desc: string[];
   higher_level?: string[];
@@ -15,6 +14,21 @@ export interface Spell {
   school?: SpellReference;
   classes?: SpellReference[];
   subclasses?: SpellReference[];
+  image?: string;
+  // Additional D&D API fields
+  damage?: {
+    damage_type?: SpellReference;
+    damage_at_slot_level?: Record<string, string>;
+  };
+  dc?: {
+    dc_type?: SpellReference;
+    dc_success?: string;
+  };
+  area_of_effect?: {
+    type: string;
+    size: number;
+  };
+  heal_at_slot_level?: Record<string, string>;
   created_by?: string;
   created_at?: string;
   updated_at?: string;

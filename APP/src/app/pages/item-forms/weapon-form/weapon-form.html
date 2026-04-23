@@ -41,14 +41,39 @@
           </select>
         </div>
       </div>
+
+      <div class="form-group">
+        <label for="image">Image URL</label>
+        <input
+          id="image"
+          type="text"
+          [(ngModel)]="formData().image"
+          name="image"
+          placeholder="e.g. /assets/weapons/longsword.png"
+        />
+      </div>
     </div>
 
     <div class="form-section">
       <h3>Damage</h3>
 
-      <div class="form-row">
+      <div class="damage-input-row">
         <div class="form-group">
-          <label for="damage-dice">Damage Dice *</label>
+          <label for="damage-count">Count</label>
+          <input
+            id="damage-count"
+            type="number"
+            [ngModel]="damageCount()"
+            (ngModelChange)="damageCount.set($event)"
+            name="damageCount"
+            min="1"
+            max="10"
+            placeholder="e.g. 1"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="damage-dice">Dice *</label>
           <select id="damage-dice" [(ngModel)]="formData().damage!.damage_dice" name="damageDice" required>
             @for (die of damageDice; track die) {
               <option [value]="die">{{ die }}</option>
@@ -56,6 +81,18 @@
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="damage-type">Damage Type *</label>
+          <select id="damage-type" [ngModel]="formData().damage!.damage_type?.index" (ngModelChange)="formData.update(d => ({ ...d, damage: { ...d.damage!, damage_type: { index: $event, name: $event, url: '/api/2014/damage-types/' + $event } } }))" name="damageType" required>
+            <option value="">Select type...</option>
+            @for (dtype of damageTypes; track dtype.index) {
+              <option [value]="dtype.index">{{ dtype.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label for="range-normal">Normal Range</label>
           <input
@@ -80,6 +117,59 @@
           />
         </div>
       </div>
+
+      <div class="form-group">
+        <label>Properties</label>
+        <div class="properties-grid">
+          @for (prop of weaponProperties; track prop.index) {
+            <label class="property-label">
+              <input
+                type="checkbox"
+                [checked]="hasProperty(prop.index)"
+                (change)="toggleProperty(prop.index)"
+              />
+              <span>{{ prop.name }}</span>
+            </label>
+          }
+        </div>
+      </div>
+
+      @if (hasProperty('versatile')) {
+        <div class="two-handed-damage-row">
+          <div class="form-group">
+            <label for="twohand-count">Count</label>
+            <input
+              id="twohand-count"
+              type="number"
+              [ngModel]="twoHandedDamageCount()"
+              (ngModelChange)="twoHandedDamageCount.set($event)"
+              name="twoHandedDamageCount"
+              min="1"
+              max="10"
+              placeholder="e.g. 2"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="twohand-dice">Two-Handed Dice</label>
+            <select id="twohand-dice" [(ngModel)]="formData().two_handed_damage!.damage_dice" name="twohandDice">
+              @for (die of damageDice; track die) {
+                <option [value]="die">{{ die }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="twohand-type">Two-Handed Type</label>
+            <select id="twohand-type" [ngModel]="formData().two_handed_damage!.damage_type?.index" (ngModelChange)="formData.update(d => ({ ...d, two_handed_damage: { ...d.two_handed_damage!, damage_type: { index: $event, name: $event, url: '/api/2014/damage-types/' + $event } } }))" name="twohandType">
+              <option value="">Select type...</option>
+              @for (dtype of damageTypes; track dtype.index) {
+                <option [value]="dtype.index">{{ dtype.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      }
     </div>
 
     <div class="form-section">

@@ -1,31 +1,19 @@
 export interface Background {
   id?: string;
-  index: string;
   name: string;
   starting_proficiencies?: BackgroundReference[];
   starting_equipment?: BackgroundEquipment[];
   starting_equipment_options?: Array<{ desc?: string }>;
   feature?: {
     name: string;
-    desc?: string[];
-    is_variant?: boolean;
-    variant?: {
-      name: string;
-      desc?: string[];
-    };
+    desc?: string;
+    variant?: string;
   };
-  personality_traits?: {
-    options?: string[];
-  };
-  ideals?: {
-    options?: string[];
-  };
-  bonds?: {
-    options?: string[];
-  };
-  flaws?: {
-    options?: string[];
-  };
+  personality_traits?: string[];
+  ideals?: string[];
+  bonds?: string[];
+  flaws?: string[];
+  image?: string;
   created_by?: string;
   created_at?: string;
   updated_at?: string;

@@ -159,6 +159,16 @@ export class Monsters implements OnInit {
     this.sizes.set(sizeSet);
   }
 
+  // Helper to parse challenge rating (e.g., "1/4" -> 0.25)
+  private parseChallengeRating(cr: string | undefined): number {
+    if (!cr) return 0;
+    if (cr.includes('/')) {
+      const [num, den] = cr.split('/').map(Number);
+      return den ? num / den : 0;
+    }
+    return Number(cr) || 0;
+  }
+
   private applyFilters(): void {
     const filters = this.filters();
     let filtered = this.allMonsters();
@@ -178,22 +188,22 @@ export class Monsters implements OnInit {
 
     if (filters.crMin !== '') {
       const min = Number(filters.crMin);
-      filtered = filtered.filter(m => m.challenge_rating >= min);
+      filtered = filtered.filter(m => this.parseChallengeRating(m.challenge_rating) >= min);
     }
 
     if (filters.crMax !== '') {
       const max = Number(filters.crMax);
-      filtered = filtered.filter(m => m.challenge_rating <= max);
+      filtered = filtered.filter(m => this.parseChallengeRating(m.challenge_rating) <= max);
     }
 
     if (filters.hpMin !== '') {
       const min = Number(filters.hpMin);
-      filtered = filtered.filter(m => m.hit_points >= min);
+      filtered = filtered.filter(m => (m.hit_points || 0) >= min);
     }
 
     if (filters.hpMax !== '') {
       const max = Number(filters.hpMax);
-      filtered = filtered.filter(m => m.hit_points <= max);
+      filtered = filtered.filter(m => (m.hit_points || 0) <= max);
     }
 
     this.filteredMonsters.set(filtered);
@@ -249,7 +259,7 @@ export class Monsters implements OnInit {
   }
 
   getIdentifier(monster: Monster): string {
-    return monster.id || monster.index;
+    return monster.id || monster.name?.toLowerCase().replace(/ /g, '-') || '';
   }
 
   navigateToCreate(): void {

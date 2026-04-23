@@ -17,6 +17,7 @@ export interface Item {
   equipment_category?: ResourceReference;
   cost?: CostSchema;
   weight?: number;
+  image?: string;
   url?: string;
   // Weapon specific
   weapon_category?: string;
@@ -30,6 +31,10 @@ export interface Item {
     long?: number;
   };
   properties?: ResourceReference[];
+  two_handed_damage?: {
+    damage_dice?: string;
+    damage_type?: ResourceReference;
+  };
   // Armor specific
   armor_category?: string;
   armor_class?: {
@@ -40,6 +45,12 @@ export interface Item {
   stealth_disadvantage?: boolean;
   // Tool specific
   tool_category?: string;
+  // Magic Item specific
+  rarity?: {
+    name: string;
+  };
+  variants?: ResourceReference[];
+  variant?: boolean;
   // Mount/Vehicle specific
   vehicle_category?: string;
   capacity?: string;

@@ -1,6 +1,5 @@
 export interface Monster {
   id?: string;
-  index: string;
   name: string;
   desc?: string;
   size: string;
@@ -8,10 +7,10 @@ export interface Monster {
   subtype?: string;
   alignment: string;
   armor_class?: ArmorClass[];
-  hit_points: number;
+  hit_points?: number;
   hit_dice: string;
   hit_points_roll?: string;
-  speed: Record<string, string>;
+  speed: Record<string, number>;
   strength: number;
   dexterity: number;
   constitution: number;
@@ -32,7 +31,7 @@ export interface Monster {
     [key: string]: any;
   };
   languages?: string;
-  challenge_rating: number;
+  challenge_rating: string;
   proficiency_bonus?: number;
   xp?: number;
   special_abilities?: MonsterAbility[];
