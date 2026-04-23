@@ -465,7 +465,7 @@
                   class="damage-dice-input"
                 />
                 <select
-                  [value]="dmg.damage_type?.index || ''"
+                  [value]="dmg.damage_type.index || ''"
                   (change)="updateActionDamage('actions', idx, dmgIdx, 'damage_type', { index: $any($event.target).value, name: $any($event.target).options[$any($event.target).selectedIndex].text, url: '/api/2014/damage-types/' + $any($event.target).value })"
                   class="damage-type-select"
                 >
