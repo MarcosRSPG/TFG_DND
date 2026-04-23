@@ -137,6 +137,10 @@ export class MonsterForm implements OnInit {
     legendary_actions: [],
   });
 
+  // Languages management
+  languageFilter = signal('');
+  selectedLanguages = signal<{ index: string; name: string }[]>([]);
+
   // Hit dice selection
   hitDiceCount = signal(1);
 
@@ -212,7 +216,30 @@ export class MonsterForm implements OnInit {
   ngOnInit(): void {
     this.dndOptions.loadAlignments();
     this.dndOptions.loadProficiencies();
+    this.dndOptions.loadLanguages();
     this.loadAllSpells();
+  }
+
+  // Get filtered languages
+  get filteredLanguages() {
+    const query = this.languageFilter().toLowerCase();
+    const langs = this.dndOptions.languages();
+    if (!query) return langs;
+    return langs.filter(l => l.name.toLowerCase().includes(query));
+  }
+
+  onLanguageInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    const lang = this.filteredLanguages.find(l => l.name === value);
+    if (lang && !this.selectedLanguages().find(l => l.index === lang.index)) {
+      this.selectedLanguages.update(list => [...list, { index: lang.index, name: lang.name }]);
+      input.value = '';
+    }
+  }
+
+  removeLanguage(index: number): void {
+    this.selectedLanguages.update(list => list.filter((_, i) => i !== index));
   }
 
   async loadAllSpells(): Promise<void> {
@@ -532,6 +559,7 @@ export class MonsterForm implements OnInit {
         damage_vulnerabilities: this.damageVulnerabilitiesList(),
         damage_resistances: this.damageResistancesList(),
         damage_immunities: this.damageImmunitiesList(),
+        languages: this.selectedLanguages().map(l => l.name).join(', '),
       };
 
       await this.monstersService.create(data);

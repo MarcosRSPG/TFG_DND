@@ -19,6 +19,15 @@ export type {
   DndEquipmentCategory,
 } from '../interfaces/dnd-options';
 
+export interface DndLanguage {
+  index: string;
+  name: string;
+  url: string;
+  desc?: string;
+  type?: string;
+  typical_speakers?: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class DndOptionsService {
   private readonly http = inject(HttpClient);
@@ -31,6 +40,7 @@ export class DndOptionsService {
   readonly subclasses = signal<DndClass[]>([]);
   readonly alignments = signal<DndAlignment[]>([]);
   readonly equipmentCategories = signal<DndEquipmentCategory[]>([]);
+  readonly languages = signal<DndLanguage[]>([]);
 
   readonly isLoading = signal(false);
 
@@ -44,6 +54,7 @@ export class DndOptionsService {
         this.loadClasses(),
         this.loadAlignments(),
         this.loadEquipmentCategories(),
+        this.loadLanguages(),
       ]);
     } catch (error) {
       console.error('Error loading D&D options:', error);
@@ -115,6 +126,17 @@ export class DndOptionsService {
       this.equipmentCategories.set(data.results);
     } catch (error) {
       console.error('Error loading equipment categories:', error);
+    }
+  }
+
+  async loadLanguages(): Promise<void> {
+    try {
+      const data = await firstValueFrom(
+        this.http.get<{ results: DndLanguage[] }>(`${this.dndApiUrl}/languages`)
+      );
+      this.languages.set(data.results);
+    } catch (error) {
+      console.error('Error loading languages:', error);
     }
   }
 }

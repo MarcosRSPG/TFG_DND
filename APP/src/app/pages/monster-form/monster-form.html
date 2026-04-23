@@ -233,14 +233,30 @@
       </div>
 
       <div class="form-group">
-        <label for="languages">Languages</label>
+        <label for="language-input">Languages</label>
         <input
-          id="languages"
           type="text"
-          [(ngModel)]="formData().languages"
-          name="languages"
-          placeholder="e.g. Common, Draconic..."
+          id="language-input"
+          list="languages-list"
+          placeholder="Search or select language..."
+          (input)="onLanguageInputChange($event)"
         />
+        <datalist id="languages-list">
+          @for (lang of filteredLanguages; track lang.index) {
+            <option [value]="lang.name"></option>
+          }
+        </datalist>
+
+        @if (selectedLanguages().length > 0) {
+          <div class="selected-list">
+            @for (lang of selectedLanguages(); track lang.index; let idx = $index) {
+              <div class="selected-item">
+                <span>{{ lang.name }}</span>
+                <button type="button" class="remove-btn" (click)="removeLanguage(idx)">Remove</button>
+              </div>
+            }
+          </div>
+        }
       </div>
 
       <div class="damage-section">
