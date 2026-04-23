@@ -7,11 +7,12 @@ import { BackgroundsService } from '../../services/backgrounds-service';
 import { DndOptionsService, DndProficiency } from '../../services/dnd-options-service';
 import { ItemsService } from '../../services/items-service';
 import { Item } from '../../interfaces/item';
+import { VikingCheck } from '../../components/viking-check/viking-check';
 
 @Component({
   selector: 'app-background-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, VikingCheck],
   templateUrl: './background-form.html',
   styleUrl: './background-form.css',
 })
@@ -26,50 +27,53 @@ export class BackgroundForm implements OnInit {
   isSubmitting = signal(false);
   error = signal<string | null>(null);
 
+// Form data
   formData = signal<Partial<Background>>({
     name: '',
     starting_proficiencies: [],
     starting_equipment: [],
     feature: {
       name: '',
-      desc: '',
-      variant: '',
+      desc: [],
+      is_variant: false,
+      variant: { name: '', desc: [] },
     },
-    personality_traits: [],
-    ideals: [],
-    bonds: [],
-    flaws: [],
+    personality_traits: { options: [] },
+    ideals: { options: [] },
+    bonds: { options: [] },
+    flaws: { options: [] },
   });
 
-  proficiencySearchQuery = signal('');
+  // For proficiency selection
   selectedProficiencies = signal<string[]>([]);
   proficiencyCount = signal(1);
 
-  equipmentSearchQuery = signal('');
+  // For equipment selection
   selectedEquipment = signal<{ index: string; name: string; quantity: number }[]>([]);
 
+  // Proficiency filter
+  proficiencyFilter = signal('');
+
+  // For multiple options in traits/ideals/bonds/flaws
+  personalityTraitsOptions = signal<string[]>(['']);
+  idealsOptions = signal<string[]>(['']);
+  bondsOptions = signal<string[]>(['']);
+  flawsOptions = signal<string[]>(['']);
+
+  // Items list for equipment selection
   itemsList = signal<Item[]>([]);
+  filteredItems = signal<Item[]>([]);
   itemsLoading = signal(false);
 
-  Array = Array;
+  // Items filter
+  itemsFilter = signal('');
 
-  get proficiencies(): DndProficiency[] {
-    return this.dndOptions.proficiencies();
-  }
-
-  get filteredProficiencies(): DndProficiency[] {
-    const query = this.proficiencySearchQuery().toLowerCase();
-    if (!query) return this.proficiencies;
-    return this.proficiencies.filter(p => 
-      p.name.toLowerCase().includes(query) || p.index.toLowerCase().includes(query)
-    );
-  }
-
-  get filteredItems(): Item[] {
-    const query = this.equipmentSearchQuery().toLowerCase();
-    if (!query) return this.itemsList();
-    return this.itemsList().filter(i => 
-      i.name.toLowerCase().includes(query)
+  // Filtered items based on search
+  get itemsOptions(): Item[] {
+    const query = this.itemsFilter().toLowerCase();
+    if (!query) return this.filteredItems();
+    return this.filteredItems().filter(item =>
+      item.name.toLowerCase().includes(query)
     );
   }
 
@@ -78,11 +82,29 @@ export class BackgroundForm implements OnInit {
     this.loadItems();
   }
 
+  // Expose Array for template
+  Array = Array;
+
+  // Available proficiencies
+  get proficiencies(): DndProficiency[] {
+    return this.dndOptions.proficiencies();
+  }
+
+  // Filtered proficiencies based on search
+  get filteredProficiencies(): DndProficiency[] {
+    const query = this.proficiencyFilter().toLowerCase();
+    if (!query) return this.dndOptions.proficiencies();
+    return this.dndOptions.proficiencies().filter(p =>
+      p.name.toLowerCase().includes(query) || p.index.toLowerCase().includes(query)
+    );
+  }
+
   async loadItems(): Promise<void> {
     this.itemsLoading.set(true);
     try {
       const items = await this.itemsService.getAll();
       this.itemsList.set(items);
+      this.filteredItems.set(items);
     } catch (err) {
       console.error('Error loading items:', err);
     } finally {
@@ -90,14 +112,35 @@ export class BackgroundForm implements OnInit {
     }
   }
 
-  onProficiencySearchChange(event: Event): void {
+  onProficiencyInputChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.proficiencySearchQuery.set(input.value);
+    const value = input.value;
+    // Find matching proficiency
+    const prof = this.filteredProficiencies.find(p => p.name === value);
+    if (prof && !this.selectedProficiencies().includes(prof.index)) {
+      this.selectedProficiencies.update(list => [...list, prof.index]);
+      input.value = '';
+    }
   }
 
-  onEquipmentSearchChange(event: Event): void {
+  onItemsFilterChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.equipmentSearchQuery.set(input.value);
+    this.itemsFilter.set(input.value);
+  }
+
+  onEquipmentInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    // Find matching item by name
+    const item = this.itemsOptions.find(i => i.name === value);
+    if (item) {
+      const index = item['index'] || item['id'];
+      const exists = this.selectedEquipment().find(e => e.index === index);
+      if (!exists) {
+        this.selectedEquipment.update(list => [...list, { index, name: item.name, quantity: 1 }]);
+        input.value = '';
+      }
+    }
   }
 
   onProficiencyChange(index: number, event: Event): void {
@@ -125,6 +168,7 @@ export class BackgroundForm implements OnInit {
     }
   }
 
+  // Equipment methods
   addEquipment(index: string): void {
     const item = this.itemsList().find(i => i['index'] === index);
     if (!item) return;
@@ -150,34 +194,36 @@ export class BackgroundForm implements OnInit {
     }
   }
 
+  // Multiple options methods for traits/ideals/bonds/flaws
   addOption(type: 'personality_traits' | 'ideals' | 'bonds' | 'flaws'): void {
-    const current = this.formData()[type] || [];
+    const current = (this.formData()[type] as { options?: string[] })?.options || [];
+    const newArray = [...current, ''];
     this.formData.update(d => ({
       ...d,
-      [type]: [...current, '']
+      [type]: { options: newArray }
     }));
   }
 
   removeOption(type: 'personality_traits' | 'ideals' | 'bonds' | 'flaws', index: number): void {
-    const current = [...(this.formData()[type] as string[] || [])];
+    const current = [...((this.formData()[type] as { options?: string[] })?.options || [])];
     current.splice(index, 1);
     this.formData.update(d => ({
       ...d,
-      [type]: current
+      [type]: { options: current }
     }));
   }
 
   updateOption(type: 'personality_traits' | 'ideals' | 'bonds' | 'flaws', index: number, value: string): void {
-    const current = [...(this.formData()[type] as string[] || [])];
+    const current = [...((this.formData()[type] as { options?: string[] })?.options || [])];
     current[index] = value;
     this.formData.update(d => ({
       ...d,
-      [type]: current
+      [type]: { options: current }
     }));
   }
 
   getOptions(type: 'personality_traits' | 'ideals' | 'bonds' | 'flaws'): string[] {
-    return this.formData()[type] as string[] || [];
+    return (this.formData()[type] as { options?: string[] })?.options || [];
   }
 
   async onSubmit(): Promise<void> {
@@ -185,6 +231,7 @@ export class BackgroundForm implements OnInit {
     this.error.set(null);
 
     try {
+      // Convert selected proficiency indices to BackgroundReference format
       const startingProficiencies = this.selectedProficiencies()
         .filter((p) => p)
         .map((index) => {
@@ -196,6 +243,7 @@ export class BackgroundForm implements OnInit {
           };
         });
 
+      // Convert selected equipment
       const startingEquipment = this.selectedEquipment().map(item => ({
         equipment: {
           index: item.index,
@@ -205,18 +253,48 @@ export class BackgroundForm implements OnInit {
         quantity: item.quantity
       }));
 
-      const data: Partial<Background> = {
+      // Build options arrays for traits
+      const personalityTraitsOptions = this.personalityTraitsOptions().filter(o => o.trim());
+      const idealsOptions = this.idealsOptions().filter(o => o.trim());
+      const bondsOptions = this.bondsOptions().filter(o => o.trim());
+      const flawsOptions = this.flawsOptions().filter(o => o.trim());
+
+      // Build feature with variant
+      const feature = this.formData().feature;
+      const featureData: any = {
+        name: feature?.name,
+        desc: feature?.desc?.filter((d: string) => d.trim()),
+        is_variant: feature?.is_variant,
+      };
+      if (feature?.is_variant && feature.variant?.name) {
+        featureData.variant = {
+          name: feature.variant.name,
+          desc: feature.variant.desc?.filter((d: string) => d.trim()),
+        };
+      }
+
+const data: Partial<Background> = {
         ...this.formData(),
+        feature: featureData,
         starting_proficiencies: startingProficiencies as any,
         starting_equipment: startingEquipment as any,
-        personality_traits: this.formData().personality_traits?.filter(o => o.trim()),
-        ideals: this.formData().ideals?.filter(o => o.trim()),
-        bonds: this.formData().bonds?.filter(o => o.trim()),
-        flaws: this.formData().flaws?.filter(o => o.trim()),
+        personality_traits: {
+          options: personalityTraitsOptions.length > 0 ? personalityTraitsOptions : undefined,
+        },
+        ideals: {
+          options: idealsOptions.length > 0 ? idealsOptions : undefined,
+        },
+        bonds: {
+          options: bondsOptions.length > 0 ? bondsOptions : undefined,
+        },
+        flaws: {
+          options: flawsOptions.length > 0 ? flawsOptions : undefined,
+        }
       };
 
       await this.backgroundsService.create(data);
 
+      // Navigate back to backgrounds list
       this.router.navigate(['/manual'], {
         queryParams: { section: 'backgrounds' },
       });
@@ -232,5 +310,15 @@ export class BackgroundForm implements OnInit {
     this.router.navigate(['/manual'], {
       queryParams: { section: 'backgrounds' },
     });
+  }
+
+  getProficiencyName(index: string): string {
+    const prof = this.proficiencies.find(p => p.index === index);
+    return prof?.name || index;
+  }
+
+  removeProficiency(index: number): void {
+    this.selectedProficiencies.update(list => list.filter((_, i) => i !== index));
+    this.proficiencyCount.update(c => c - 1);
   }
 }
