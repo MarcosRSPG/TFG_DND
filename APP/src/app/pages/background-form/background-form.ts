@@ -29,7 +29,6 @@ export class BackgroundForm implements OnInit {
 
   // Form data
   formData = signal<Partial<Background>>({
-    index: '',
     name: '',
     starting_proficiencies: [],
     starting_equipment: [],
@@ -37,11 +36,12 @@ export class BackgroundForm implements OnInit {
       name: '',
       desc: [],
       is_variant: false,
+      variant: { name: '', desc: [] },
     },
-    personality_traits: { options: [], desc: '' },
-    ideals: { options: [], desc: '' },
-    bonds: { options: [], desc: '' },
-    flaws: { options: [], desc: '' },
+    personality_traits: { options: [] },
+    ideals: { options: [] },
+    bonds: { options: [] },
+    flaws: { options: [] },
   });
 
   // For proficiency selection
@@ -51,8 +51,8 @@ export class BackgroundForm implements OnInit {
   // For equipment selection
   selectedEquipment = signal<{ index: string; name: string; quantity: number }[]>([]);
 
-  // For feature - search filter
-  featureSearchQuery = signal('');
+  // Proficiency filter
+  proficiencyFilter = signal('');
 
   // For multiple options in traits/ideals/bonds/flaws
   personalityTraitsOptions = signal<string[]>(['']);
@@ -65,6 +65,23 @@ export class BackgroundForm implements OnInit {
   filteredItems = signal<Item[]>([]);
   itemsLoading = signal(false);
 
+  // Items filter
+  itemsFilter = signal('');
+
+  // Filtered items based on search
+  get itemsOptions(): Item[] {
+    const query = this.itemsFilter().toLowerCase();
+    if (!query) return this.filteredItems();
+    return this.filteredItems().filter(item =>
+      item.name.toLowerCase().includes(query)
+    );
+  }
+
+  ngOnInit(): void {
+    this.dndOptions.loadProficiencies();
+    this.loadItems();
+  }
+
   // Expose Array for template
   Array = Array;
 
@@ -73,23 +90,13 @@ export class BackgroundForm implements OnInit {
     return this.dndOptions.proficiencies();
   }
 
-  // Filtered features based on search (simulated features list)
-  get availableFeatures(): string[] {
-    const features = [
-      'Researcher', 'Soldier', 'Sage', 'Criminal', 'Entertainer', 'Folk Hero',
-      'Noble', 'Acolyte', 'Outlander', 'Pirate', 'Sailor', 'Urchin',
-      'Hermit', 'Merchant', 'Scribe', 'Knight', 'Spy', 'Barbarian',
-      'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin',
-      'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard'
-    ];
-    const query = this.featureSearchQuery().toLowerCase();
-    if (!query) return features;
-    return features.filter(f => f.toLowerCase().includes(query));
-  }
-
-  ngOnInit(): void {
-    this.dndOptions.loadProficiencies();
-    this.loadItems();
+  // Filtered proficiencies based on search
+  get filteredProficiencies(): DndProficiency[] {
+    const query = this.proficiencyFilter().toLowerCase();
+    if (!query) return this.dndOptions.proficiencies();
+    return this.dndOptions.proficiencies().filter(p =>
+      p.name.toLowerCase().includes(query) || p.index.toLowerCase().includes(query)
+    );
   }
 
   async loadItems(): Promise<void> {
@@ -105,17 +112,35 @@ export class BackgroundForm implements OnInit {
     }
   }
 
-  onFeatureSearchChange(event: Event): void {
+  onProficiencyInputChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.featureSearchQuery.set(input.value);
+    const value = input.value;
+    // Find matching proficiency
+    const prof = this.filteredProficiencies.find(p => p.name === value);
+    if (prof && !this.selectedProficiencies().includes(prof.index)) {
+      this.selectedProficiencies.update(list => [...list, prof.index]);
+      input.value = '';
+    }
   }
 
-  onFeatureSelect(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    this.formData.update(d => ({
-      ...d,
-      feature: { ...d.feature!, name: select.value }
-    }));
+  onItemsFilterChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.itemsFilter.set(input.value);
+  }
+
+  onEquipmentInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    // Find matching item by name
+    const item = this.itemsOptions.find(i => i.name === value);
+    if (item) {
+      const index = item['index'] || item['id'];
+      const exists = this.selectedEquipment().find(e => e.index === index);
+      if (!exists) {
+        this.selectedEquipment.update(list => [...list, { index, name: item.name, quantity: 1 }]);
+        input.value = '';
+      }
+    }
   }
 
   onProficiencyChange(index: number, event: Event): void {
@@ -241,25 +266,36 @@ export class BackgroundForm implements OnInit {
       const bondsOptions = this.bondsOptions().filter(o => o.trim());
       const flawsOptions = this.flawsOptions().filter(o => o.trim());
 
+      // Build feature with variant
+      const feature = this.formData().feature;
+      const featureData: any = {
+        name: feature?.name,
+        desc: feature?.desc?.filter((d: string) => d.trim()),
+        is_variant: feature?.is_variant,
+      };
+      if (feature?.is_variant && feature.variant?.name) {
+        featureData.variant = {
+          name: feature.variant.name,
+          desc: feature.variant.desc?.filter((d: string) => d.trim()),
+        };
+      }
+
       const data: Partial<Background> = {
         ...this.formData(),
+        feature: featureData,
         starting_proficiencies: startingProficiencies as any,
         starting_equipment: startingEquipment as any,
         personality_traits: {
           options: personalityTraitsOptions.length > 0 ? personalityTraitsOptions : undefined,
-          desc: this.formData().personality_traits?.desc || undefined
         },
         ideals: {
           options: idealsOptions.length > 0 ? idealsOptions : undefined,
-          desc: this.formData().ideals?.desc || undefined
         },
         bonds: {
           options: bondsOptions.length > 0 ? bondsOptions : undefined,
-          desc: this.formData().bonds?.desc || undefined
         },
         flaws: {
           options: flawsOptions.length > 0 ? flawsOptions : undefined,
-          desc: this.formData().flaws?.desc || undefined
         }
       };
 
@@ -281,5 +317,15 @@ export class BackgroundForm implements OnInit {
     this.router.navigate(['/manual'], {
       queryParams: { section: 'backgrounds' },
     });
+  }
+
+  getProficiencyName(index: string): string {
+    const prof = this.proficiencies.find(p => p.index === index);
+    return prof?.name || index;
+  }
+
+  removeProficiency(index: number): void {
+    this.selectedProficiencies.update(list => list.filter((_, i) => i !== index));
+    this.proficiencyCount.update(c => c - 1);
   }
 }

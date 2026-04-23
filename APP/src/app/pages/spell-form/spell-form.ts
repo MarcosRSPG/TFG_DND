@@ -33,7 +33,6 @@ export class SpellForm implements OnInit {
 
   // Form data
   formData = signal<Partial<Spell>>({
-    index: '',
     name: '',
     desc: [''],
     higher_level: [],
@@ -67,7 +66,19 @@ export class SpellForm implements OnInit {
   hasSomatic = signal(false);
   hasMaterial = signal(false);
 
-  // Available options
+  // Filter for datalist
+  classFilter = signal('');
+
+  // Filtered options - for datalist (classes checkboxes still need filtering)
+  get filteredClasses(): DndClass[] {
+    const query = this.classFilter().toLowerCase();
+    if (!query) return this.dndOptions.classes();
+    return this.dndOptions.classes().filter(c =>
+      c.name.toLowerCase().includes(query) || c.index.toLowerCase().includes(query)
+    );
+  }
+
+  // Available options - show all for datalist
   get schools(): DndSchool[] {
     return this.dndOptions.schools();
   }
@@ -106,6 +117,11 @@ export class SpellForm implements OnInit {
     // Load D&D API options
     this.dndOptions.loadSchools();
     this.dndOptions.loadClasses();
+  }
+
+  onClassFilterChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.classFilter.set(input.value);
   }
 
   onComponentChange(component: string, checked: boolean): void {

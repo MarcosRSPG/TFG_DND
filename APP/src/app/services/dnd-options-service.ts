@@ -2,44 +2,22 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import {
+  DndProficiency,
+  DndSchool,
+  DndClass,
+  DndAlignment,
+  DndEquipmentCategory,
+} from '../interfaces/dnd-options';
 
-export interface DndProficiency {
-  index: string;
-  name: string;
-  url: string;
-  type?: string;
-}
-
-export interface DndSchool {
-  index: string;
-  name: string;
-  url: string;
-  desc?: string[];
-}
-
-export interface DndClass {
-  index: string;
-  name: string;
-  url: string;
-}
-
-export interface DndAlignment {
-  index: string;
-  name: string;
-  url: string;
-  desc?: string;
-}
-
-export interface DndEquipmentCategory {
-  index: string;
-  name: string;
-  url: string;
-  equipment?: Array<{
-    index: string;
-    name: string;
-    url: string;
-  }>;
-}
+// Re-export for backward compatibility
+export type {
+  DndProficiency,
+  DndSchool,
+  DndClass,
+  DndAlignment,
+  DndEquipmentCategory,
+} from '../interfaces/dnd-options';
 
 @Injectable({ providedIn: 'root' })
 export class DndOptionsService {

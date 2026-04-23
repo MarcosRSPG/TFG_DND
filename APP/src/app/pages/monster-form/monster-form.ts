@@ -103,9 +103,16 @@ export class MonsterForm implements OnInit {
   // Proficiencies
   selectedProficiencies = signal<{ index: string; bonus: number }[]>([]);
 
+  // Filter
+  alignmentFilter = signal('');
+
   // Available alignments
   get alignments(): DndAlignment[] {
-    return this.dndOptions.alignments();
+    const query = this.alignmentFilter().toLowerCase();
+    if (!query) return this.dndOptions.alignments();
+    return this.dndOptions.alignments().filter(a =>
+      a.name.toLowerCase().includes(query) || a.index.toLowerCase().includes(query)
+    );
   }
 
   // Ability score modifiers
@@ -120,6 +127,11 @@ export class MonsterForm implements OnInit {
 
   ngOnInit(): void {
     this.dndOptions.loadAlignments();
+  }
+
+  onAlignmentFilterChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.alignmentFilter.set(input.value);
   }
 
   // Hit dice methods

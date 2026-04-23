@@ -3,29 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Item } from '../interfaces/item';
-import { AdventuringGear } from '../interfaces/items/adventuring-gear';
-import { Armor } from '../interfaces/items/armor';
-import { Weapon } from '../interfaces/items/weapon';
-import { MagicItem } from '../interfaces/items/magic-item';
-import { Tool } from '../interfaces/items/tool';
-import { Mount } from '../interfaces/items/mount';
+import { ItemType, ItemSpecific } from '../interfaces/items/item.types';
 import { TokenHashService } from './token-hash-service';
 
-export type ItemType =
-  | 'adventuringgear'
-  | 'armor'
-  | 'weapon'
-  | 'magicitem'
-  | 'tool'
-  | 'mount';
-
-export type ItemSpecific =
-  | AdventuringGear
-  | Armor
-  | Weapon
-  | MagicItem
-  | Tool
-  | Mount;
+// Re-export for backward compatibility
+export type { ItemType, ItemSpecific } from '../interfaces/items/item.types';
 
 @Injectable({ providedIn: 'root' })
 export class ItemsService {

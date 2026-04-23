@@ -21,17 +21,6 @@
         />
       </div>
 
-      <div class="form-group">
-        <label for="index">Index (URL slug)</label>
-        <input
-          id="index"
-          type="text"
-          [(ngModel)]="formData().index"
-          name="index"
-          placeholder="e.g. fireball"
-        />
-      </div>
-
       <div class="form-row">
         <div class="form-group">
           <label for="level">Spell Level *</label>
@@ -51,18 +40,21 @@
 
         <div class="form-group">
           <label for="school">School *</label>
-          <select
+          <input
+            type="text"
             id="school"
+            list="schools-list"
             [ngModel]="formData().school?.index"
             (ngModelChange)="formData.update(d => ({ ...d, school: { index: $event, name: '', url: '' } }))"
             name="school"
             required
-          >
-            <option value="">Select school...</option>
+            placeholder="Search or select school..."
+          />
+          <datalist id="schools-list">
             @for (school of schools; track school.index) {
               <option [value]="school.index">{{ school.name }}</option>
             }
-          </select>
+          </datalist>
         </div>
       </div>
     </div>
@@ -234,6 +226,19 @@
 
       <div class="form-group">
         <label>Spellcasting Classes</label>
+        <input
+          type="text"
+          id="class-filter"
+          placeholder="Filter classes..."
+          (input)="onClassFilterChange($event)"
+          class="filter-input"
+          list="classes-list"
+        />
+        <datalist id="classes-list">
+          @for (cls of filteredClasses; track cls.index) {
+            <option [value]="cls.name">{{ cls.index }}</option>
+          }
+        </datalist>
         <div class="checkbox-group checkbox-grid">
           @for (cls of classes; track cls.index) {
             <label class="checkbox-label">

@@ -58,12 +58,20 @@
 
         <div class="form-group">
           <label for="alignment">Alignment *</label>
-          <select id="alignment" [(ngModel)]="formData().alignment" name="alignment" required>
-            <option value="">Select alignment...</option>
+          <input
+            type="text"
+            id="alignment"
+            list="alignments-list"
+            [(ngModel)]="formData().alignment"
+            name="alignment"
+            required
+            placeholder="Search or select alignment..."
+          />
+          <datalist id="alignments-list">
             @for (alignment of alignments; track alignment.index) {
-              <option [value]="alignment.name">{{ alignment.name }}</option>
+              <option [value]="alignment.name"></option>
             }
-          </select>
+          </datalist>
         </div>
       </div>
     </div>
