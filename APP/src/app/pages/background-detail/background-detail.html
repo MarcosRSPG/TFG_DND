@@ -16,6 +16,12 @@
       <p class="detail-subtitle">Background</p>
     </header>
 
+    @if (item.image) {
+      <div class="detail-image">
+        <img [src]="getImageUrl(item.image)" [alt]="item.name" />
+      </div>
+    }
+
     <section class="detail-meta-grid">
       <p class="meta-item"><span class="meta-label">Feature</span><span class="meta-value">{{ item.feature?.name || 'None' }}</span></p>
     </section>
@@ -23,7 +29,8 @@
     @if (item.feature?.desc?.length) {
       <section class="detail-block">
         <h2>Feature Description</h2>
-        <div class="detail-text-stack">
+        <div class="feature-block">
+          <p><strong>{{ item.feature?.name }}</strong></p>
           @for (line of item.feature?.desc ?? []; track $index) {
             <p>{{ line }}</p>
           }

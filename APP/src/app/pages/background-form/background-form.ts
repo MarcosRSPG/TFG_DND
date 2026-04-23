@@ -67,11 +67,13 @@ export class BackgroundForm implements OnInit {
 
   // Items filter
   itemsFilter = signal('');
+  showProficiencyDropdown = signal(false);
+  showEquipmentDropdown = signal(false);
 
   // Filtered items based on search
   get itemsOptions(): Item[] {
     const query = this.itemsFilter().toLowerCase();
-    if (!query) return [];
+    if (!query) return this.filteredItems();
     return this.filteredItems().filter(item =>
       item.name.toLowerCase().includes(query)
     );
@@ -93,10 +95,36 @@ export class BackgroundForm implements OnInit {
   // Filtered proficiencies based on search
   get filteredProficiencies(): DndProficiency[] {
     const query = this.proficiencyFilter().toLowerCase();
-    if (!query) return [];
+    if (!query) return this.dndOptions.proficiencies();
     return this.dndOptions.proficiencies().filter(p =>
       p.name.toLowerCase().includes(query) || p.index.toLowerCase().includes(query)
     );
+  }
+
+  onProficiencyFocus(): void {
+    this.showProficiencyDropdown.set(true);
+  }
+
+  onProficiencyBlur(): void {
+    setTimeout(() => this.showProficiencyDropdown.set(false), 200);
+  }
+
+  onProficiencyInputChange(value: string): void {
+    this.proficiencyFilter.set(value);
+    this.showProficiencyDropdown.set(true);
+  }
+
+  onEquipmentFocus(): void {
+    this.showEquipmentDropdown.set(true);
+  }
+
+  onEquipmentBlur(): void {
+    setTimeout(() => this.showEquipmentDropdown.set(false), 200);
+  }
+
+  onEquipmentInputChange(value: string): void {
+    this.itemsFilter.set(value);
+    this.showEquipmentDropdown.set(true);
   }
 
   addProficiency(index: string): void {
@@ -121,27 +149,6 @@ export class BackgroundForm implements OnInit {
     } finally {
       this.itemsLoading.set(false);
     }
-  }
-
-  onProficiencyInputChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = input.value;
-    // Find matching proficiency
-    const prof = this.filteredProficiencies.find(p => p.name === value);
-    if (prof && !this.selectedProficiencies().includes(prof.index)) {
-      this.selectedProficiencies.update(list => [...list, prof.index]);
-      input.value = '';
-    }
-  }
-
-  onItemsFilterChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.itemsFilter.set(input.value);
-  }
-
-  onEquipmentInputChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.itemsFilter.set(input.value);
   }
 
   selectEquipment(item: Item): void {

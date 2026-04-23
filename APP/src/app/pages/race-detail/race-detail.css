@@ -22,6 +22,51 @@
   color: #f1dfbf;
 }
 
+.detail-image {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.detail-image img {
+  max-width: 240px;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid rgba(201, 162, 90, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ability-bonus-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ability-bonus-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  background: rgba(20, 12, 7, 0.35);
+  border: 1px solid rgba(201, 162, 90, 0.22);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.ability-bonus-item .ability-name {
+  color: #cfbc96;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+.ability-bonus-item .ability-value {
+  color: #eadab8;
+  font-weight: 700;
+}
+
 .message {
   padding: 0.75rem 1rem;
   border-radius: 8px;
@@ -42,8 +87,9 @@
 
 .detail h1 {
   margin: 0;
-  color: #f1dfbf;
-  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+  color: #ffd700;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
 }
 
 .detail-subtitle {
@@ -88,8 +134,9 @@
 
 .detail h2 {
   margin: 0 0 0.55rem;
-  color: #f0d8b0;
-  font-size: 1.16rem;
+  color: #f1dfbf;
+  font-weight: 700;
+  font-size: 1.3rem;
   border-bottom: 1px solid rgba(201, 162, 90, 0.22);
   padding-bottom: 0.35rem;
 }

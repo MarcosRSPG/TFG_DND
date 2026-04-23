@@ -17,6 +17,12 @@
 			<p class="detail-subtitle">Race</p>
 		</header>
 
+		@if (currentRace.image) {
+			<div class="detail-image">
+				<img [src]="getImageUrl(currentRace.image)" [alt]="currentRace.name" />
+			</div>
+		}
+
 		<section class="detail-meta-grid">
 			<p class="meta-item"><span class="meta-label">Size</span><span class="meta-value">{{ currentRace.size }}</span></p>
 			<p class="meta-item"><span class="meta-label">Speed</span><span class="meta-value">{{ currentRace.speed }} pies</span></p>
@@ -47,11 +53,14 @@
 		@if (currentRace.ability_bonuses.length) {
 			<section class="detail-block">
 				<h2>Ability Bonuses</h2>
-				<ul class="detail-list">
+				<div class="ability-bonus-grid">
 					@for (bonus of currentRace.ability_bonuses; track bonus.ability_score.index) {
-						<li><strong>{{ bonus.ability_score.name }}:</strong> +{{ bonus.bonus }}</li>
+						<span class="ability-bonus-item">
+							<span class="ability-name">{{ bonus.ability_score.name }}</span>
+							<span class="ability-value">+{{ bonus.bonus }}</span>
+						</span>
 					}
-				</ul>
+				</div>
 			</section>
 		}
 

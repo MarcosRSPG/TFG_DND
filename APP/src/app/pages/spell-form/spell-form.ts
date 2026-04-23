@@ -153,6 +153,7 @@ export class SpellForm implements OnInit {
   // Search queries (for autocomplete)
   classSearchQuery = signal('');
   classSubclassSearchQuery = signal('');
+  showClassSubclassDropdown = signal(false);
   damageTypeSearchQuery = signal('');
   dcAbilitySearchQuery = signal('');
 
@@ -188,8 +189,21 @@ export class SpellForm implements OnInit {
   // Selected options - filtered by search query
   get filteredClassSubclass(): ClassSubclassOption[] {
     const query = this.classSubclassSearchQuery().toLowerCase();
-    if (!query) return [];
+    if (!query) return this.classSubclassOptions;
     return this.classSubclassOptions.filter(c => c.name.toLowerCase().includes(query));
+  }
+
+  onClassSubclassSearchFocus(): void {
+    this.showClassSubclassDropdown.set(true);
+  }
+
+  onClassSubclassSearchBlur(): void {
+    setTimeout(() => this.showClassSubclassDropdown.set(false), 200);
+  }
+
+  onClassSubclassSearchChange(value: string): void {
+    this.classSubclassSearchQuery.set(value);
+    this.showClassSubclassDropdown.set(true);
   }
 
   // Check if class/subclass is selected

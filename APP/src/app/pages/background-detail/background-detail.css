@@ -22,14 +22,43 @@
   color: #f1dfbf;
 }
 
+.detail-image {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.detail-image img {
+  max-width: 240px;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid rgba(201, 162, 90, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.feature-block {
+  padding: 1rem;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  border-left: 3px solid rgba(255, 215, 0, 0.5);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.feature-block p {
+  margin: 0.4rem 0;
+}
+
 .detail-header {
   margin-bottom: 1rem;
 }
 
 .detail h1 {
   margin: 0;
-  color: #f1dfbf;
-  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+  color: #ffd700;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
 }
 
 .detail-subtitle {

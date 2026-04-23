@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 import { Race, RaceTrait, RaceTraitDetail } from '../../interfaces/race';
 import { Subrace } from '../../interfaces/subrace';
 import { RacesService } from '../../services/races-service';
@@ -23,6 +24,11 @@ export class RaceDetail implements OnInit {
   traitDetails = signal<Record<string, RaceTraitDetail>>({});
   loading = signal(true);
   error = signal<string | null>(null);
+
+  getImageUrl(imagePath: string | undefined): string {
+    if (!imagePath) return '';
+    return `${environment.API_IMAGES}${imagePath}`;
+  }
   selectedSubrace = signal<Subrace | null>(null);
   showModal = signal(false);
   backQueryParams: Record<string, string> = {};

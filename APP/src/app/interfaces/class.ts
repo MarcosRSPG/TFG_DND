@@ -1,6 +1,7 @@
 export interface DndClass {
   index: string;
   name: string;
+  image?: string;
   hit_die: number;
   proficiency_choices: ClassChoice[];
   proficiencies: ClassReference[];
@@ -49,6 +50,9 @@ export interface ClassSpellcasting {
   level: number;
   spellcasting_ability: ClassReference;
   info: ClassSpellcastingInfo[];
+  dc?: number;
+  modifier?: number;
+  slots?: Record<string, number>;
 }
 
 export interface ClassSpellcastingInfo {

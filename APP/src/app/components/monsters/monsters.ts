@@ -10,8 +10,8 @@ interface MonsterFilters {
   searchName: string;
   types: string[];
   sizes: string[];
-  crMin: number | '';
-  crMax: number | '';
+  crMin: string;
+  crMax: string;
   hpMin: number | '';
   hpMax: number | '';
   source: string;
@@ -48,6 +48,11 @@ export class Monsters implements OnInit {
     hpMax: '',
     source: 'all',
   });
+
+  readonly challengeRatings = [
+    '0', '1/8', '1/4', '1/2', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+    '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'
+  ];
 
   private indexSet = new Set<string>();
 
@@ -128,6 +133,18 @@ export class Monsters implements OnInit {
     });
   }
 
+  onCrMinChange(value: string): void {
+    const current = this.filters();
+    this.filters.set({ ...current, crMin: value });
+    this.onFilterChange();
+  }
+
+  onCrMaxChange(value: string): void {
+    const current = this.filters();
+    this.filters.set({ ...current, crMax: value });
+    this.onFilterChange();
+  }
+
   private updateUrl(): void {
     const filters = this.filters();
     this.router.navigate([], {
@@ -160,13 +177,14 @@ export class Monsters implements OnInit {
   }
 
   // Helper to parse challenge rating (e.g., "1/4" -> 0.25)
-  private parseChallengeRating(cr: string | undefined): number {
+  private parseChallengeRating(cr: unknown): number {
     if (!cr) return 0;
-    if (cr.includes('/')) {
-      const [num, den] = cr.split('/').map(Number);
+    const str = String(cr);
+    if (str.includes('/')) {
+      const [num, den] = str.split('/').map(Number);
       return den ? num / den : 0;
     }
-    return Number(cr) || 0;
+    return Number(str) || 0;
   }
 
   private applyFilters(): void {
@@ -187,12 +205,12 @@ export class Monsters implements OnInit {
     }
 
     if (filters.crMin !== '') {
-      const min = Number(filters.crMin);
+      const min = this.parseChallengeRating(filters.crMin);
       filtered = filtered.filter(m => this.parseChallengeRating(m.challenge_rating) >= min);
     }
 
     if (filters.crMax !== '') {
-      const max = Number(filters.crMax);
+      const max = this.parseChallengeRating(filters.crMax);
       filtered = filtered.filter(m => this.parseChallengeRating(m.challenge_rating) <= max);
     }
 

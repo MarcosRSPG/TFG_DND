@@ -16,14 +16,39 @@
       <p class="detail-subtitle">Spell</p>
     </header>
 
+    @if (item.image) {
+      <div class="detail-image">
+        <img [src]="getImageUrl(item.image)" [alt]="item.name" />
+      </div>
+    }
+
+    <div class="magic-tags">
+      @if (item.concentration) {
+        <span class="magic-tag magic-tag--concentration">⚡ Concentration</span>
+      }
+      @if (item.ritual) {
+        <span class="magic-tag magic-tag--ritual">📖 Ritual</span>
+      }
+      <span class="magic-tag magic-tag--casting-time">⏱️ {{ item.casting_time }}</span>
+      <span class="magic-tag magic-tag--range">🎯 {{ item.range }}</span>
+      <span class="magic-tag magic-tag--duration">⏳ {{ item.duration }}</span>
+    </div>
+
+    @if (item.school) {
+      <div class="detail-block school-block">
+        <span class="school-badge">{{ item.school.name }}</span>
+      </div>
+    }
+
     <section class="detail-meta-grid">
       <p class="meta-item"><span class="meta-label">Level</span><span class="meta-value">{{ item.level }}</span></p>
       <p class="meta-item"><span class="meta-label">School</span><span class="meta-value">{{ item.school?.name || 'N/A' }}</span></p>
       <p class="meta-item"><span class="meta-label">Range</span><span class="meta-value">{{ item.range }}</span></p>
       <p class="meta-item"><span class="meta-label">Casting Time</span><span class="meta-value">{{ item.casting_time }}</span></p>
       <p class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">{{ item.duration }}</span></p>
-      <p class="meta-item"><span class="meta-label">Concentration</span><span class="meta-value">{{ item.concentration ? 'Yes' : 'No' }}</span></p>
-      <p class="meta-item"><span class="meta-label">Ritual</span><span class="meta-value">{{ item.ritual ? 'Yes' : 'No' }}</span></p>
+      @if (item.components?.length) {
+        <p class="meta-item"><span class="meta-label">Components</span><span class="meta-value">{{ item.components.join(', ') }} @if (item.material) { <span class="component-material">({{ item.material }})</span> }</span></p>
+      }
     </section>
 
     <section class="detail-block">

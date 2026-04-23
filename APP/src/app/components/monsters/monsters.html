@@ -28,27 +28,31 @@
     </div>
 
     <div class="filter-group">
-      <label for="monster-cr-min">Min CR:</label>
-      <input
+      <label for="monster-cr-min">Min CR</label>
+      <select
         id="monster-cr-min"
-        type="number"
-        [(ngModel)]="filters().crMin"
-        (ngModelChange)="onFilterChange()"
-        placeholder="Min"
-        step="0.125"
-      />
+        [ngModel]="filters().crMin"
+        (ngModelChange)="onCrMinChange($event)"
+      >
+        <option value="">Any</option>
+        @for (cr of challengeRatings; track cr) {
+          <option [value]="cr">{{ cr }}</option>
+        }
+      </select>
     </div>
 
     <div class="filter-group">
-      <label for="monster-cr-max">Max CR:</label>
-      <input
+      <label for="monster-cr-max">Max CR</label>
+      <select
         id="monster-cr-max"
-        type="number"
-        [(ngModel)]="filters().crMax"
-        (ngModelChange)="onFilterChange()"
-        placeholder="Max"
-        step="0.125"
-      />
+        [ngModel]="filters().crMax"
+        (ngModelChange)="onCrMaxChange($event)"
+      >
+        <option value="">Any</option>
+        @for (cr of challengeRatings; track cr) {
+          <option [value]="cr">{{ cr }}</option>
+        }
+      </select>
     </div>
 
     <div class="filter-group">

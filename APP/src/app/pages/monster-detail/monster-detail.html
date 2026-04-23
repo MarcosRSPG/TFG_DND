@@ -16,11 +16,31 @@
       <p class="detail-subtitle">Monster</p>
     </header>
 
+    @if (item.image) {
+      <div class="detail-image">
+        <img [src]="getImageUrl(item.image)" [alt]="item.name" />
+      </div>
+    }
+
     <section class="detail-meta-grid">
       <p class="meta-item"><span class="meta-label">Type</span><span class="meta-value">{{ item.size }} {{ item.type }} {{ item.subtype ? '(' + item.subtype + ')' : '' }}</span></p>
       <p class="meta-item"><span class="meta-label">Alignment</span><span class="meta-value">{{ item.alignment }}</span></p>
       <p class="meta-item"><span class="meta-label">HP</span><span class="meta-value">{{ item.hit_points }} ({{ item.hit_dice }})</span></p>
       <p class="meta-item"><span class="meta-label">CR</span><span class="meta-value">{{ item.challenge_rating }}</span></p>
+      <p class="meta-item"><span class="meta-label">Armor Class</span><span class="meta-value">{{ getArmorClass() }}</span></p>
+      <p class="meta-item"><span class="meta-label">Speed</span><span class="meta-value">{{ getSpeed() }}</span></p>
+      @if (item.senses) {
+        <p class="meta-item"><span class="meta-label">Senses</span><span class="meta-value">{{ getSenses() }}</span></p>
+      }
+      @if (item['skills']?.length) {
+        <p class="meta-item"><span class="meta-label">Skills</span><span class="meta-value">{{ getSkills() }}</span></p>
+      }
+      @if (item.languages) {
+        <p class="meta-item"><span class="meta-label">Languages</span><span class="meta-value">{{ item.languages || 'None' }}</span></p>
+      }
+      @if (item.damage_resistances?.length || item.damage_immunities?.length) {
+        <p class="meta-item"><span class="meta-label">Damage Resistances</span><span class="meta-value">{{ getDamageResistances() }}</span></p>
+      }
     </section>
 
     <section class="detail-block">
@@ -51,7 +71,95 @@
         <h2>Special Abilities</h2>
         <ul class="detail-list">
           @for (ability of item.special_abilities ?? []; track ability.name) {
-            <li><strong>{{ ability.name }}:</strong> {{ ability.desc }}</li>
+            <li class="ability-item"><strong>{{ ability.name }}:</strong> {{ ability.desc }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (getSpellcastingInfo(); as spellData) {
+      <section class="detail-block spellcasting-section">
+        <h2>Spellcasting</h2>
+
+        <div class="spellcasting-header">
+          <p><strong>Spellcaster Ability:</strong> <span>{{ spellData.ability?.name || 'Intelligence' }}</span></p>
+          <p><strong>Spell Save DC:</strong> <span>{{ spellData.dc || 10 }}</span></p>
+          <p><strong>Attack Bonus:</strong> <span>{{ spellData.modifier > 0 ? '+' : '' }}{{ spellData.modifier || 0 }}</span></p>
+        </div>
+
+        @if (spellData.slots && (spellData.slots['1'] > 0 || spellData.slots['2'] > 0 || spellData.slots['3'] > 0 || spellData.slots['4'] > 0 || spellData.slots['5'] > 0 || spellData.slots['6'] > 0 || spellData.slots['7'] > 0 || spellData.slots['8'] > 0 || spellData.slots['9'] > 0)) {
+          <h3>Spell Slots</h3>
+          <div class="spell-slots-display">
+            @for (slot of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track slot) {
+              @if (spellData.slots[slot.toString()] > 0) {
+                <div class="slot-display-card">
+                  <span class="slot-level-label">Level {{ slot }}</span>
+                  <span class="slot-count">{{ spellData.slots[slot.toString()] }} slot{{ spellData.slots[slot.toString()] > 1 ? 's' : '' }}</span>
+                </div>
+              }
+            }
+          </div>
+          <details class="spell-slots-details">
+            <summary class="slots-details-toggle">View Spell Slots Table</summary>
+            <table class="spell-slots-table">
+              <thead>
+                <tr>
+                  <th>Spell Level</th>
+                  <th>Slots Available</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (slot of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track slot) {
+                  @if (spellData.slots[slot.toString()] > 0) {
+                    <tr>
+                      <td>Level {{ slot }}</td>
+                      <td>{{ spellData.slots[slot.toString()] }}</td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </details>
+        }
+
+        @if (spellData.spells && spellData.spells.length > 0) {
+          <h3>Spells Known</h3>
+          <div class="spells-grouped-display">
+            @for (level of getSpellLevels(); track level) {
+              <div class="spell-level-group">
+                <h4 class="level-group-header">{{ getSpellLevelLabel(level) }}</h4>
+                <div class="spells-in-level">
+                  @for (spell of getSpellByLevel()[level]; track spell.name) {
+                    <span class="spell-tag">
+                      <a [routerLink]="['/spells', getSpellIndex(spell.name)]">{{ spell.name }}</a>
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    @if (item.legendary_actions?.length) {
+      <section class="detail-block">
+        <h2>Legendary Actions</h2>
+        <p class="legendary-intro">The {{ item.name }} can take {{ item.legendary_actions?.length }} legendary actions, choosing from the options below. Only one legendary action can be used at a time and only at the end of another creature's turn. The {{ item.name }} regains spent legendary actions at the start of its turn.</p>
+        <ul class="detail-list">
+          @for (action of item.legendary_actions ?? []; track action.name) {
+            <li class="legendary-action-item"><strong>{{ action.name }}:</strong> {{ action.desc }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (item.reactions?.length) {
+      <section class="detail-block">
+        <h2>Reactions</h2>
+        <ul class="detail-list">
+          @for (reaction of item.reactions ?? []; track reaction.name) {
+            <li class="ability-item"><strong>{{ reaction.name }}:</strong> {{ reaction.desc }}</li>
           }
         </ul>
       </section>

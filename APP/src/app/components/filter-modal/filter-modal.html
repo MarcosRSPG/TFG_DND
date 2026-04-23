@@ -10,6 +10,8 @@
         <input
           type="text"
           [(ngModel)]="searchText"
+          (ngModelChange)="searchText.set($event)"
+          (focus)="onSearchFocus()"
           placeholder="Search..."
           class="filter-search-input"
         />

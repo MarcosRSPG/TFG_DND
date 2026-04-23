@@ -32,13 +32,15 @@
           type="text"
           id="proficiency-input"
           [ngModel]="proficiencyFilter()"
-          (ngModelChange)="proficiencyFilter.set($event)"
+          (ngModelChange)="onProficiencyInputChange($event)"
+          (focus)="onProficiencyFocus()"
+          (blur)="onProficiencyBlur()"
           [ngModelOptions]="{standalone: true}"
-          placeholder="Search proficiency..."
+          placeholder="Type to search or click to see all..."
           class="search-input"
         />
 
-        @if (proficiencyFilter() && filteredProficiencies.length > 0) {
+        @if (showProficiencyDropdown() && filteredProficiencies.length > 0) {
           <div class="filtered-dropdown">
             @for (prof of filteredProficiencies; track prof.index) {
               <button 
@@ -82,13 +84,15 @@
           type="text"
           id="equipment-input"
           [ngModel]="itemsFilter()"
-          (ngModelChange)="itemsFilter.set($event)"
+          (ngModelChange)="onEquipmentInputChange($event)"
+          (focus)="onEquipmentFocus()"
+          (blur)="onEquipmentBlur()"
           [ngModelOptions]="{standalone: true}"
-          placeholder="Search equipment..."
+          placeholder="Type to search or click to see all..."
           class="search-input"
         />
 
-        @if (itemsFilter() && itemsOptions.length > 0) {
+        @if (showEquipmentDropdown() && itemsOptions.length > 0) {
           <div class="filtered-dropdown">
             @for (item of itemsOptions; track item['index']) {
               <button 

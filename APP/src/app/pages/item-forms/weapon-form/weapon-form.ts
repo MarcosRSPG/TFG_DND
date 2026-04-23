@@ -62,6 +62,7 @@ export class WeaponForm implements OnInit {
 
   // Property search for dropdown
   propertySearchQuery = signal('');
+  showPropertiesDropdown = signal(false);
 
   // Selected property's description (for properties that need explanation)
   selectedPropertyDesc = signal<string | null>(null);
@@ -142,10 +143,24 @@ export class WeaponForm implements OnInit {
   // Filter properties based on search
   get filteredProperties(): WeaponProperty[] {
     const query = this.propertySearchQuery().toLowerCase();
-    if (!query) return [];
-    return this.weaponProperties.filter(p => 
+    if (!query) return this.weaponProperties;
+    return this.weaponProperties.filter(p =>
       p.name.toLowerCase().includes(query) || p.index.toLowerCase().includes(query)
     );
+  }
+
+  onPropertySearchFocus(): void {
+    this.showPropertiesDropdown.set(true);
+  }
+
+  onPropertySearchBlur(): void {
+    // Delay to allow click on dropdown item
+    setTimeout(() => this.showPropertiesDropdown.set(false), 200);
+  }
+
+  onPropertySearchChange(value: string): void {
+    this.propertySearchQuery.set(value);
+    this.showPropertiesDropdown.set(true);
   }
 
   toggleProperty(propertyIndex: string): void {

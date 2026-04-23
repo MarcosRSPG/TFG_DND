@@ -62,10 +62,25 @@ li {
 	margin-bottom: 0.3rem;
 }
 .detail-title {
-	font-size: 2.2rem;
-	margin-bottom: 1.2rem;
-	color: #ffd700;
-	text-shadow: 1px 1px 8px #000a;
+  font-size: 2.2rem;
+  margin-bottom: 1.2rem;
+  color: #ffd700;
+  text-shadow: 1px 1px 8px #000a;
+}
+
+.detail-image {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.detail-image img {
+  max-width: 260px;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid rgba(201, 162, 90, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 .detail-grid {
 	display: grid;

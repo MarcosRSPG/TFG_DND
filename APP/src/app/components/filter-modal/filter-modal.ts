@@ -20,10 +20,18 @@ export class FilterModalComponent {
   localSelected = signal<string[]>([]);
   isOpen = signal(false);
 
+  private lastSearchText = '';
+
   open(): void {
     this.localSelected.set([...this.selectedOptions]);
     this.searchText.set('');
+    this.lastSearchText = '';
     this.isOpen.set(true);
+  }
+
+  onSearchFocus(): void {
+    this.lastSearchText = this.searchText();
+    this.searchText.set('');
   }
 
   close(): void {

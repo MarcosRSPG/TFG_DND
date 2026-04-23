@@ -1,6 +1,7 @@
 export interface Race {
 	index: string;
 	name: string;
+	image?: string;
 	speed: number;
 	ability_bonuses: RaceAbilityBonus[];
 	age: string;

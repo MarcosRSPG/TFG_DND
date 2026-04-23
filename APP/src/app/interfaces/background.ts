@@ -2,6 +2,7 @@ export interface Background {
   id?: string;
   index: string;
   name: string;
+  image?: string;
   starting_proficiencies?: BackgroundReference[];
   starting_equipment?: BackgroundEquipment[];
   starting_equipment_options?: Array<{ desc?: string }>;

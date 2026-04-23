@@ -124,13 +124,15 @@
           type="text"
           id="property-search"
           [ngModel]="propertySearchQuery()"
-          (ngModelChange)="propertySearchQuery.set($event)"
+          (ngModelChange)="onPropertySearchChange($event)"
+          (focus)="onPropertySearchFocus()"
+          (blur)="onPropertySearchBlur()"
           [ngModelOptions]="{standalone: true}"
-          placeholder="Type to search properties..."
+          placeholder="Type to search or click to see all..."
           class="search-input"
         />
 
-        @if (propertySearchQuery() && filteredProperties.length > 0) {
+        @if (showPropertiesDropdown() && filteredProperties.length > 0) {
           <div class="filtered-dropdown">
             @for (prop of filteredProperties; track prop.index) {
               <button 

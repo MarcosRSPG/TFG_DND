@@ -1,6 +1,14 @@
 @if (mount) {
   <section class="detail-container">
+    <a routerLink="/manual" [queryParams]="{section: 'items'}" class="back-link">← Back</a>
     <h2 class="detail-title">{{ mount.name }}</h2>
+
+    @if (mount.image) {
+      <div class="detail-image">
+        <img [src]="getImageUrl(mount.image)" [alt]="mount.name" />
+      </div>
+    }
+
     <div class="detail-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
       <div>
         <div class="detail-section">

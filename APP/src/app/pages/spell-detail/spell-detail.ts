@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { environment } from '../../../environments/environment';
 import { Spell } from '../../interfaces/spell';
 import { SpellsService } from '../../services/spells-service';
 
@@ -18,6 +19,11 @@ export class SpellDetail implements OnInit {
   spell = signal<Spell | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
+
+  getImageUrl(imagePath: string | undefined): string {
+    if (!imagePath) return '';
+    return `${environment.API_IMAGES}${imagePath}`;
+  }
 
   async ngOnInit(): Promise<void> {
     try {

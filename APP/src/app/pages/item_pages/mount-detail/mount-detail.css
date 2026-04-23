@@ -81,3 +81,18 @@ ul {
 li {
 	margin-bottom: 0.3rem;
 }
+
+/* Image */
+.detail-image {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.detail-image img {
+  max-width: 260px;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid rgba(201, 162, 90, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}

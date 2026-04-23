@@ -62,13 +62,15 @@
             type="text"
             id="alignment"
             [ngModel]="alignmentSearchQuery()"
-            (ngModelChange)="alignmentSearchQuery.set($event)"
+            (ngModelChange)="onAlignmentChange($event)"
+            (focus)="onAlignmentFocus()"
+            (blur)="onAlignmentBlur()"
             [ngModelOptions]="{standalone: true}"
-            placeholder="Search alignment..."
+            placeholder="Type to search or click to see all..."
             class="search-input"
           />
 
-          @if (alignmentSearchQuery() && alignments.length > 0) {
+          @if (showAlignmentDropdown() && alignments.length > 0) {
             <div class="filtered-dropdown">
               @for (alignment of filteredAlignments; track alignment.index) {
                 <button 
@@ -247,13 +249,15 @@
           type="text"
           id="language-input"
           [ngModel]="languageFilter()"
-          (ngModelChange)="languageFilter.set($event)"
+          (ngModelChange)="onLanguageChange($event)"
+          (focus)="onLanguageFocus()"
+          (blur)="onLanguageBlur()"
           [ngModelOptions]="{standalone: true}"
-          placeholder="Search language..."
+          placeholder="Type to search or click to see all..."
           class="search-input"
         />
 
-        @if (languageFilter() && filteredLanguages.length > 0) {
+        @if (showLanguageDropdown() && filteredLanguages.length > 0) {
           <div class="filtered-dropdown">
             @for (lang of filteredLanguages; track lang.index) {
               <button 
@@ -470,13 +474,15 @@
             id="spell-search"
             type="text"
             [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)"
+            (ngModelChange)="onSpellChange($event)"
+            (focus)="onSpellFocus()"
+            (blur)="onSpellBlur()"
             [ngModelOptions]="{standalone: true}"
-            placeholder="Type to search spells..."
+            placeholder="Type to search or click to see all..."
             class="search-input"
           />
 
-          @if (searchQuery() && filteredSpells.length > 0) {
+          @if (showSpellDropdown() && filteredSpells.length > 0) {
             <div class="filtered-dropdown">
               @for (spell of filteredSpells; track spell.name) {
                 <button type="button" class="dropdown-item" (click)="addSpellToKnown(spell)">

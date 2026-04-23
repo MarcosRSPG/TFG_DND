@@ -126,6 +126,7 @@ export class MonsterForm implements OnInit {
 
   // Languages management
   languageFilter = signal('');
+  showLanguageDropdown = signal(false);
   selectedLanguages = signal<{ index: string; name: string }[]>([]);
 
   // Hit dice selection
@@ -171,9 +172,11 @@ export class MonsterForm implements OnInit {
     duration?: string;
   }[]>([]);
   searchQuery = signal('');
+  showSpellDropdown = signal(false);
 
   // Alignment search
   alignmentSearchQuery = signal('');
+  showAlignmentDropdown = signal(false);
 
   // Filtered alignments based on search
   get filteredAlignments(): DndAlignment[] {
@@ -187,6 +190,19 @@ export class MonsterForm implements OnInit {
   selectAlignment(name: string): void {
     this.formData.update(d => ({ ...d, alignment: name }));
     this.alignmentSearchQuery.set('');
+  }
+
+  onAlignmentFocus(): void {
+    this.showAlignmentDropdown.set(true);
+  }
+
+  onAlignmentBlur(): void {
+    setTimeout(() => this.showAlignmentDropdown.set(false), 200);
+  }
+
+  onAlignmentChange(value: string): void {
+    this.alignmentSearchQuery.set(value);
+    this.showAlignmentDropdown.set(true);
   }
 
   // Proficiencies
@@ -207,6 +223,19 @@ export class MonsterForm implements OnInit {
     const spells = this.allSpells();
     if (!query) return spells;
     return spells.filter(s => s.name.toLowerCase().includes(query));
+  }
+
+  onSpellFocus(): void {
+    this.showSpellDropdown.set(true);
+  }
+
+  onSpellBlur(): void {
+    setTimeout(() => this.showSpellDropdown.set(false), 200);
+  }
+
+  onSpellChange(value: string): void {
+    this.searchQuery.set(value);
+    this.showSpellDropdown.set(true);
   }
 
   // Current alignment description - FIX: Use optional chaining properly
@@ -305,7 +334,7 @@ export class MonsterForm implements OnInit {
   get filteredLanguages() {
     const query = this.languageFilter().toLowerCase();
     const langs = this.dndOptions.languages();
-    if (!query) return [];
+    if (!query) return langs;
     return langs.filter(l => l.name.toLowerCase().includes(query));
   }
 
@@ -318,6 +347,19 @@ export class MonsterForm implements OnInit {
 
   removeLanguage(index: number): void {
     this.selectedLanguages.update(list => list.filter((_, i) => i !== index));
+  }
+
+  onLanguageFocus(): void {
+    this.showLanguageDropdown.set(true);
+  }
+
+  onLanguageBlur(): void {
+    setTimeout(() => this.showLanguageDropdown.set(false), 200);
+  }
+
+  onLanguageChange(value: string): void {
+    this.languageFilter.set(value);
+    this.showLanguageDropdown.set(true);
   }
 
   async loadAllSpells(): Promise<void> {

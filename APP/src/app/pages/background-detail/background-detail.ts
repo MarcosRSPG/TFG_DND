@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { environment } from '../../../environments/environment';
 import { Background, BackgroundReference } from '../../interfaces/background';
 import { BackgroundsService } from '../../services/backgrounds-service';
 
@@ -18,6 +19,11 @@ export class BackgroundDetail implements OnInit {
   background = signal<Background | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
+
+  getImageUrl(imagePath: string | undefined): string {
+    if (!imagePath) return '';
+    return `${environment.API_IMAGES}${imagePath}`;
+  }
 
   async ngOnInit(): Promise<void> {
     try {

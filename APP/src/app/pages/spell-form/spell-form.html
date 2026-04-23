@@ -240,13 +240,15 @@
           type="text"
           id="class-search"
           [ngModel]="classSubclassSearchQuery()"
-          (ngModelChange)="classSubclassSearchQuery.set($event)"
+          (ngModelChange)="onClassSubclassSearchChange($event)"
+          (focus)="onClassSubclassSearchFocus()"
+          (blur)="onClassSubclassSearchBlur()"
           [ngModelOptions]="{standalone: true}"
-          placeholder="Type to search classes or subclasses..."
+          placeholder="Type to search or click to see all..."
           class="search-input"
         />
 
-        @if (classSubclassSearchQuery() && filteredClassSubclass.length > 0) {
+        @if (showClassSubclassDropdown() && filteredClassSubclass.length > 0) {
           <div class="filtered-dropdown">
             @for (option of filteredClassSubclass; track option.index + option.type) {
               <button 

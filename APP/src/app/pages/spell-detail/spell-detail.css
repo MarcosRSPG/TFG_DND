@@ -22,14 +22,107 @@
   color: #f1dfbf;
 }
 
+.detail-image {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.detail-image img {
+  max-width: 220px;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid rgba(201, 162, 90, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.magic-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.magic-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.magic-tag--concentration {
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+}
+
+.magic-tag--ritual {
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+}
+
+.magic-tag--casting-time,
+.magic-tag--range,
+.magic-tag--duration {
+  background: rgba(201, 162, 90, 0.12);
+  color: #c9a25a;
+  border: 1px solid rgba(201, 162, 90, 0.35);
+}
+
+.school-block {
+  margin-bottom: 1rem;
+}
+
+.school-badge {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+}
+
+.component-material {
+  font-style: italic;
+  color: #bfa77d;
+}
+
 .detail-header {
   margin-bottom: 1rem;
 }
 
 .detail h1 {
   margin: 0;
+  color: #ffd700;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.detail h2 {
+  margin: 0 0 0.55rem;
   color: #f1dfbf;
-  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+  font-weight: 700;
+  font-size: 1.3rem;
+  border-bottom: 1px solid rgba(201, 162, 90, 0.22);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.detail h3 {
+  margin: 0;
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
 }
 
 .detail-subtitle {
@@ -70,14 +163,6 @@
 
 .detail-block + .detail-block {
   margin-top: 1.05rem;
-}
-
-.detail h2 {
-  margin: 0 0 0.55rem;
-  color: #f0d8b0;
-  font-size: 1.16rem;
-  border-bottom: 1px solid rgba(201, 162, 90, 0.22);
-  padding-bottom: 0.35rem;
 }
 
 .detail-text-stack p + p {
