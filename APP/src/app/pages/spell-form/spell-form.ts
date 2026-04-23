@@ -187,7 +187,9 @@ export class SpellForm implements OnInit {
 
   // Selected options - filtered by search query
   get filteredClassSubclass(): ClassSubclassOption[] {
-    return this.classSubclassOptions;
+    const query = this.classSubclassSearchQuery().toLowerCase();
+    if (!query) return [];
+    return this.classSubclassOptions.filter(c => c.name.toLowerCase().includes(query));
   }
 
   // Check if class/subclass is selected
@@ -195,6 +197,18 @@ export class SpellForm implements OnInit {
     const classes = this.formData().classes || [];
     const subclasses = this.formData().subclasses || [];
     return classes.some((c) => c?.['index'] === index) || subclasses.some((s) => s?.['index'] === index);
+  }
+
+  // Check if any classes or subclasses are selected
+  hasSelectedClasses(): boolean {
+    return (this.formData().classes?.length ?? 0) > 0 || (this.formData().subclasses?.length ?? 0) > 0;
+  }
+
+  // Get all selected classes and subclasses for display
+  getSelectedClasses(): ClassSubclassOption[] {
+    const classes = (this.formData().classes || []).map(c => ({ ...c, type: 'class' as const, url: c.url }));
+    const subclasses = (this.formData().subclasses || []).map(s => ({ ...s, type: 'subclass' as const, url: s.url }));
+    return [...classes, ...subclasses];
   }
 
   ngOnInit(): void {

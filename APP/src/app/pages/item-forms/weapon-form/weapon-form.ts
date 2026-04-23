@@ -8,6 +8,7 @@ import { ItemsService } from '../../../services/items-service';
 interface WeaponProperty {
   index: string;
   name: string;
+  desc?: string;
 }
 
 interface DamageType {
@@ -49,26 +50,27 @@ export class WeaponForm implements OnInit {
   // Weapon ranges
   weaponRanges = ['Melee', 'Ranged'];
 
-  // Damage dice options
-  damageDice = ['1d4', '1d6', '1d8', '1d10', '1d12', '2d6', '2d8', '2d10', '2d12', '3d6', '3d8', '4d6', '4d8', '6d6', '8d6'];
+  // Damage dice options - just the die type
+  damageDice = ['d4', 'd6', 'd8', 'd10', 'd12'];
 
   // Cost units
   costUnits = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
-  // Weapon properties from D&D API
-  weaponProperties: WeaponProperty[] = [
-    { index: 'ammunition', name: 'Ammunition' },
-    { index: 'finesse', name: 'Finesse' },
-    { index: 'heavy', name: 'Heavy' },
-    { index: 'light', name: 'Light' },
-    { index: 'loading', name: 'Loading' },
-    { index: 'range', name: 'Range' },
-    { index: 'reach', name: 'Reach' },
-    { index: 'special', name: 'Special' },
-    { index: 'thrown', name: 'Thrown' },
-    { index: 'two-handed', name: 'Two-Handed' },
-    { index: 'versatile', name: 'Versatile' },
-  ];
+  // Weapon properties from D&D API (loaded in ngOnInit)
+  weaponProperties: WeaponProperty[] = [];
+  weaponPropertiesLoading = signal(true);
+
+  // Property search for dropdown
+  propertySearchQuery = signal('');
+
+  // Selected property's description (for properties that need explanation)
+  selectedPropertyDesc = signal<string | null>(null);
+
+  // Extra field for 'special' property
+  specialPropertyDesc = signal('');
+
+  // Properties that show description when selected
+  readonly propertiesWithDesc = ['finesse', 'heavy', 'light', 'reach', 'thrown', 'two-handed', 'versatile', 'ammunition', 'loading', 'monk'];
 
   // Damage types from D&D API
   damageTypes: DamageType[] = [
@@ -86,19 +88,102 @@ export class WeaponForm implements OnInit {
   // Two-handed damage count
   twoHandedDamageCount = signal(1);
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadWeaponProperties();
+  }
+
+  async loadWeaponProperties(): Promise<void> {
+    this.weaponPropertiesLoading.set(true);
+    try {
+      const response = await fetch('https://www.dnd5eapi.co/api/2014/weapon-properties');
+      const data = await response.json();
+      
+      // Load each property with its description
+      const properties: WeaponProperty[] = [];
+      for (const prop of data.results) {
+        try {
+          const detailRes = await fetch(`https://www.dnd5eapi.co${prop.url}`);
+          const detail = await detailRes.json();
+          properties.push({
+            index: prop.index,
+            name: prop.name,
+            desc: detail.desc?.[0] || ''
+          });
+        } catch {
+          properties.push({
+            index: prop.index,
+            name: prop.name,
+            desc: ''
+          });
+        }
+      }
+      this.weaponProperties = properties;
+    } catch (err) {
+      console.error('Error loading weapon properties:', err);
+      // Fallback to basic list
+      this.weaponProperties = [
+        { index: 'ammunition', name: 'Ammunition' },
+        { index: 'finesse', name: 'Finesse' },
+        { index: 'heavy', name: 'Heavy' },
+        { index: 'light', name: 'Light' },
+        { index: 'loading', name: 'Loading' },
+        { index: 'monk', name: 'Monk' },
+        { index: 'reach', name: 'Reach' },
+        { index: 'special', name: 'Special' },
+        { index: 'thrown', name: 'Thrown' },
+        { index: 'two-handed', name: 'Two-Handed' },
+        { index: 'versatile', name: 'Versatile' },
+      ];
+    } finally {
+      this.weaponPropertiesLoading.set(false);
+    }
+  }
+
+  // Filter properties based on search
+  get filteredProperties(): WeaponProperty[] {
+    const query = this.propertySearchQuery().toLowerCase();
+    if (!query) return [];
+    return this.weaponProperties.filter(p => 
+      p.name.toLowerCase().includes(query) || p.index.toLowerCase().includes(query)
+    );
+  }
 
   toggleProperty(propertyIndex: string): void {
     const current = this.selectedProperties();
     if (current.includes(propertyIndex)) {
       this.selectedProperties.set(current.filter(p => p !== propertyIndex));
+      // Clear description if unselected
+      if (!current.includes(propertyIndex)) {
+        this.selectedPropertyDesc.set(null);
+      }
     } else {
       this.selectedProperties.set([...current, propertyIndex]);
+      // Show description for properties that have one
+      const prop = this.weaponProperties.find(p => p.index === propertyIndex);
+      if (prop?.desc && this.propertiesWithDesc.includes(propertyIndex)) {
+        this.selectedPropertyDesc.set(prop.desc);
+      } else if (propertyIndex === 'special') {
+        this.selectedPropertyDesc.set('special');
+      } else {
+        this.selectedPropertyDesc.set(null);
+      }
     }
   }
 
-  hasProperty(propertyIndex: string): boolean {
+hasProperty(propertyIndex: string): boolean {
     return this.selectedProperties().includes(propertyIndex);
+  }
+
+  // Get property name for template
+  getPropertyName(propertyIndex: string): string {
+    const prop = this.weaponProperties.find(p => p.index === propertyIndex);
+    return prop?.name || propertyIndex;
+  }
+
+  // Get property description
+  getPropertyDesc(propertyIndex: string): string {
+    const prop = this.weaponProperties.find(p => p.index === propertyIndex);
+    return prop?.desc || '';
   }
 
   async onSubmit(): Promise<void> {
@@ -112,7 +197,9 @@ export class WeaponForm implements OnInit {
         return {
           index,
           name: prop?.name || index,
-          url: `/api/2014/weapon-properties/${index}`
+          url: `/api/2014/weapon-properties/${index}`,
+          // Include description for 'special' property
+          desc: index === 'special' ? this.specialPropertyDesc() : (prop?.desc || '')
         };
       });
 
@@ -120,13 +207,13 @@ export class WeaponForm implements OnInit {
       const damageType = this.formData().damage?.damage_type || { index: '', name: '', url: '' };
 
       // Build damage dice formula: count + die (e.g., 2d6)
-      const baseDie = this.formData().damage?.damage_dice?.replace(/^\d+/, '') || 'd6';
-      const damageDice = `${this.damageCount()}${baseDie}`;
+      const dieType = this.formData().damage?.damage_dice || 'd6';
+      const damageDice = `${this.damageCount()}${dieType}`;
 
       // Build two-handed damage reference
       const twoHandedDamageType = this.formData().two_handed_damage?.damage_type || { index: '', name: '', url: '' };
-      const twoHandedBaseDie = this.formData().two_handed_damage?.damage_dice?.replace(/^\d+/, '') || 'd8';
-      const twoHandedDamageDice = `${this.twoHandedDamageCount()}${twoHandedBaseDie}`;
+      const twoHandedDieType = this.formData().two_handed_damage?.damage_dice || 'd8';
+      const twoHandedDamageDice = `${this.twoHandedDamageCount()}${twoHandedDieType}`;
 
       const data: Partial<Item> = {
         ...this.formData(),

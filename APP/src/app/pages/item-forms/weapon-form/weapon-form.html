@@ -59,13 +59,13 @@
 
       <div class="damage-input-row">
         <div class="form-group">
-          <label for="damage-count">Count</label>
+          <label for="damage-number">Number</label>
           <input
-            id="damage-count"
+            id="damage-number"
             type="number"
             [ngModel]="damageCount()"
             (ngModelChange)="damageCount.set($event)"
-            name="damageCount"
+            name="damageNumber"
             min="1"
             max="10"
             placeholder="e.g. 1"
@@ -73,7 +73,7 @@
         </div>
 
         <div class="form-group">
-          <label for="damage-dice">Dice *</label>
+          <label for="damage-dice">Dice Type *</label>
           <select id="damage-dice" [(ngModel)]="formData().damage!.damage_dice" name="damageDice" required>
             @for (die of damageDice; track die) {
               <option [value]="die">{{ die }}</option>
@@ -119,31 +119,76 @@
       </div>
 
       <div class="form-group">
-        <label>Properties</label>
-        <div class="properties-grid">
-          @for (prop of weaponProperties; track prop.index) {
-            <label class="property-label">
-              <input
-                type="checkbox"
-                [checked]="hasProperty(prop.index)"
-                (change)="toggleProperty(prop.index)"
-              />
-              <span>{{ prop.name }}</span>
-            </label>
-          }
-        </div>
+        <label for="property-search">Weapon Properties</label>
+        <input
+          type="text"
+          id="property-search"
+          [ngModel]="propertySearchQuery()"
+          (ngModelChange)="propertySearchQuery.set($event)"
+          [ngModelOptions]="{standalone: true}"
+          placeholder="Type to search properties..."
+          class="search-input"
+        />
+
+        @if (propertySearchQuery() && filteredProperties.length > 0) {
+          <div class="filtered-dropdown">
+            @for (prop of filteredProperties; track prop.index) {
+              <button 
+                type="button" 
+                class="dropdown-item"
+                (click)="toggleProperty(prop.index)"
+                [class.selected]="hasProperty(prop.index)"
+              >
+                {{ prop.name }}
+              </button>
+            }
+          </div>
+        }
       </div>
 
+      @if (selectedProperties().length > 0) {
+        <div class="properties-selected">
+          <div class="properties-selected-header">
+            <span>Selected Properties</span>
+            <span class="properties-count">{{ selectedProperties().length }}</span>
+          </div>
+          
+          @for (propIndex of selectedProperties(); track propIndex) {
+            <article class="property-card">
+              <header class="property-card-header">
+                <span class="property-name">{{ getPropertyName(propIndex) }}</span>
+                <button type="button" class="remove-btn" (click)="toggleProperty(propIndex)">X</button>
+              </header>
+              
+              @if (propIndex === 'special') {
+                <div class="property-special-input">
+                  <label>Describe the special property:</label>
+                  <input
+                    type="text"
+                    [ngModel]="specialPropertyDesc()"
+                    (ngModelChange)="specialPropertyDesc.set($event)"
+                    [ngModelOptions]="{standalone: true}"
+                    placeholder="e.g. The blade glows when within 30ft of a celestial..."
+                  />
+                </div>
+              } @else if (getPropertyDesc(propIndex)) {
+                <p class="property-desc">{{ getPropertyDesc(propIndex) }}</p>
+              }
+            </article>
+          }
+        </div>
+      }
+
       @if (hasProperty('versatile')) {
-        <div class="two-handed-damage-row">
+        <div class="versatile-damage-row">
           <div class="form-group">
-            <label for="twohand-count">Count</label>
+            <label for="twohand-number">Number</label>
             <input
-              id="twohand-count"
+              id="twohand-number"
               type="number"
               [ngModel]="twoHandedDamageCount()"
               (ngModelChange)="twoHandedDamageCount.set($event)"
-              name="twoHandedDamageCount"
+              name="twoHandedDamageNumber"
               min="1"
               max="10"
               placeholder="e.g. 2"
@@ -151,7 +196,7 @@
           </div>
 
           <div class="form-group">
-            <label for="twohand-dice">Two-Handed Dice</label>
+            <label for="twohand-dice">Dice Type</label>
             <select id="twohand-dice" [(ngModel)]="formData().two_handed_damage!.damage_dice" name="twohandDice">
               @for (die of damageDice; track die) {
                 <option [value]="die">{{ die }}</option>
@@ -160,7 +205,7 @@
           </div>
 
           <div class="form-group">
-            <label for="twohand-type">Two-Handed Type</label>
+            <label for="twohand-type">Damage Type</label>
             <select id="twohand-type" [ngModel]="formData().two_handed_damage!.damage_type?.index" (ngModelChange)="formData.update(d => ({ ...d, two_handed_damage: { ...d.two_handed_damage!, damage_type: { index: $event, name: $event, url: '/api/2014/damage-types/' + $event } } }))" name="twohandType">
               <option value="">Select type...</option>
               @for (dtype of damageTypes; track dtype.index) {

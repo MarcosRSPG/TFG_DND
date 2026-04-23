@@ -1,7 +1,9 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { Monster, MonsterAction, MonsterAbility, SpellcastingInfo, SpellInfo, MonsterProficiency, MonsterDamage, ResourceReference } from '../../interfaces/monster';
 import { Spell } from '../../interfaces/spell';
 import { MonstersService } from '../../services/monsters-service';
@@ -37,6 +39,7 @@ export class MonsterForm implements OnInit {
   private readonly monstersService = inject(MonstersService);
   private readonly dndOptions = inject(DndOptionsService);
   private readonly spellsService = inject(SpellsService);
+  private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
 
   isEditMode = signal(false);
@@ -91,22 +94,6 @@ export class MonsterForm implements OnInit {
     { index: 'cha', name: 'CHA' },
   ];
 
-  // Spell schools
-  readonly spellSchools = [
-    'abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation',
-  ];
-
-  readonly spellSchoolNames: Record<string, string> = {
-    'abjuration': 'Abjuration',
-    'conjuration': 'Conjuration',
-    'divination': 'Divination',
-    'enchantment': 'Enchantment',
-    'evocation': 'Evocation',
-    'illusion': 'Illusion',
-    'necromancy': 'Necromancy',
-    'transmutation': 'Transmutation',
-  };
-
   // Form data
   formData = signal<Partial<Monster>>({
     name: '',
@@ -159,10 +146,10 @@ export class MonsterForm implements OnInit {
   hasSpellcasting = signal(false);
 
   // Spellcasting details
-  spellcastingLevel = signal(0);
   spellcastingAbility = signal('int');
-  spellcastingSchool = signal('evocation');
-  spellcastingComponents = signal<string[]>([]);
+  spellcastingBonus = signal(2);
+  spellcastingDC = signal(10);
+  spellcastingModifier = signal(0);
   spellSlots = signal<SpellSlotEntry[]>([
     { level: 1, slots: 0 },
     { level: 2, slots: 0 },
@@ -174,8 +161,33 @@ export class MonsterForm implements OnInit {
     { level: 8, slots: 0 },
     { level: 9, slots: 0 },
   ]);
-  selectedSpells = signal<{ name: string; level: number; url: string }[]>([]);
+  selectedSpells = signal<{
+    name: string;
+    level: number;
+    url: string;
+    castingTime?: string;
+    range?: string;
+    components?: string;
+    duration?: string;
+  }[]>([]);
   searchQuery = signal('');
+
+  // Alignment search
+  alignmentSearchQuery = signal('');
+
+  // Filtered alignments based on search
+  get filteredAlignments(): DndAlignment[] {
+    const query = this.alignmentSearchQuery().toLowerCase();
+    const all = this.alignments;
+    if (!query) return all;
+    return all.filter(a => a.name.toLowerCase().includes(query));
+  }
+
+  // Select alignment
+  selectAlignment(name: string): void {
+    this.formData.update(d => ({ ...d, alignment: name }));
+    this.alignmentSearchQuery.set('');
+  }
 
   // Proficiencies
   proficiencySearchQuery = signal('');
@@ -193,8 +205,8 @@ export class MonsterForm implements OnInit {
   get filteredSpells(): Spell[] {
     const query = this.searchQuery().toLowerCase();
     const spells = this.allSpells();
-    if (!query) return spells.slice(0, 50); // Limit to 50 for performance
-    return spells.filter(s => s.name.toLowerCase().includes(query)).slice(0, 50);
+    if (!query) return spells;
+    return spells.filter(s => s.name.toLowerCase().includes(query));
   }
 
   // Current alignment description - FIX: Use optional chaining properly
@@ -213,29 +225,95 @@ export class MonsterForm implements OnInit {
     return mod >= 0 ? `+${mod}` : `${mod}`;
   }
 
+  // Get current ability score for spellcasting
+  getAbilityScore(): number {
+    const ability = this.abilityScores.find(a => a.index === this.spellcastingAbility());
+    if (!ability) return 10;
+
+    // Map index to formData property name
+    const abilityMap: Record<string, keyof Monster> = {
+      'str': 'strength',
+      'dex': 'dexterity',
+      'con': 'constitution',
+      'int': 'intelligence',
+      'wis': 'wisdom',
+      'cha': 'charisma',
+    };
+
+    const property = abilityMap[ability.index];
+    if (!property) return 10;
+
+    const score = this.formData()[property] ?? 10;
+    return score;
+  }
+
+  // Computed spell stats
+  computedSpellDC = computed(() => {
+    const abilityScore = this.getAbilityScore();
+    const abilityMod = this.getModifier(abilityScore);
+    const bonus = this.spellcastingBonus();
+    return 10 + abilityMod + bonus;
+  });
+
+  computedSpellModifier = computed(() => {
+    const abilityScore = this.getAbilityScore();
+    const abilityMod = this.getModifier(abilityScore);
+    const bonus = this.spellcastingBonus();
+    return abilityMod + bonus;
+  });
+
+  // Handlers for spellcasting changes
+  onSpellcastingAbilityChange(value: string): void {
+    this.spellcastingAbility.set(value);
+    this.recalculateSpellStats();
+  }
+
+  onSpellBonusChange(value: number): void {
+    this.spellcastingBonus.set(value);
+    this.recalculateSpellStats();
+  }
+
+  onSpellDCChange(value: number): void {
+    this.spellcastingDC.set(value);
+  }
+
+  onSpellModifierChange(value: number): void {
+    this.spellcastingModifier.set(value);
+  }
+
+  private recalculateSpellStats(): void {
+    const dc = this.computedSpellDC();
+    const modifier = this.computedSpellModifier();
+    this.spellcastingDC.set(dc);
+    this.spellcastingModifier.set(modifier);
+  }
+
+  updateAbilityScore(ability: 'strength' | 'dexterity' | 'constitution' | 'intelligence' | 'wisdom' | 'charisma', value: number): void {
+    this.formData.update(d => ({ ...d, [ability]: value }));
+    this.recalculateSpellStats();
+  }
+
   ngOnInit(): void {
     this.dndOptions.loadAlignments();
     this.dndOptions.loadProficiencies();
     this.dndOptions.loadLanguages();
     this.loadAllSpells();
+    this.recalculateSpellStats();
   }
 
   // Get filtered languages
   get filteredLanguages() {
     const query = this.languageFilter().toLowerCase();
     const langs = this.dndOptions.languages();
-    if (!query) return langs;
+    if (!query) return [];
     return langs.filter(l => l.name.toLowerCase().includes(query));
   }
 
-  onLanguageInputChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = input.value;
-    const lang = this.filteredLanguages.find(l => l.name === value);
-    if (lang && !this.selectedLanguages().find(l => l.index === lang.index)) {
-      this.selectedLanguages.update(list => [...list, { index: lang.index, name: lang.name }]);
-      input.value = '';
+  addLanguage(lang: { index: string; name: string }): void {
+    if (!this.selectedLanguages().find(l => l.index === lang.index)) {
+      this.selectedLanguages.update(list => [...list, lang]);
     }
+    this.languageFilter.set('');
   }
 
   removeLanguage(index: number): void {
@@ -244,11 +322,59 @@ export class MonsterForm implements OnInit {
 
   async loadAllSpells(): Promise<void> {
     try {
-      const spells = await this.spellsService.getAll();
+      // Try to load from backend first
+      try {
+        const spells = await this.spellsService.getAll();
+        if (spells.length > 0) {
+          this.allSpells.set(spells);
+          return;
+        }
+      } catch (backendError) {
+        console.warn('Backend not available:', backendError);
+      }
+
+      // Fallback: load basic spell list from D&D 5e API (without details)
+      // This works for filtering by name
+      const response = await firstValueFrom(
+        this.http.get<{ results: { index: string; name: string; url: string }[] }>(
+          'https://www.dnd5eapi.co/api/2014/spells'
+        )
+      );
+
+      // Create spells with just name and level (estimated from index)
+      // This allows filtering without needing detailed API calls
+      const spells: Spell[] = response.results.map((s) => ({
+        name: s.name,
+        desc: [],
+        range: 'Self',
+        components: [],
+        ritual: false,
+        duration: 'Instantaneous',
+        concentration: false,
+        casting_time: '1 action',
+        level: this.estimateSpellLevel(s.name),
+      }));
+
       this.allSpells.set(spells);
     } catch (err) {
       console.error('Error loading spells:', err);
     }
+  }
+
+  private estimateSpellLevel(spellName: string): number {
+    // Common cantrips (level 0)
+    const cantrips = ['fire-bolt', 'light', 'ray-of-frost', 'sacred-flame', 'poison-spray', 'produce-flame', 
+                      'fire-ray', 'shocking-grasp', 'frost-bite', 'mind-sliver', 'blade-ward', 'bone-rattling',
+                      'dancing-lights', 'message', 'minor-illusion', 'prestidigitation', 'true-strike', 'vicious-mockery'];
+    if (cantrips.includes(spellName.toLowerCase().replace(/ /g, '-'))) {
+      return 0;
+    }
+    // For named spells with level, estimate based on common patterns
+    const levelMatch = spellName.match(/\d+(st|nd|rd|th)/i);
+    if (levelMatch) {
+      return parseInt(levelMatch[0]);
+    }
+    return 1; // Default to level 1
   }
 
   // Spellcasting methods
@@ -265,32 +391,78 @@ export class MonsterForm implements OnInit {
       }
       return updated;
     });
+    // Recalculate bonus based on highest spell level with slots
+    this.recalculateBonus();
+  }
+
+  private recalculateBonus(): void {
+    let highestSpellLevel = 0;
+    for (let i = 9; i >= 1; i--) {
+      const slot = this.spellSlots().find(s => s.level === i);
+      if (slot && slot.slots > 0) {
+        highestSpellLevel = i;
+        break;
+      }
+    }
+    // Proficiency bonus table based on character/s monster level
+    // Using spell slot level as approximation: slots 1-4 → +2, 5-8 → +3, 9+ → +4
+    let bonus = 2;
+    if (highestSpellLevel >= 5) bonus = 3;
+    if (highestSpellLevel >= 9) bonus = 4;
+    this.spellcastingBonus.set(bonus);
   }
 
   addSpellToKnown(spell: Spell): void {
     const current = this.selectedSpells();
     const exists = current.find(s => s.name === spell.name);
     if (!exists) {
-      this.selectedSpells.set([...current, {
+      // Add with basic info first
+      const newSpell = {
         name: spell.name,
         level: spell.level,
-        url: `/api/2014/spells/${spell.name.toLowerCase().replace(/ /g, '-')}`
-      }]);
+        url: `/api/2014/spells/${spell.name.toLowerCase().replace(/ /g, '-')}`,
+      };
+
+      this.selectedSpells.set([...current, newSpell]);
+      this.searchQuery.set(''); // Clear search after adding
+
+      // Then fetch full details from D&D API
+      this.loadSpellDetails(spell.name);
     }
-    this.searchQuery.set(''); // Clear search after adding
+  }
+
+  private async loadSpellDetails(spellName: string): Promise<void> {
+    try {
+      const index = spellName.toLowerCase().replace(/ /g, '-');
+      const detail = await firstValueFrom(
+        this.http.get<any>(`https://www.dnd5eapi.co/api/2014/spells/${index}`)
+      );
+
+      // Update the spell with full details
+      this.selectedSpells.update(spells => {
+        const idx = spells.findIndex(s => s.name === spellName);
+        if (idx >= 0) {
+          const updated = [...spells];
+          updated[idx] = {
+            ...updated[idx],
+            castingTime: detail.casting_time || '1 action',
+            range: detail.range || 'Self',
+            components: detail.components?.join(', ') || '',
+            duration: detail.concentration
+              ? `Concentration, ${detail.duration}`
+              : detail.duration || 'Instantaneous',
+          };
+          return updated;
+        }
+        return spells;
+      });
+    } catch (err) {
+      console.warn('Could not load spell details:', err);
+    }
   }
 
   removeSpellFromKnown(index: number): void {
     this.selectedSpells.update(spells => spells.filter((_, i) => i !== index));
-  }
-
-  toggleSpellcastingComponent(component: string): void {
-    const current = this.spellcastingComponents();
-    if (current.includes(component)) {
-      this.spellcastingComponents.set(current.filter(c => c !== component));
-    } else {
-      this.spellcastingComponents.set([...current, component]);
-    }
   }
 
   // Hit dice methods
@@ -502,14 +674,24 @@ export class MonsterForm implements OnInit {
     try {
       let specialAbilities = [...this.specialAbilities()];
 
-      // Add spellcasting if enabled
-      if (this.hasSpellcasting() && this.spellcastingLevel() > 0) {
-        const level = this.spellcastingLevel();
-        const ability = this.abilityScores.find(a => a.index === this.spellcastingAbility())!;
-        const modifier = this.getModifier(10 + (level - 1) * 2); // Approximate
+      // Build spellcasting data
+      let spellcastingData: SpellcastingInfo | null = null;
 
-        // Build DC from level
-        const dc = 10 + level + 5; // Approximate: 10 + spell level + 5
+      if (this.hasSpellcasting()) {
+        const ability = this.abilityScores.find(a => a.index === this.spellcastingAbility())!;
+        const abilityScore = this.formData()[ability.index.toLowerCase() as keyof Omit<Monster, 'id' | 'name' | 'desc' | 'size' | 'type' | 'subtype' | 'alignment' | 'armor_class' | 'hit_points' | 'hit_dice' | 'hit_points_roll' | 'speed' | 'senses' | 'languages' | 'challenge_rating' | 'proficiency_bonus' | 'xp' | 'special_abilities' | 'actions' | 'reactions' | 'legendary_actions' | 'forms' | 'image' | 'created_by' | 'created_at' | 'updated_at'>] as number ?? 10;
+        const abilityMod = this.getModifier(abilityScore);
+        const bonus = this.spellcastingBonus();
+
+        // Calculate spell level based on slots
+        let spellLevel = 0;
+        for (let i = 9; i >= 1; i--) {
+          const slot = this.spellSlots().find(s => s.level === i);
+          if (slot && slot.slots > 0) {
+            spellLevel = i;
+            break;
+          }
+        }
 
         // Build slots object
         const slots: Record<string, number> = {};
@@ -519,22 +701,16 @@ export class MonsterForm implements OnInit {
           }
         });
 
-        const spellcastingInfo: SpellcastingInfo = {
-          level,
+        spellcastingData = {
+          level: spellLevel,
           ability: { index: ability.index, name: ability.name, url: `/api/2014/ability-scores/${ability.index}` },
-          dc,
-          modifier,
-          components_required: this.spellcastingComponents(),
-          school: { index: this.spellcastingSchool(), name: this.spellSchoolNames[this.spellcastingSchool()], url: `/api/2014/magic-schools/${this.spellcastingSchool()}` },
+          dc: this.spellcastingDC(),
+          modifier: this.spellcastingModifier(),
+          components_required: [],
+          school: { index: 'evocation', name: 'Evocation', url: '/api/2014/magic-schools/evocation' },
           slots,
           spells: this.selectedSpells().map(s => ({ name: s.name, level: s.level, url: s.url })),
         };
-
-        specialAbilities.push({
-          name: 'Spellcasting',
-          desc: `The monster is a ${level}th-level spellcaster. Its spellcasting ability is ${ability.name} (spell save DC ${dc}, +${modifier} to hit with spell attacks).`,
-          spellcasting: spellcastingInfo
-        });
       }
 
       // Build proficiencies array
@@ -561,6 +737,15 @@ export class MonsterForm implements OnInit {
         damage_immunities: this.damageImmunitiesList(),
         languages: this.selectedLanguages().map(l => l.name).join(', '),
       };
+
+      // Add spellcasting to special abilities if enabled
+      if (spellcastingData) {
+        data.special_abilities?.push({
+          name: 'Spellcasting',
+          desc: `The monster is a spellcaster. Its spellcasting ability is ${spellcastingData.ability.name} (spell save DC ${spellcastingData.dc}, +${spellcastingData.modifier} to hit with spell attacks).`,
+          spellcasting: spellcastingData,
+        });
+      }
 
       await this.monstersService.create(data);
 

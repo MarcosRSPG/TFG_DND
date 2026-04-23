@@ -1,4 +1,4 @@
-<div class="form-container">
+<main class="form-container">
   <h2>{{ isEditMode() ? 'Edit' : 'Create' }} Monster</h2>
 
   @if (error()) {
@@ -6,7 +6,7 @@
   }
 
   <form (ngSubmit)="onSubmit()">
-    <div class="form-section">
+    <section class="form-section">
       <h3>Basic Information</h3>
 
       <div class="form-group">
@@ -56,22 +56,31 @@
           />
         </div>
 
-        <div class="form-group">
-          <label for="alignment">Alignment *</label>
+<div class="form-group">
+        <label for="alignment">Alignment *</label>
           <input
             type="text"
             id="alignment"
-            list="alignments-list"
-            [(ngModel)]="formData().alignment"
-            name="alignment"
-            required
-            placeholder="Search or select alignment..."
+            [ngModel]="alignmentSearchQuery()"
+            (ngModelChange)="alignmentSearchQuery.set($event)"
+            [ngModelOptions]="{standalone: true}"
+            placeholder="Search alignment..."
+            class="search-input"
           />
-          <datalist id="alignments-list">
-            @for (alignment of alignments; track alignment.index) {
-              <option [value]="alignment.name"></option>
-            }
-          </datalist>
+
+          @if (alignmentSearchQuery() && alignments.length > 0) {
+            <div class="filtered-dropdown">
+              @for (alignment of filteredAlignments; track alignment.index) {
+                <button 
+                  type="button" 
+                  class="dropdown-item"
+                  (click)="selectAlignment(alignment.name)"
+                >
+                  {{ alignment.name }}
+                </button>
+              }
+            </div>
+          }
         </div>
       </div>
 
@@ -89,9 +98,9 @@
           placeholder="e.g. /assets/monsters/archmage.png"
         />
       </div>
-    </div>
+    </section>
 
-    <div class="form-section">
+    <section class="form-section">
       <h3>Combat Statistics</h3>
 
       <div class="form-row">
@@ -149,7 +158,7 @@
         </div>
       </div>
 
-      <div class="form-section">
+      <section class="form-section">
         <h4>Speed</h4>
         @for (entry of speedEntries(); track $index; let idx = $index) {
           <div class="speed-entry-row">
@@ -178,46 +187,46 @@
           </div>
         }
         <button type="button" class="add-btn" (click)="addSpeedType()">+ Add Speed</button>
-      </div>
+      </section>
 
-      <div class="form-section">
+      <section class="form-section">
         <h4>Ability Scores</h4>
         <div class="ability-grid">
           <div class="ability-item">
             <label>STR</label>
-            <input type="number" [(ngModel)]="formData().strength" name="strength" />
+            <input type="number" [ngModel]="formData().strength" (ngModelChange)="updateAbilityScore('strength', $event)" name="strength" />
             <span class="modifier">{{ getModifierString(formData().strength ?? 10) }}</span>
           </div>
           <div class="ability-item">
             <label>DEX</label>
-            <input type="number" [(ngModel)]="formData().dexterity" name="dexterity" />
+            <input type="number" [ngModel]="formData().dexterity" (ngModelChange)="updateAbilityScore('dexterity', $event)" name="dexterity" />
             <span class="modifier">{{ getModifierString(formData().dexterity ?? 10) }}</span>
           </div>
           <div class="ability-item">
             <label>CON</label>
-            <input type="number" [(ngModel)]="formData().constitution" name="constitution" />
+            <input type="number" [ngModel]="formData().constitution" (ngModelChange)="updateAbilityScore('constitution', $event)" name="constitution" />
             <span class="modifier">{{ getModifierString(formData().constitution ?? 10) }}</span>
           </div>
           <div class="ability-item">
             <label>INT</label>
-            <input type="number" [(ngModel)]="formData().intelligence" name="intelligence" />
+            <input type="number" [ngModel]="formData().intelligence" (ngModelChange)="updateAbilityScore('intelligence', $event)" name="intelligence" />
             <span class="modifier">{{ getModifierString(formData().intelligence ?? 10) }}</span>
           </div>
           <div class="ability-item">
             <label>WIS</label>
-            <input type="number" [(ngModel)]="formData().wisdom" name="wisdom" />
+            <input type="number" [ngModel]="formData().wisdom" (ngModelChange)="updateAbilityScore('wisdom', $event)" name="wisdom" />
             <span class="modifier">{{ getModifierString(formData().wisdom ?? 10) }}</span>
           </div>
           <div class="ability-item">
             <label>CHA</label>
-            <input type="number" [(ngModel)]="formData().charisma" name="charisma" />
+            <input type="number" [ngModel]="formData().charisma" (ngModelChange)="updateAbilityScore('charisma', $event)" name="charisma" />
             <span class="modifier">{{ getModifierString(formData().charisma ?? 10) }}</span>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </section>
 
-    <div class="form-section">
+    <section class="form-section">
       <h3>Description</h3>
 
       <div class="form-group">
@@ -237,23 +246,34 @@
         <input
           type="text"
           id="language-input"
-          list="languages-list"
-          placeholder="Search or select language..."
-          (input)="onLanguageInputChange($event)"
+          [ngModel]="languageFilter()"
+          (ngModelChange)="languageFilter.set($event)"
+          [ngModelOptions]="{standalone: true}"
+          placeholder="Search language..."
+          class="search-input"
         />
-        <datalist id="languages-list">
-          @for (lang of filteredLanguages; track lang.index) {
-            <option [value]="lang.name"></option>
-          }
-        </datalist>
+
+        @if (languageFilter() && filteredLanguages.length > 0) {
+          <div class="filtered-dropdown">
+            @for (lang of filteredLanguages; track lang.index) {
+              <button 
+                type="button" 
+                class="dropdown-item"
+                (click)="addLanguage(lang)"
+              >
+                {{ lang.name }}
+              </button>
+            }
+          </div>
+        }
 
         @if (selectedLanguages().length > 0) {
           <div class="selected-list">
             @for (lang of selectedLanguages(); track lang.index; let idx = $index) {
-              <div class="selected-item">
+              <article class="selected-item">
                 <span>{{ lang.name }}</span>
                 <button type="button" class="remove-btn" (click)="removeLanguage(idx)">Remove</button>
-              </div>
+              </article>
             }
           </div>
         }
@@ -309,13 +329,13 @@
           </div>
         }
       </div>
-    </div>
+    </section>
 
-    <div class="form-section">
+    <section class="form-section">
       <h3>Special Abilities</h3>
 
       @for (ability of specialAbilities(); track $index; let idx = $index) {
-        <div class="action-item">
+        <article class="action-item">
           <input
             type="text"
             [value]="ability.name"
@@ -329,100 +349,129 @@
             rows="3"
           ></textarea>
           <button type="button" class="remove-btn" (click)="removeAbility(idx)">Remove</button>
-        </div>
+        </article>
       }
       <button type="button" class="add-btn" (click)="addAbility()">+ Add Special Ability</button>
+    </section>
 
-      <div class="form-group" style="margin-top: 1.5rem;">
-        <label>
-          <app-viking-check
-            [checked]="hasSpellcasting()"
-            (checkedChange)="toggleSpellcasting()"
-            ariaLabel="Has spellcasting"
-          ></app-viking-check>
-          <span>Can Cast Spells</span>
-        </label>
-      </div>
-    </div>
+    <nav class="form-section spellcasting-toggle">
+      <label class="checkbox-label-center">
+        <app-viking-check
+          [checked]="hasSpellcasting()"
+          (checkedChange)="toggleSpellcasting()"
+          ariaLabel="Has spellcasting"
+        ></app-viking-check>
+        <span>Can Cast Spells</span>
+      </label>
+    </nav>
 
     @if (hasSpellcasting()) {
-      <div class="form-section spellcasting-section">
+      <section class="form-section spellcasting-section">
         <h4>Spellcasting</h4>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="spell-level">Spell Level</label>
-            <input
-              id="spell-level"
-              type="number"
-              [(ngModel)]="spellcastingLevel"
-              name="spellLevel"
-              min="0"
-              max="9"
-              placeholder="0-9"
-            />
+        <div class="spellcasting-config">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="spell-ability">Ability *</label>
+              <select 
+                id="spell-ability" 
+                [ngModel]="spellcastingAbility()" 
+                (ngModelChange)="onSpellcastingAbilityChange($event)" 
+                name="spellAbility" 
+                required>
+                @for (ability of abilityScores; track ability.index) {
+                  <option [value]="ability.index">{{ ability.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="spell-bonus">Proficiency Bonus</label>
+              <input
+                id="spell-bonus"
+                type="number"
+                [ngModel]="spellcastingBonus()"
+                (ngModelChange)="onSpellBonusChange($event)"
+                name="spellBonus"
+                min="-5"
+                max="15"
+              />
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="spell-ability">Ability</label>
-            <select id="spell-ability" [(ngModel)]="spellcastingAbility" name="spellAbility">
-              @for (ability of abilityScores; track ability.index) {
-                <option [value]="ability.index">{{ ability.name }}</option>
+          <div class="spell-stats-row">
+            <div class="stat-field">
+              <label for="spell-dc">Spell Save DC</label>
+              <input
+                id="spell-dc"
+                type="number"
+                [ngModel]="spellcastingDC()"
+                (ngModelChange)="onSpellDCChange($event)"
+                name="spellDC"
+                min="1"
+                max="50"
+              />
+              <span class="stat-hint">= 10 + {{ spellcastingBonus() }} + {{ getModifierString(getAbilityScore()) }}</span>
+            </div>
+
+            <div class="stat-field">
+              <label for="spell-modifier">Attack Modifier</label>
+              <input
+                id="spell-modifier"
+                type="number"
+                [ngModel]="spellcastingModifier()"
+                (ngModelChange)="onSpellModifierChange($event)"
+                name="spellModifier"
+                min="-10"
+                max="30"
+              />
+              <span class="stat-hint">= {{ spellcastingBonus() }} + {{ getModifierString(getAbilityScore()) }}</span>
+            </div>
+          </div>
+
+          <aside class="proficiency-info">
+            <h5>Proficiency Bonus Guide</h5>
+            <p class="hint">This bonus is typically derived from the monster's effective "spellcaster level":</p>
+            <ul class="proficiency-table">
+              <li><strong>Level 1-4:</strong> +2</li>
+              <li><strong>Level 5-8:</strong> +3</li>
+              <li><strong>Level 9-12:</strong> +4</li>
+              <li><strong>Level 13-16:</strong> +5</li>
+              <li><strong>Level 17-20:</strong> +6</li>
+            </ul>
+            <p class="hint" style="margin-top: 0.5rem;">You can adjust the bonus manually if the monster has special factors.</p>
+          </aside>
+        </div>
+
+        <div class="form-group">
+          <fieldset>
+            <legend>Spell Slots</legend>
+            <div class="slots-grid">
+              @for (slot of spellSlots(); track slot.level) {
+                <div class="slot-item">
+                  <span>L{{ slot.level }}</span>
+                  <input
+                    type="number"
+                    [value]="slot.slots"
+                    (change)="updateSpellSlot(slot.level, +$any($event.target).value)"
+                    min="0"
+                    max="10"
+                  />
+                </div>
               }
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="spell-school">School</label>
-            <select id="spell-school" [(ngModel)]="spellcastingSchool" name="spellSchool">
-              @for (school of spellSchools; track school) {
-                <option [value]="school">{{ spellSchoolNames[school] }}</option>
-              }
-            </select>
-          </div>
+            </div>
+          </fieldset>
         </div>
 
         <div class="form-group">
-          <label>Components</label>
-          <div class="components-row">
-            @for (comp of ['V', 'S', 'M']; track comp) {
-              <label class="checkbox-label">
-                <app-viking-check
-                  [checked]="spellcastingComponents().includes(comp)"
-                  (checkedChange)="toggleSpellcastingComponent(comp)"
-                  [ariaLabel]="comp + ' component'"
-                ></app-viking-check>
-                <span (click)="toggleSpellcastingComponent(comp)">{{ comp }}</span>
-              </label>
-            }
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Spell Slots</label>
-          <div class="slots-grid">
-            @for (slot of spellSlots(); track slot.level) {
-              <div class="slot-item">
-                <span>L{{ slot.level }}</span>
-                <input
-                  type="number"
-                  [value]="slot.slots"
-                  (change)="updateSpellSlot(slot.level, +$any($event.target).value)"
-                  min="0"
-                  max="10"
-                />
-              </div>
-            }
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Known/Prepared Spells</label>
+          <label for="spell-search">Known/Prepared Spells</label>
           <p class="hint">Search and add spells known by this monster:</p>
           <input
+            id="spell-search"
             type="text"
             [ngModel]="searchQuery()"
             (ngModelChange)="searchQuery.set($event)"
+            [ngModelOptions]="{standalone: true}"
             placeholder="Type to search spells..."
             class="search-input"
           />
@@ -438,24 +487,55 @@
           }
 
           @if (selectedSpells().length > 0) {
-            <div class="selected-items">
+            <div class="selected-spells-list">
               @for (spell of selectedSpells(); track $index; let idx = $index) {
-                <div class="item-tag">
-                  <span>{{ spell.name }} (Lv{{ spell.level }})</span>
-                  <button type="button" class="remove-btn" (click)="removeSpellFromKnown(idx)">X</button>
-                </div>
+                <article class="spell-card">
+                  <header class="spell-card-header">
+                    <span class="spell-name">{{ spell.name }}</span>
+                    <span class="spell-level">Level {{ spell.level }}</span>
+                    <button type="button" class="remove-btn" (click)="removeSpellFromKnown(idx)">X</button>
+                  </header>
+                  @if (spell.castingTime || spell.range) {
+                    <div class="spell-card-info">
+                      @if (spell.castingTime) {
+                        <div class="spell-info-item">
+                          <span class="spell-info-label">Casting Time:</span>
+                          <span class="spell-info-value">{{ spell.castingTime }}</span>
+                        </div>
+                      }
+                      @if (spell.range) {
+                        <div class="spell-info-item">
+                          <span class="spell-info-label">Range:</span>
+                          <span class="spell-info-value">{{ spell.range }}</span>
+                        </div>
+                      }
+                      @if (spell.components) {
+                        <div class="spell-info-item">
+                          <span class="spell-info-label">Components:</span>
+                          <span class="spell-info-value">{{ spell.components }}</span>
+                        </div>
+                      }
+                      @if (spell.duration) {
+                        <div class="spell-info-item">
+                          <span class="spell-info-label">Duration:</span>
+                          <span class="spell-info-value">{{ spell.duration }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                </article>
               }
             </div>
           }
         </div>
-      </div>
+      </section>
     }
 
-    <div class="form-section">
+    <section class="form-section">
       <h3>Actions</h3>
 
       @for (action of actions(); track $index; let idx = $index) {
-        <div class="action-item">
+        <article class="action-item">
           <input
             type="text"
             [value]="action.name"
@@ -497,16 +577,16 @@
           </div>
 
           <button type="button" class="remove-btn" (click)="removeAction('actions', idx)">Remove Action</button>
-        </div>
+        </article>
       }
       <button type="button" class="add-btn" (click)="addAction('actions')">+ Add Action</button>
-    </div>
+    </section>
 
-    <div class="form-section">
+    <section class="form-section">
       <h3>Reactions</h3>
 
       @for (reaction of reactions(); track $index; let idx = $index) {
-        <div class="action-item">
+        <article class="action-item">
           <input
             type="text"
             [value]="reaction.name"
@@ -520,16 +600,16 @@
             rows="3"
           ></textarea>
           <button type="button" class="remove-btn" (click)="removeAction('reactions', idx)">Remove</button>
-        </div>
+        </article>
       }
       <button type="button" class="add-btn" (click)="addAction('reactions')">+ Add Reaction</button>
-    </div>
+    </section>
 
-    <div class="form-section">
+    <section class="form-section">
       <h3>Legendary Actions</h3>
 
       @for (action of legendaryActions(); track $index; let idx = $index) {
-        <div class="action-item">
+        <article class="action-item">
           <input
             type="text"
             [value]="action.name"
@@ -543,16 +623,16 @@
             rows="3"
           ></textarea>
           <button type="button" class="remove-btn" (click)="removeAction('legendary_actions', idx)">Remove</button>
-        </div>
+        </article>
       }
       <button type="button" class="add-btn" (click)="addAction('legendary_actions')">+ Add Legendary Action</button>
-    </div>
+    </section>
 
-    <div class="form-actions">
+    <footer class="form-actions">
       <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
       <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
         {{ isSubmitting() ? 'Creating...' : 'Create Monster' }}
       </button>
-    </div>
+    </footer>
   </form>
-</div>
+</main>

@@ -71,7 +71,7 @@ export class BackgroundForm implements OnInit {
   // Filtered items based on search
   get itemsOptions(): Item[] {
     const query = this.itemsFilter().toLowerCase();
-    if (!query) return this.filteredItems();
+    if (!query) return [];
     return this.filteredItems().filter(item =>
       item.name.toLowerCase().includes(query)
     );
@@ -93,10 +93,21 @@ export class BackgroundForm implements OnInit {
   // Filtered proficiencies based on search
   get filteredProficiencies(): DndProficiency[] {
     const query = this.proficiencyFilter().toLowerCase();
-    if (!query) return this.dndOptions.proficiencies();
+    if (!query) return [];
     return this.dndOptions.proficiencies().filter(p =>
       p.name.toLowerCase().includes(query) || p.index.toLowerCase().includes(query)
     );
+  }
+
+  addProficiency(index: string): void {
+    if (!this.selectedProficiencies().includes(index)) {
+      this.selectedProficiencies.update(list => [...list, index]);
+    }
+    this.proficiencyFilter.set('');
+  }
+
+  removeProficiency(index: number): void {
+    this.selectedProficiencies.update(list => list.filter((_, i) => i !== index));
   }
 
   async loadItems(): Promise<void> {
@@ -130,18 +141,27 @@ export class BackgroundForm implements OnInit {
 
   onEquipmentInputChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = input.value;
-    // Find matching item by name
-    const item = this.itemsOptions.find(i => i.name === value);
-    if (item) {
-      const index = item['index'] || item['id'];
-      const exists = this.selectedEquipment().find(e => e.index === index);
-      if (!exists) {
-        this.selectedEquipment.update(list => [...list, { index, name: item.name, quantity: 1 }]);
-        input.value = '';
-      }
-    }
+    this.itemsFilter.set(input.value);
   }
+
+  selectEquipment(item: Item): void {
+    const index = item['index'] || item['id'];
+    const name = item.name;
+    if (!this.selectedEquipment().find(e => e.index === index)) {
+      this.selectedEquipment.update(list => [...list, { index, name, quantity: 1 }]);
+    }
+    this.itemsFilter.set('');
+  }
+
+  // Aliases for template
+  addEquipment = this.selectEquipment;
+
+  removeEquipment(index: number): void {
+    this.selectedEquipment.update(list => list.filter((_, i) => i !== index));
+  }
+
+  // Alias for template
+  removeEquipmentByIndex = this.removeEquipment;
 
   onProficiencyChange(index: number, event: Event): void {
     const select = event.target as HTMLSelectElement;
@@ -166,24 +186,6 @@ export class BackgroundForm implements OnInit {
       newProficiencies.pop();
       this.selectedProficiencies.set(newProficiencies);
     }
-  }
-
-  // Equipment methods
-  addEquipment(index: string): void {
-    const item = this.itemsList().find(i => i['index'] === index);
-    if (!item) return;
-    
-    const current = this.selectedEquipment();
-    const exists = current.find(e => e.index === index);
-    if (!exists) {
-      this.selectedEquipment.set([...current, { index: index, name: item.name, quantity: 1 }]);
-    }
-  }
-
-  removeEquipment(index: number): void {
-    const current = [...this.selectedEquipment()];
-    current.splice(index, 1);
-    this.selectedEquipment.set(current);
   }
 
   updateEquipmentQuantity(index: number, quantity: number): void {
@@ -315,10 +317,5 @@ const data: Partial<Background> = {
   getProficiencyName(index: string): string {
     const prof = this.proficiencies.find(p => p.index === index);
     return prof?.name || index;
-  }
-
-  removeProficiency(index: number): void {
-    this.selectedProficiencies.update(list => list.filter((_, i) => i !== index));
-    this.proficiencyCount.update(c => c - 1);
   }
 }

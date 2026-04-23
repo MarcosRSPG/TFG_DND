@@ -112,7 +112,24 @@ export class DndOptionsService {
       const data = await firstValueFrom(
         this.http.get<{ results: DndAlignment[] }>(`${this.dndApiUrl}/alignments`)
       );
-      this.alignments.set(data.results);
+
+      // Fetch individual alignment details to get the desc field
+      const alignmentsWithDesc = await Promise.all(
+        data.results.map(async (alignment) => {
+          try {
+            const detail = await firstValueFrom(
+              this.http.get<{ index: string; name: string; url: string; desc: string }>(
+                `${this.dndApiUrl}/alignments/${alignment.index}`
+              )
+            );
+            return { ...alignment, desc: detail.desc };
+          } catch {
+            return alignment;
+          }
+        })
+      );
+
+      this.alignments.set(alignmentsWithDesc);
     } catch (error) {
       console.error('Error loading alignments:', error);
     }

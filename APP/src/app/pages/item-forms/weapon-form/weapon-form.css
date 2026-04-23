@@ -1,5 +1,5 @@
 .form-container {
-  max-width: 700px;
+  max-width: 70%;
   margin: 20em auto 0;
   padding: 2rem;
   background: rgba(55, 34, 19, 0.78);
@@ -80,6 +80,45 @@ h3 {
   min-height: 200px;
 }
 
+/* Filtered dropdown */
+.filtered-dropdown {
+  margin-top: 0.25rem;
+  max-height: 180px;
+  overflow-y: auto;
+  background: rgba(20, 12, 7, 0.8);
+  border: 1px solid rgba(201, 162, 90, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(201, 162, 90, 0.1);
+  color: #eadab8;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: rgba(101, 67, 33, 0.4);
+}
+
+.dropdown-item.selected {
+  background: rgba(70, 100, 50, 0.5);
+  font-weight: 500;
+}
+
 .cost-input-group {
   display: flex;
   gap: 0.5rem;
@@ -87,13 +126,14 @@ h3 {
 
 .cost-input-group input {
   flex: 1;
+  min-width: 60px;
 }
 
 .cost-input-group select {
-  width: 80px;
+  min-width: 70px;
 }
 
-/* Damage input rows */
+/* Damage input row */
 .damage-input-row {
   display: flex;
   gap: 0.75rem;
@@ -128,8 +168,8 @@ h3 {
   font-size: 0.95rem;
 }
 
-/* Two-handed damage row */
-.two-handed-damage-row {
+/* Versatile damage row */
+.versatile-damage-row {
   display: flex;
   gap: 0.75rem;
   align-items: flex-end;
@@ -140,53 +180,112 @@ h3 {
   border-radius: 8px;
 }
 
-.two-handed-damage-row .form-group {
+.versatile-damage-row .form-group {
   flex: 1;
 }
 
-.two-handed-damage-row .form-group:first-child {
+.versatile-damage-row .form-group:first-child {
   flex: 0 0 80px;
 }
 
-.two-handed-damage-row .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #f0d8b0;
-  font-weight: 500;
-  font-size: 0.9rem;
+/* Properties selected container */
+.properties-selected {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(20, 12, 7, 0.4);
+  border: 1px solid rgba(201, 162, 90, 0.25);
+  border-radius: 8px;
 }
 
-.two-handed-damage-row input,
-.two-handed-damage-row select {
+.properties-selected-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(201, 162, 90, 0.2);
+}
+
+.properties-selected-header span:first-child {
+  font-weight: 500;
+  color: #f0d8b0;
+  font-size: 0.95rem;
+}
+
+.properties-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background: rgba(101, 67, 33, 0.6);
+  border: 1px solid rgba(201, 162, 90, 0.3);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: #eadab8;
+}
+
+/* Property card */
+.property-card {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(20, 12, 7, 0.5);
+  border: 1px solid rgba(201, 162, 90, 0.2);
+  border-radius: 6px;
+}
+
+.property-card:last-child {
+  margin-bottom: 0;
+}
+
+.property-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.property-card-header .property-name {
+  font-size: 1rem;
+}
+
+.property-desc {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: #c9b896;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Special property input */
+.property-special-input {
+  margin-top: 0.75rem;
+}
+
+.property-special-input label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  color: #c9b896;
+}
+
+.property-special-input input {
   width: 100%;
   padding: 0.6rem;
   background: rgba(20, 12, 7, 0.6);
   border: 1px solid rgba(201, 162, 90, 0.3);
   border-radius: 6px;
   color: #eadab8;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
-/* Properties grid */
-.properties-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+.property-special-input input:focus {
+  outline: none;
+  border-color: rgba(201, 162, 90, 0.6);
 }
 
-.property-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  color: #eadab8;
-}
-
-.property-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #d8b470;
-  cursor: pointer;
+.property-special-input input::placeholder {
+  color: #8b6f47;
 }
 
 .error-message {
