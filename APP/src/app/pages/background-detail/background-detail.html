@@ -40,12 +40,73 @@
 
     <section class="detail-block">
       <h2>Background Proficiencies and Equipment</h2>
-      <div class="detail-text-stack">
-        <p><strong>Skill Proficiencies:</strong> {{ getSkillProficiencies(item) }}</p>
-        <p><strong>Tool Proficiencies:</strong> {{ getToolProficiencies(item) }}</p>
-        <p><strong>Languages:</strong> {{ getLanguages(item) }}</p>
-        <p><strong>Equipment:</strong> {{ getEquipmentSummary(item) }}</p>
+      <div class="proficiencies-grid">
+        <div class="prof-item">
+          <span class="prof-label">Skill Proficiencies</span>
+          <span class="prof-value">{{ getSkillProficiencies(item) }}</span>
+        </div>
+        <div class="prof-item">
+          <span class="prof-label">Tool Proficiencies</span>
+          <span class="prof-value">{{ getToolProficiencies(item) }}</span>
+        </div>
+        <div class="prof-item">
+          <span class="prof-label">Languages</span>
+          <span class="prof-value">{{ getLanguages(item) }}</span>
+        </div>
+        <div class="prof-item">
+          <span class="prof-label">Equipment</span>
+          <span class="prof-value">{{ getEquipmentSummary(item) }}</span>
+        </div>
       </div>
     </section>
+
+    @if (getPersonalityTraitOptions(item).length) {
+      <section class="detail-block">
+        <h2>Personality Traits</h2>
+        <ul class="option-list">
+          @for (option of getPersonalityTraitOptions(item); track $index) {
+            <li>{{ option }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (getIdealOptions(item).length) {
+      <section class="detail-block">
+        <h2>Ideals</h2>
+        <ul class="option-list">
+          @for (ideal of getIdealOptions(item); track $index) {
+            <li>
+              <p>{{ ideal.text }}</p>
+              @if (ideal.alignments.length) {
+                <small class="ideal-alignments">Alignments: {{ ideal.alignments.join(', ') }}</small>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (getBondOptions(item).length) {
+      <section class="detail-block">
+        <h2>Bonds</h2>
+        <ul class="option-list">
+          @for (option of getBondOptions(item); track $index) {
+            <li>{{ option }}</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (getFlawOptions(item).length) {
+      <section class="detail-block">
+        <h2>Flaws</h2>
+        <ul class="option-list">
+          @for (option of getFlawOptions(item); track $index) {
+            <li>{{ option }}</li>
+          }
+        </ul>
+      </section>
+    }
   </section>
 }

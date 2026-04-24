@@ -134,6 +134,72 @@
   border-radius: 0 8px 8px 0;
 }
 
+.option-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.option-list li {
+  padding: 0.65rem 0.85rem;
+  border-left: 3px solid rgba(201, 162, 90, 0.35);
+  background: rgba(16, 10, 6, 0.32);
+  border-radius: 0 8px 8px 0;
+  color: #eadab8;
+  line-height: 1.5;
+}
+
+.option-list li p {
+  margin: 0;
+}
+
+.option-list li + li {
+  margin-top: 0.5rem;
+}
+
+.ideal-alignments {
+  display: block;
+  margin-top: 0.4rem;
+  color: #a89068;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.proficiencies-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.prof-item {
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(201, 162, 90, 0.25);
+  border-radius: 10px;
+  background: rgba(16, 10, 6, 0.28);
+}
+
+.prof-label {
+  display: block;
+  color: #bfa77d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  margin-bottom: 0.25rem;
+}
+
+.prof-value {
+  display: block;
+  color: #eadab8;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.option-list li::marker {
+  color: #c9a25a;
+}
+
 @media (max-width: 860px) {
   .detail {
     padding: 1.15rem;

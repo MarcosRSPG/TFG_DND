@@ -60,6 +60,10 @@ export class BackgroundForm implements OnInit {
   bondsOptions = signal<string[]>(['']);
   flawsOptions = signal<string[]>(['']);
 
+  // Custom equipment model
+  customEquipmentNameModel = '';
+  customEquipmentQuantityModel = 1;
+
   // Items list for equipment selection
   itemsList = signal<Item[]>([]);
   filteredItems = signal<Item[]>([]);
@@ -69,6 +73,17 @@ export class BackgroundForm implements OnInit {
   itemsFilter = signal('');
   showProficiencyDropdown = signal(false);
   showEquipmentDropdown = signal(false);
+  showOtherEquipmentField = signal(false);
+
+  // Proficiency choice groups (new feature)
+  proficiencyChoiceGroups = signal<{ count: number; options: string[] }[]>([]);
+  proficiencyChoiceFilter = signal('');
+  proficiencyChoiceDropdownOpen = signal(false);
+
+  // Equipment choice groups
+  equipmentChoiceGroups = signal<{ count: number; items: { index: string; name: string; quantity: number }[] }[]>([]);
+  equipmentChoiceFilter = signal('');
+  equipmentChoiceDropdownOpen = signal(false);
 
   // Filtered items based on search
   get itemsOptions(): Item[] {
@@ -170,6 +185,30 @@ export class BackgroundForm implements OnInit {
   // Alias for template
   removeEquipmentByIndex = this.removeEquipment;
 
+  showOtherField(): void {
+    this.showEquipmentDropdown.set(false);
+    this.showOtherEquipmentField.set(true);
+  }
+
+  hideOtherField(): void {
+    this.showOtherEquipmentField.set(false);
+    this.customEquipmentNameModel = '';
+    this.customEquipmentQuantityModel = 1;
+  }
+
+  addCustomEquipment(): void {
+    const name = this.customEquipmentNameModel.trim();
+    const quantity = this.customEquipmentQuantityModel || 1;
+    if (!name) return;
+
+    const index = `custom-${name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+    if (!this.selectedEquipment().find(e => e.index === index)) {
+      this.selectedEquipment.update(list => [...list, { index, name, quantity }]);
+    }
+    this.customEquipmentNameModel = '';
+    this.customEquipmentQuantityModel = 1;
+  }
+
   onProficiencyChange(index: number, event: Event): void {
     const select = event.target as HTMLSelectElement;
     const newProficiencies = [...this.selectedProficiencies()];
@@ -180,6 +219,177 @@ export class BackgroundForm implements OnInit {
 
     newProficiencies[index] = select.value;
     this.selectedProficiencies.set(newProficiencies);
+  }
+
+  // Proficiency choice group methods
+  addProficiencyChoiceGroup(): void {
+    this.proficiencyChoiceGroups.update(groups => [...groups, { count: 1, options: [] }]);
+  }
+
+  removeProficiencyChoiceGroup(index: number): void {
+    this.proficiencyChoiceGroups.update(groups => groups.filter((_, i) => i !== index));
+  }
+
+  updateProficiencyChoiceCount(groupIndex: number, event: Event): void {
+    const value = parseInt((event.target as HTMLInputElement).value) || 1;
+    this.proficiencyChoiceGroups.update(groups => {
+      const newGroups = [...groups];
+      newGroups[groupIndex] = { ...newGroups[groupIndex], count: value };
+      return newGroups;
+    });
+  }
+
+  getProficiencyChoiceFilter(): string {
+    return this.proficiencyChoiceFilter();
+  }
+
+  setProficiencyChoiceFilter(value: string): void {
+    this.proficiencyChoiceFilter.set(value);
+    if (value) {
+      this.proficiencyChoiceDropdownOpen.set(true);
+    }
+  }
+
+  isProficiencyChoiceDropdownOpen(): boolean {
+    return this.proficiencyChoiceDropdownOpen();
+  }
+
+  getFilteredProficiencyChoices(): DndProficiency[] {
+    const query = this.proficiencyChoiceFilter().toLowerCase();
+    if (!query) return this.dndOptions.proficiencies().slice(0, 20);
+    return this.dndOptions.proficiencies()
+      .filter(p => p.name.toLowerCase().includes(query) || p.index.toLowerCase().includes(query))
+      .slice(0, 20);
+  }
+
+  openProficiencyChoiceDropdown(): void {
+    this.proficiencyChoiceDropdownOpen.set(true);
+  }
+
+  closeProficiencyChoiceDropdown(): void {
+    setTimeout(() => {
+      this.proficiencyChoiceDropdownOpen.set(false);
+      this.proficiencyChoiceFilter.set('');
+    }, 150);
+  }
+
+  addProficiencyChoiceOption(groupIndex: number, profIndex: string, profName: string): void {
+    this.proficiencyChoiceGroups.update(groups => {
+      const newGroups = [...groups];
+      const current = newGroups[groupIndex].options;
+      if (!current.includes(profName)) {
+        newGroups[groupIndex] = { 
+          ...newGroups[groupIndex], 
+          options: [...current, profName] 
+        };
+      }
+      return newGroups;
+    });
+    this.proficiencyChoiceFilter.set('');
+  }
+
+  removeProficiencyChoiceOption(groupIndex: number, optionIndex: number): void {
+    this.proficiencyChoiceGroups.update(groups => {
+      const newGroups = [...groups];
+      newGroups[groupIndex] = {
+        ...newGroups[groupIndex],
+        options: newGroups[groupIndex].options.filter((_, i) => i !== optionIndex)
+      };
+      return newGroups;
+    });
+  }
+
+  // Equipment choice group methods
+  addEquipmentChoiceGroup(): void {
+    this.equipmentChoiceGroups.update(groups => [...groups, { count: 1, items: [] }]);
+  }
+
+  removeEquipmentChoiceGroup(index: number): void {
+    this.equipmentChoiceGroups.update(groups => groups.filter((_, i) => i !== index));
+  }
+
+  updateEquipmentChoiceCount(groupIndex: number, event: Event): void {
+    const value = parseInt((event.target as HTMLInputElement).value) || 1;
+    this.equipmentChoiceGroups.update(groups => {
+      const newGroups = [...groups];
+      newGroups[groupIndex] = { ...newGroups[groupIndex], count: value };
+      return newGroups;
+    });
+  }
+
+  getEquipmentChoiceFilter(): string {
+    return this.equipmentChoiceFilter();
+  }
+
+  setEquipmentChoiceFilter(value: string): void {
+    this.equipmentChoiceFilter.set(value);
+    if (value) {
+      this.equipmentChoiceDropdownOpen.set(true);
+    }
+  }
+
+  isEquipmentChoiceDropdownOpen(): boolean {
+    return this.equipmentChoiceDropdownOpen();
+  }
+
+  getFilteredEquipmentOptions(): Item[] {
+    const query = this.equipmentChoiceFilter().toLowerCase();
+    if (!query) return this.filteredItems().slice(0, 20);
+    return this.filteredItems()
+      .filter(item => item.name.toLowerCase().includes(query))
+      .slice(0, 20);
+  }
+
+  openEquipmentChoiceDropdown(): void {
+    this.equipmentChoiceDropdownOpen.set(true);
+  }
+
+  closeEquipmentChoiceDropdown(): void {
+    setTimeout(() => {
+      this.equipmentChoiceDropdownOpen.set(false);
+      this.equipmentChoiceFilter.set('');
+    }, 150);
+  }
+
+  addEquipmentChoiceOption(groupIndex: number, item: Item): void {
+    const index = item['index'] || item['id'];
+    const name = item.name;
+    this.equipmentChoiceGroups.update(groups => {
+      const newGroups = [...groups];
+      const current = newGroups[groupIndex].items;
+      if (!current.find(e => e.index === index)) {
+        newGroups[groupIndex] = { 
+          ...newGroups[groupIndex], 
+          items: [...current, { index, name, quantity: 1 }] 
+        };
+      }
+      return newGroups;
+    });
+    this.equipmentChoiceFilter.set('');
+  }
+
+  removeEquipmentChoiceOption(groupIndex: number, itemIndex: number): void {
+    this.equipmentChoiceGroups.update(groups => {
+      const newGroups = [...groups];
+      newGroups[groupIndex] = {
+        ...newGroups[groupIndex],
+        items: newGroups[groupIndex].items.filter((_, i) => i !== itemIndex)
+      };
+      return newGroups;
+    });
+  }
+
+  updateEquipmentChoiceQuantity(groupIndex: number, itemIndex: number, quantity: number): void {
+    this.equipmentChoiceGroups.update(groups => {
+      const newGroups = [...groups];
+      if (newGroups[groupIndex].items[itemIndex]) {
+        newGroups[groupIndex].items[itemIndex] = {
+          ...newGroups[groupIndex].items[itemIndex],
+          quantity
+        };
+      }
+      return newGroups;
+    });
   }
 
   addProficiencyField(): void {

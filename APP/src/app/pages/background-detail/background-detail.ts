@@ -98,6 +98,32 @@ export class BackgroundDetail implements OnInit {
     return items.length ? items.join(', ') : 'None';
   }
 
+  getPersonalityTraitOptions(background: Background): string[] {
+    const options = background.personality_traits?.from?.options ?? [];
+    return options.map((opt) => opt.string).filter((s): s is string => !!s);
+  }
+
+  getIdealOptions(background: Background): Array<{ text: string; alignments: string[] }> {
+    const options = background.ideals?.from?.options ?? [];
+    return options
+      .map((opt) => ({
+        text: opt.desc ?? opt.string ?? '',
+        alignments:
+          opt.alignments?.map((a) => a.name) ?? [],
+      }))
+      .filter((opt) => opt.text);
+  }
+
+  getBondOptions(background: Background): string[] {
+    const options = background.bonds?.from?.options ?? [];
+    return options.map((opt) => opt.string).filter((s): s is string => !!s);
+  }
+
+  getFlawOptions(background: Background): string[] {
+    const options = background.flaws?.from?.options ?? [];
+    return options.map((opt) => opt.string).filter((s): s is string => !!s);
+  }
+
   private isSkillProficiency(name: string): boolean {
     const value = name.toLowerCase();
     return value.includes('skill') || value.includes('insight') || value.includes('religion');

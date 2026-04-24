@@ -46,7 +46,7 @@
       <p class="meta-item"><span class="meta-label">Range</span><span class="meta-value">{{ item.range }}</span></p>
       <p class="meta-item"><span class="meta-label">Casting Time</span><span class="meta-value">{{ item.casting_time }}</span></p>
       <p class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">{{ item.duration }}</span></p>
-      @if (item.components?.length) {
+      @if (item.components.length) {
         <p class="meta-item"><span class="meta-label">Components</span><span class="meta-value">{{ item.components.join(', ') }} @if (item.material) { <span class="component-material">({{ item.material }})</span> }</span></p>
       }
     </section>

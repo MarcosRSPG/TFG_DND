@@ -50,9 +50,27 @@
               >
                 {{ prof.name }}
               </button>
-            }
+}
           </div>
         }
+
+        <!-- Custom equipment input (always visible) -->
+        <div class="other-equipment-input" style="margin-top: 0.5rem;">
+          <input
+            type="text"
+            [(ngModel)]="customEquipmentNameModel"
+            placeholder="Custom equipment name..."
+            class="search-input"
+          />
+          <input
+            type="number"
+            [(ngModel)]="customEquipmentQuantityModel"
+            min="1"
+            value="1"
+            class="quantity-input"
+          />
+          <button type="button" class="add-btn" (click)="addCustomEquipment()">+ Add</button>
+        </div>
       </div>
 
       @if (selectedProficiencies().length > 0) {
@@ -72,6 +90,70 @@
           <button type="button" class="remove-btn" (click)="removeProficiencyField()">- Remove</button>
         }
       </div>
+    </div>
+
+    <!-- Proficiency Choice Groups -->
+    <div class="form-section">
+      <h3>Proficiency Choice Options</h3>
+      <p class="hint">Define proficiency choices the player can select from. Add groups if needed.</p>
+
+      @for (group of proficiencyChoiceGroups(); track $index; let groupIdx = $index) {
+        <div class="choice-group">
+          <div class="choice-group-header">
+            <span>Proficiency Group {{ groupIdx + 1 }}</span>
+            <button type="button" class="remove-btn" (click)="removeProficiencyChoiceGroup(groupIdx)">Remove</button>
+          </div>
+
+          <div class="form-group">
+            <label>Choose</label>
+            <input
+              type="number"
+              [value]="group.count"
+              (change)="updateProficiencyChoiceCount(groupIdx, $event)"
+              min="1"
+              max="10"
+              class="small-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Search proficiencies</label>
+            <input
+              type="text"
+              [value]="getProficiencyChoiceFilter()"
+              (input)="setProficiencyChoiceFilter($any($event.target).value)"
+              (focus)="openProficiencyChoiceDropdown()"
+              (blur)="closeProficiencyChoiceDropdown()"
+              placeholder="Search proficiencies..."
+              class="search-input"
+            />
+
+            @if (isProficiencyChoiceDropdownOpen() && getFilteredProficiencyChoices().length > 0) {
+              <div class="filtered-dropdown">
+                @for (prof of getFilteredProficiencyChoices(); track prof.index) {
+                  <button 
+                    type="button" 
+                    class="dropdown-item"
+                    (click)="addProficiencyChoiceOption(groupIdx, prof.index, prof.name)"
+                  >
+                    {{ prof.name }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="selected-list">
+            @for (opt of group.options; track $index) {
+              <div class="selected-item">
+                <span>{{ opt }}</span>
+                <button type="button" class="remove-btn" (click)="removeProficiencyChoiceOption(groupIdx, $index)">X</button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      <button type="button" class="add-btn" (click)="addProficiencyChoiceGroup()">+ Add Proficiency Group</button>
     </div>
 
     <div class="form-section">
@@ -105,6 +187,24 @@
             }
           </div>
         }
+
+        <!-- Custom equipment input (always visible) -->
+        <div class="other-equipment-input" style="margin-top: 0.5rem;">
+          <input
+            type="text"
+            [(ngModel)]="customEquipmentNameModel"
+            placeholder="Custom equipment name..."
+            class="search-input"
+          />
+          <input
+            type="number"
+            [(ngModel)]="customEquipmentQuantityModel"
+            min="1"
+            value="1"
+            class="quantity-input"
+          />
+          <button type="button" class="add-btn" (click)="addCustomEquipment()">+ Add</button>
+        </div>
       </div>
 
       @if (selectedEquipment().length > 0) {
@@ -124,6 +224,77 @@
           }
         </div>
       }
+    </div>
+
+    <!-- Equipment Choice Groups -->
+    <div class="form-section">
+      <h3>Equipment Choice Options</h3>
+      <p class="hint">Define equipment choices the player can select from. Add groups if needed.</p>
+
+      @for (group of equipmentChoiceGroups(); track $index; let groupIdx = $index) {
+        <div class="choice-group">
+          <div class="choice-group-header">
+            <span>Equipment Group {{ groupIdx + 1 }}</span>
+            <button type="button" class="remove-btn" (click)="removeEquipmentChoiceGroup(groupIdx)">Remove</button>
+          </div>
+
+          <div class="form-group">
+            <label>Choose</label>
+            <input
+              type="number"
+              [value]="group.count"
+              (change)="updateEquipmentChoiceCount(groupIdx, $event)"
+              min="1"
+              max="10"
+              class="small-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Search equipment</label>
+            <input
+              type="text"
+              [value]="getEquipmentChoiceFilter()"
+              (input)="setEquipmentChoiceFilter($any($event.target).value)"
+              (focus)="openEquipmentChoiceDropdown()"
+              (blur)="closeEquipmentChoiceDropdown()"
+              placeholder="Search equipment..."
+              class="search-input"
+            />
+
+            @if (isEquipmentChoiceDropdownOpen() && getFilteredEquipmentOptions().length > 0) {
+              <div class="filtered-dropdown">
+                @for (item of getFilteredEquipmentOptions(); track item['index']) {
+                  <button 
+                    type="button" 
+                    class="dropdown-item"
+                    (click)="addEquipmentChoiceOption(groupIdx, item)"
+                  >
+                    {{ item.name }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="selected-list">
+            @for (item of group.items; track $index) {
+              <div class="selected-item">
+                <span>{{ item.name }}</span>
+                <input
+                  type="number"
+                  [value]="item.quantity"
+                  (change)="updateEquipmentChoiceQuantity(groupIdx, $index, +$any($event.target).value)"
+                  min="1"
+                  class="quantity-input"
+                />
+                <button type="button" class="remove-btn" (click)="removeEquipmentChoiceOption(groupIdx, $index)">X</button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      <button type="button" class="add-btn" (click)="addEquipmentChoiceGroup()">+ Add Equipment Group</button>
     </div>
 
     <div class="form-section">
