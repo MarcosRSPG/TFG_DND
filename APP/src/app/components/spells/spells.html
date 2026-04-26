@@ -59,6 +59,12 @@
       </button>
     </div>
 
+    <div class="filter-group filter-group--multi">
+      <button class="filter-button" (click)="classesModal.open()">
+        Classes ({{ filters().classes.length }})
+      </button>
+    </div>
+
     <div class="filter-group">
       <label for="spell-source">Content:</label>
       <select
@@ -92,12 +98,25 @@
     (confirmed)="onRangesConfirmed($event)"
   ></app-filter-modal>
 
+  <app-filter-modal
+    #classesModal
+    title="Select Classes"
+    [options]="Array.from(classes())"
+    [selectedOptions]="filters().classes"
+    (confirmed)="onClassesConfirmed($event)"
+  ></app-filter-modal>
+
   <ul class="entity-list" aria-label="List of spells">
     @for (spell of paginatedSpells(); track getIdentifier(spell)) {
       <li class="entity-item">
         <a [routerLink]="['/spells', getIdentifier(spell)]" class="entity-link">
           <h3>{{ spell.name }}</h3>
-          <p>Level: {{ spell.level }}</p>
+          <div class="spell-chips">
+            <span class="spell-chip spell-chip--level">Lvl {{ spell.level }}</span>
+            @for (cls of (spell.classes || []); track cls.index) {
+              <span class="spell-chip spell-chip--class">{{ cls.name }}</span>
+            }
+          </div>
           <p>School: {{ spell.school?.name || 'Unknown' }}</p>
           <p>Concentration: {{ spell.concentration ? 'Yes' : 'No' }}</p>
         </a>

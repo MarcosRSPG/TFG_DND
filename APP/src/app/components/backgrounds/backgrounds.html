@@ -9,8 +9,8 @@
       <input
         id="background-search"
         type="text"
-        [(ngModel)]="filters().searchName"
-        (ngModelChange)="onFilterChange()"
+        [ngModel]="filters().searchName"
+        (ngModelChange)="onSearchNameChange($event)"
         placeholder="e.g. Outlander, Soldier..."
       />
     </div>
@@ -19,8 +19,8 @@
       <label for="background-source">Content:</label>
       <select
         id="background-source"
-        [(ngModel)]="filters().source"
-        (ngModelChange)="onFilterChange()"
+        [ngModel]="filters().source"
+        (ngModelChange)="onSourceChange($event)"
       >
         <option value="all">All</option>
         <option value="official">Official</option>

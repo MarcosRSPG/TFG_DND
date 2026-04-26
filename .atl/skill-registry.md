@@ -12,6 +12,15 @@
 | When writing Go tests | go-testing | ../../../.config/opencode/skills/go-testing/SKILL.md |
 | When creating a GitHub issue | issue-creation | ../../../.config/opencode/skills/issue-creation/SKILL.md |
 | judgmental day, judgment-day | judgment-day | ../../../.config/opencode/skills/judgment-day/SKILL.md |
+| sdd init, initialize SDD | sdd-init | ../../../.config/opencode/skills/sdd-init/SKILL.md |
+| sdd explore, investigate | sdd-explore | ../../../.config/opencode/skills/sdd-explore/SKILL.md |
+| sdd propose, new change | sdd-propose | ../../../.config/opencode/skills/sdd-propose/SKILL.md |
+| sdd spec, write specs | sdd-spec | ../../../.config/opencode/skills/sdd-spec/SKILL.md |
+| sdd design, technical design | sdd-design | ../../../.config/opencode/skills/sdd-design/SKILL.md |
+| sdd tasks, task breakdown | sdd-tasks | ../../../.config/opencode/skills/sdd-tasks/SKILL.md |
+| sdd apply, implement | sdd-apply | ../../../.config/opencode/skills/sdd-apply/SKILL.md |
+| sdd verify, validate | sdd-verify | ../../../.config/opencode/skills/sdd-verify/SKILL.md |
+| sdd archive, complete change | sdd-archive | ../../../.config/opencode/skills/sdd-archive/SKILL.md |
 
 ## Compact Rules
 

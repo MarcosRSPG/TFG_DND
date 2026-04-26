@@ -1,29 +1,30 @@
 @if (loading()) {
-	<section class="detail board board--type-sign sign">
-		<a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
-		<p class="message">Loading race details...</p>
-	</section>
+  <section class="detail board board--type-sign sign">
+    <a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
+    <p class="message">Loading race details...</p>
+  </section>
 } @else if (error()) {
-	<section class="detail board board--type-sign sign">
-		<a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
-		<p class="message message--error">{{ error() }}</p>
-	</section>
+  <section class="detail board board--type-sign sign">
+    <a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
+    <p class="message message--error">{{ error() }}</p>
+  </section>
 } @else if (race(); as currentRace) {
-	<section class="detail board board--type-sign sign">
-		<a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
+  <section class="detail board board--type-sign sign">
+    <a [routerLink]="['/manual']" [queryParams]="backParams" class="back-link">&larr; Back to manual</a>
 
-		<header class="detail-header">
-			<h1>{{ currentRace.name }}</h1>
-			<p class="detail-subtitle">Race</p>
-		</header>
+    <header class="detail-header">
+      <div class="header-content">
+        <h1>{{ currentRace.name }}</h1>
+        <p class="detail-subtitle">Race</p>
+      </div>
+      @if (currentRace.image) {
+        <div class="header-image">
+          <img [src]="getImageUrl(currentRace.image)" [alt]="currentRace.name" />
+        </div>
+      }
+    </header>
 
-		@if (currentRace.image) {
-			<div class="detail-image">
-				<img [src]="getImageUrl(currentRace.image)" [alt]="currentRace.name" />
-			</div>
-		}
-
-		<section class="detail-meta-grid">
+    <section class="detail-meta-grid">
 			<p class="meta-item"><span class="meta-label">Size</span><span class="meta-value">{{ currentRace.size }}</span></p>
 			<p class="meta-item"><span class="meta-label">Speed</span><span class="meta-value">{{ currentRace.speed }} pies</span></p>
 			<p class="meta-item"><span class="meta-label">Alignment</span><span class="meta-value">{{ currentRace.alignment }}</span></p>

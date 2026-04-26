@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { environment } from '../../../environments/environment';
 import { SubclassModalComponent } from '../../components/subclass-modal/subclass-modal';
 import { ClassChoice, DndClass, DndClassLevel, LeveledFeature } from '../../interfaces/class';
 import { Subclass } from '../../interfaces/subclass';
@@ -94,6 +95,36 @@ export class ClassDetail implements OnInit {
     }
 
     return level.features.map((feature) => feature.name).join(', ');
+  }
+
+  getFeatureIndices(level: DndClassLevel): string[] {
+    if (!level.features?.length) {
+      return [];
+    }
+
+    return level.features.map((feature) => feature.index);
+  }
+
+  scrollToFeature(id: string): void {
+    const element = document.getElementById('feature-' + id);
+    element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  getSneakAttackDice(level: number): string {
+    // Rogue Sneak Attack progression
+    // Level 1: 1d6, Level 3: 2d6, Level 5: 3d6, Level 7: 4d6, Level 9: 5d6,
+    // Level 11: 6d6, Level 13: 7d6, Level 15: 8d6, Level 17: 9d6, Level 18: 10d6
+    if (level < 1) return '-';
+    if (level < 3) return '1d6';
+    if (level < 5) return '2d6';
+    if (level < 7) return '3d6';
+    if (level < 9) return '4d6';
+    if (level < 11) return '5d6';
+    if (level < 13) return '6d6';
+    if (level < 15) return '7d6';
+    if (level < 17) return '8d6';
+    if (level < 18) return '9d6';
+    return '10d6';
   }
 
   getHitPointsAtFirstLevel(hitDie: number): string {
@@ -290,6 +321,11 @@ export class ClassDetail implements OnInit {
 
   getFeatureDescriptions(item: LeveledFeature): string[] {
     return item.feature.desc?.length ? item.feature.desc : ['No description available.'];
+  }
+
+  getImageUrl(imagePath: string | undefined): string {
+    if (!imagePath) return '';
+    return `${environment.API_IMAGES}${imagePath}`;
   }
 
   private isScalar(value: unknown): value is string | number {

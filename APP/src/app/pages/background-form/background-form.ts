@@ -415,34 +415,85 @@ export class BackgroundForm implements OnInit {
 
   // Multiple options methods for traits/ideals/bonds/flaws
   addOption(type: 'personality_traits' | 'ideals' | 'bonds' | 'flaws'): void {
-    const current = (this.formData()[type] as { options?: string[] })?.options || [];
-    const newArray = [...current, ''];
-    this.formData.update(d => ({
-      ...d,
-      [type]: { options: newArray }
-    }));
+    switch (type) {
+      case 'personality_traits':
+        this.personalityTraitsOptions.update(opts => [...opts, '']);
+        break;
+      case 'ideals':
+        this.idealsOptions.update(opts => [...opts, '']);
+        break;
+      case 'bonds':
+        this.bondsOptions.update(opts => [...opts, '']);
+        break;
+      case 'flaws':
+        this.flawsOptions.update(opts => [...opts, '']);
+        break;
+    }
   }
 
   removeOption(type: 'personality_traits' | 'ideals' | 'bonds' | 'flaws', index: number): void {
-    const current = [...((this.formData()[type] as { options?: string[] })?.options || [])];
-    current.splice(index, 1);
-    this.formData.update(d => ({
-      ...d,
-      [type]: { options: current }
-    }));
+    switch (type) {
+      case 'personality_traits':
+        this.personalityTraitsOptions.update(opts => opts.filter((_, i) => i !== index));
+        break;
+      case 'ideals':
+        this.idealsOptions.update(opts => opts.filter((_, i) => i !== index));
+        break;
+      case 'bonds':
+        this.bondsOptions.update(opts => opts.filter((_, i) => i !== index));
+        break;
+      case 'flaws':
+        this.flawsOptions.update(opts => opts.filter((_, i) => i !== index));
+        break;
+    }
   }
 
   updateOption(type: 'personality_traits' | 'ideals' | 'bonds' | 'flaws', index: number, value: string): void {
-    const current = [...((this.formData()[type] as { options?: string[] })?.options || [])];
-    current[index] = value;
-    this.formData.update(d => ({
-      ...d,
-      [type]: { options: current }
-    }));
+    switch (type) {
+      case 'personality_traits':
+        this.personalityTraitsOptions.update(opts => {
+          const newOpts = [...opts];
+          newOpts[index] = value;
+          return newOpts;
+        });
+        break;
+      case 'ideals':
+        this.idealsOptions.update(opts => {
+          const newOpts = [...opts];
+          newOpts[index] = value;
+          return newOpts;
+        });
+        break;
+      case 'bonds':
+        this.bondsOptions.update(opts => {
+          const newOpts = [...opts];
+          newOpts[index] = value;
+          return newOpts;
+        });
+        break;
+      case 'flaws':
+        this.flawsOptions.update(opts => {
+          const newOpts = [...opts];
+          newOpts[index] = value;
+          return newOpts;
+        });
+        break;
+    }
   }
 
   getOptions(type: 'personality_traits' | 'ideals' | 'bonds' | 'flaws'): string[] {
-    return (this.formData()[type] as { options?: string[] })?.options || [];
+    switch (type) {
+      case 'personality_traits':
+        return this.personalityTraitsOptions();
+      case 'ideals':
+        return this.idealsOptions();
+      case 'bonds':
+        return this.bondsOptions();
+      case 'flaws':
+        return this.flawsOptions();
+      default:
+        return [];
+    }
   }
 
   async onSubmit(): Promise<void> {

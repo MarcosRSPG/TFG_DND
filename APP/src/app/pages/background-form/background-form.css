@@ -371,6 +371,109 @@ h3 {
   border-radius: 6px;
 }
 
+.selected-item.has-qty {
+  gap: 0.5rem;
+}
+
+.selected-item.has-qty .eq-name {
+  flex: 1;
+  color: #eadab8;
+  font-size: 0.95rem;
+}
+
+.selected-item.has-qty .qty-mark {
+  color: #c9a25a;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.selected-item.has-qty .qty-input {
+  width: 52px;
+  padding: 0.3rem 0.4rem;
+  background: rgba(20, 12, 7, 0.65);
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  border-radius: 4px;
+  color: #eadab8;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.selected-item.has-qty .qty-input::-webkit-inner-spin-button,
+.selected-item.has-qty .qty-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.selected-item.has-qty .qty-input {
+  width: 52px;
+  padding: 0.3rem 0.4rem;
+  background: rgba(20, 12, 7, 0.65);
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  border-radius: 4px;
+  color: #eadab8;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.selected-item.with-quantity {
+  gap: 0.5rem;
+}
+
+.selected-item.with-quantity .item-name {
+  flex: 1;
+  color: #eadab8;
+  font-size: 0.95rem;
+}
+
+.selected-item.with-quantity .quantity-label {
+  color: #c9a25a;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.selected-item.with-quantity .quantity-input.small {
+  width: 50px;
+  padding: 0.3rem 0.4rem;
+  background: rgba(20, 12, 7, 0.6);
+  border: 1px solid rgba(201, 162, 90, 0.3);
+  border-radius: 4px;
+  color: #eadab8;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.selected-item.equipment-with-quantity {
+  gap: 0.75rem;
+}
+
+.selected-item.equipment-with-quantity .equipment-name {
+  flex: 1;
+  color: #eadab8;
+  font-size: 0.95rem;
+}
+
+.selected-item.equipment-with-quantity .quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.selected-item.equipment-with-quantity .quantity-control::before {
+  content: '×';
+  color: #8b6f47;
+  font-size: 1.1rem;
+}
+
+.selected-item.equipment-with-quantity .quantity-input {
+  width: 55px;
+  padding: 0.35rem 0.4rem;
+  background: rgba(20, 12, 7, 0.7);
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  border-radius: 4px;
+  color: #eadab8;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .selected-item span {
   color: #eadab8;
   font-size: 0.95rem;

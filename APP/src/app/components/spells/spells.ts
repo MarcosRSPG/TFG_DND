@@ -13,6 +13,7 @@ interface SpellFilters {
   level: string;
   ritual: boolean | null;
   ranges: string[];
+  classes: string[];
   source: string;
 }
 
@@ -39,6 +40,7 @@ export class Spells implements OnInit {
   // 🔹 ViewChild
   @ViewChild('schoolsModal') schoolsModal!: FilterModalComponent;
   @ViewChild('rangesModal') rangesModal!: FilterModalComponent;
+  @ViewChild('classesModal') classesModal!: FilterModalComponent;
 
   // 🔹 Signals
   allSpells = signal<Spell[]>([]);
@@ -53,6 +55,7 @@ export class Spells implements OnInit {
     level: 'all',
     ritual: null,
     ranges: [],
+    classes: [],
     source: 'all',
   });
 
@@ -61,6 +64,7 @@ export class Spells implements OnInit {
 
   schools = signal<Set<string>>(new Set());
   ranges = signal<Set<string>>(new Set());
+  classes = signal<Set<string>>(new Set());
 
   private indexSet = new Set<string>();
 
@@ -84,6 +88,7 @@ export class Spells implements OnInit {
             ? false
             : null,
         ranges: params['ranges'] ? params['ranges'].split(',') : [],
+        classes: params['classes'] ? params['classes'].split(',') : [],
         source: params['source'] || 'all',
       });
     });
@@ -139,6 +144,7 @@ export class Spells implements OnInit {
         level: filters.level !== 'all' ? filters.level : undefined,
         ritual: filters.ritual !== null ? filters.ritual : undefined,
         ranges: filters.ranges.length ? filters.ranges.join(',') : undefined,
+        classes: filters.classes.length ? filters.classes.join(',') : undefined,
         source: filters.source !== 'all' ? filters.source : undefined,
       },
       queryParamsHandling: 'merge',
@@ -148,6 +154,7 @@ export class Spells implements OnInit {
   private updateFiltersOptions(): void {
     const schoolSet = new Set<string>();
     const rangeSet = new Set<string>();
+    const classSet = new Set<string>();
 
     this.allSpells().forEach((spell) => {
       if (spell.school?.name) {
@@ -156,10 +163,16 @@ export class Spells implements OnInit {
       if (spell.range) {
         rangeSet.add(spell.range);
       }
+      if (spell.classes) {
+        spell.classes.forEach(c => {
+          if (c.name) classSet.add(c.name);
+        });
+      }
     });
 
     this.schools.set(schoolSet);
     this.ranges.set(rangeSet);
+    this.classes.set(classSet);
   }
 
   private applyFilters(): void {
@@ -197,6 +210,13 @@ export class Spells implements OnInit {
       );
     }
 
+    if (filters.classes.length > 0) {
+      filtered = filtered.filter((spell) => {
+        if (!spell.classes?.length) return false;
+        return spell.classes.some(c => c.name && filters.classes.includes(c.name));
+      });
+    }
+
     this.filteredSpells.set(filtered);
     this.updatePaginatedSpells();
   }
@@ -230,6 +250,12 @@ export class Spells implements OnInit {
       ...currentFilters,
       ritual: checked ? true : null
     });
+    this.onFilterChange();
+  }
+
+  onClassesConfirmed(classes: string[]): void {
+    const currentFilters = this.filters();
+    this.filters.set({ ...currentFilters, classes });
     this.onFilterChange();
   }
 

@@ -11,16 +11,18 @@
 } @else if (monster(); as item) {
   <section class="detail board board--type-sign sign">
     <a routerLink="/manual" [queryParams]="{section: 'monsters'}" class="back-link">&larr; Back to manual</a>
+    
     <header class="detail-header">
-      <h1>{{ item.name }}</h1>
-      <p class="detail-subtitle">Monster</p>
-    </header>
-
-    @if (item.image) {
-      <div class="detail-image">
-        <img [src]="getImageUrl(item.image)" [alt]="item.name" />
+      <div class="header-content">
+        <h1>{{ item.name }}</h1>
+        <p class="detail-subtitle">Monster</p>
       </div>
-    }
+      @if (item.image) {
+        <div class="header-image">
+          <img [src]="getImageUrl(item.image)" [alt]="item.name" />
+        </div>
+      }
+    </header>
 
     <section class="detail-meta-grid">
       <p class="meta-item"><span class="meta-label">Type</span><span class="meta-value">{{ item.size }} {{ item.type }} {{ item.subtype ? '(' + item.subtype + ')' : '' }}</span></p>

@@ -40,7 +40,7 @@
 .race-link h3 {
 	margin: 0 0 0.25rem;
 	font-size: 1.1rem;
-	color: #f0d8b0;
+	color: var(--title-color, #c9a25a);
 }
 
 .race-link p {

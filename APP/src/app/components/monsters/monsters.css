@@ -188,7 +188,7 @@
 
 .entity-link h3 {
   margin: 0 0 0.35rem;
-  color: #f0d8b0;
+  color: var(--title-color, #c9a25a);
   font-size: 1.12rem;
   line-height: 1.3;
 }

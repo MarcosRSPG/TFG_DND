@@ -43,34 +43,16 @@
         @if (showProficiencyDropdown() && filteredProficiencies.length > 0) {
           <div class="filtered-dropdown">
             @for (prof of filteredProficiencies; track prof.index) {
-              <button 
-                type="button" 
+              <button
+                type="button"
                 class="dropdown-item"
                 (click)="addProficiency(prof.index)"
               >
                 {{ prof.name }}
               </button>
-}
+            }
           </div>
         }
-
-        <!-- Custom equipment input (always visible) -->
-        <div class="other-equipment-input" style="margin-top: 0.5rem;">
-          <input
-            type="text"
-            [(ngModel)]="customEquipmentNameModel"
-            placeholder="Custom equipment name..."
-            class="search-input"
-          />
-          <input
-            type="number"
-            [(ngModel)]="customEquipmentQuantityModel"
-            min="1"
-            value="1"
-            class="quantity-input"
-          />
-          <button type="button" class="add-btn" (click)="addCustomEquipment()">+ Add</button>
-        </div>
       </div>
 
       @if (selectedProficiencies().length > 0) {
@@ -131,8 +113,8 @@
             @if (isProficiencyChoiceDropdownOpen() && getFilteredProficiencyChoices().length > 0) {
               <div class="filtered-dropdown">
                 @for (prof of getFilteredProficiencyChoices(); track prof.index) {
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     class="dropdown-item"
                     (click)="addProficiencyChoiceOption(groupIdx, prof.index, prof.name)"
                   >
@@ -177,8 +159,8 @@
         @if (showEquipmentDropdown() && itemsOptions.length > 0) {
           <div class="filtered-dropdown">
             @for (item of itemsOptions; track item['index']) {
-              <button 
-                type="button" 
+              <button
+                type="button"
                 class="dropdown-item"
                 (click)="addEquipment(item)"
               >
@@ -193,12 +175,16 @@
           <input
             type="text"
             [(ngModel)]="customEquipmentNameModel"
+            name="customEquipmentName"
+            [ngModelOptions]="{standalone: true}"
             placeholder="Custom equipment name..."
             class="search-input"
           />
           <input
             type="number"
             [(ngModel)]="customEquipmentQuantityModel"
+            name="customEquipmentQuantity"
+            [ngModelOptions]="{standalone: true}"
             min="1"
             value="1"
             class="quantity-input"
@@ -265,8 +251,8 @@
             @if (isEquipmentChoiceDropdownOpen() && getFilteredEquipmentOptions().length > 0) {
               <div class="filtered-dropdown">
                 @for (item of getFilteredEquipmentOptions(); track item['index']) {
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     class="dropdown-item"
                     (click)="addEquipmentChoiceOption(groupIdx, item)"
                   >
@@ -279,14 +265,15 @@
 
           <div class="selected-list">
             @for (item of group.items; track $index) {
-              <div class="selected-item">
-                <span>{{ item.name }}</span>
+              <div class="selected-item has-qty">
+                <span class="eq-name">{{ item.name }}</span>
+                <span class="qty-mark">×</span>
                 <input
                   type="number"
                   [value]="item.quantity"
                   (change)="updateEquipmentChoiceQuantity(groupIdx, $index, +$any($event.target).value)"
                   min="1"
-                  class="quantity-input"
+                  class="qty-input"
                 />
                 <button type="button" class="remove-btn" (click)="removeEquipmentChoiceOption(groupIdx, $index)">X</button>
               </div>

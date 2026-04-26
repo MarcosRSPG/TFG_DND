@@ -1,5 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
 
+/* CSS Custom Properties */
+:root {
+  /* Title color - soft amber gold for headings and titles */
+  --title-color: #c9a25a;
+}
+
 html,
 body,
 div,

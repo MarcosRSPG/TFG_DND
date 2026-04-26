@@ -29,24 +29,49 @@
 }
 
 .detail-image img {
-  max-width: 280px;
-  max-height: 280px;
-  object-fit: cover;
+  max-width: 300px;
+  max-height: 250px;
+  object-fit: contain;
   border-radius: 12px;
   border: 2px solid rgba(201, 162, 90, 0.35);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
   margin-bottom: 1rem;
+}
+
+.header-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .detail h1 {
   margin: 0;
-  color: #ffd700;
-  font-weight: 800;
+  color: var(--title-color, #eadab8);
+  font-weight: normal;
   font-size: clamp(1.8rem, 3vw, 2.4rem);
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.header-image {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(201, 162, 90, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background: rgba(55, 34, 19, 0.65);
+}
+
+.header-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .detail-subtitle {
@@ -102,8 +127,8 @@
 
 .detail h3 {
   margin: 0;
-  color: #ffd700;
-  font-weight: 700;
+  color: #eadab8;
+  font-weight: normal;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
 }
@@ -192,8 +217,8 @@
 }
 
 .spellcasting-section h2 {
-  color: #ffd700;
-  font-weight: 700;
+  color: #eadab8;
+  font-weight: normal;
   font-size: 1.3rem;
   margin-bottom: 1rem;
   border-bottom: 2px solid rgba(201, 162, 90, 0.3);
@@ -202,8 +227,8 @@
 }
 
 .spellcasting-section h3 {
-  color: #ffd700;
-  font-weight: 700;
+  color: #eadab8;
+  font-weight: normal;
   font-size: 1.1rem;
   margin: 1.2rem 0 0.6rem 0;
 }
@@ -223,8 +248,8 @@
 }
 
 .spellcasting-header strong {
-  color: #ffd700;
-  font-weight: 700;
+  color: #eadab8;
+  font-weight: normal;
 }
 
 .spellcasting-header span {
@@ -247,8 +272,8 @@
 
 .spell-slots-table th {
   background: rgba(20, 12, 7, 0.6);
-  color: #ffd700;
-  font-weight: 700;
+  color: #eadab8;
+  font-weight: normal;
   font-size: 0.9rem;
 }
 
@@ -277,9 +302,9 @@
 }
 
 .spell-tag a {
-  color: #ffd700;
+  color: #eadab8;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: normal;
   font-size: 0.85rem;
 }
 
@@ -309,9 +334,9 @@
 }
 
 .slot-level-label {
-  color: #ffd700;
+  color: #eadab8;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: normal;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -339,11 +364,11 @@
 
 .level-group-header {
   margin: 0 0 0.5rem;
-  color: #ffd700;
+  color: #eadab8;
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: normal;
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  border-bottom: 1px solid rgba(201, 162, 90, 0.2);
 }
 
 .spells-in-level {

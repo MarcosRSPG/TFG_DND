@@ -14,8 +14,15 @@
 
     <article>
       <header class="detail-header">
-      <h1>{{ currentClass.name }}</h1>
-      <p class="detail-subtitle">Class</p>
+        <div class="header-content">
+          <h1>{{ currentClass.name }}</h1>
+          <p class="detail-subtitle">Class</p>
+        </div>
+        @if (currentClass.image) {
+          <div class="header-image">
+            <img [src]="getImageUrl(currentClass.image)" [alt]="currentClass.name" />
+          </div>
+        }
       </header>
 
       <div class="levels-table-wrapper">
@@ -25,6 +32,9 @@
               <th>Nivel</th>
               <th>Proficiency Bonus</th>
               <th>Features Gained</th>
+              @if (dndClass()?.index === 'rogue') {
+                <th>Sneak Attack</th>
+              }
               @for (column of counterColumns(); track column.id) {
                 <th>{{ column.label }}</th>
               }
@@ -40,9 +50,16 @@
               <tr>
                 <td>{{ level.level }}</td>
                 <td>+{{ level.prof_bonus }}</td>
-                <td>{{ getFeatureTitles(level) }}</td>
+                <td>
+                  @for (featureIndex of getFeatureIndices(level); track featureIndex; let last = $last) {
+                    <a (click)="scrollToFeature(featureIndex)" class="feature-link">{{ featureIndex }}</a>@if (!last) {, }
+                  }
+                </td>
                 @for (column of counterColumns(); track column.id) {
                   <td>{{ getCounterValue(level, column) }}</td>
+                }
+                @if (dndClass()?.index === 'rogue') {
+                  <td class="sneak-attack-dice">{{ getSneakAttackDice(level.level) }}</td>
                 }
                 @if (isSpellcasterClass()) {
                   @for (slotLevel of slotLevels; track slotLevel) {
@@ -95,7 +112,7 @@
           <h2>New Features</h2>
           <ul class="features-list">
             @for (item of classFeatures(); track item.feature.index) {
-              <li class="feature-item">
+              <li class="feature-item" [id]="'feature-' + item.feature.index">
                 <h3>Level {{ item.level }} - {{ item.feature.name }}</h3>
                 @for (description of getFeatureDescriptions(item); track $index) {
                   <p>{{ description }}</p>

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Background } from '../../interfaces/background';
+import { Background, BackgroundEquipment } from '../../interfaces/background';
 import { BackgroundsService } from '../../services/backgrounds-service';
 
 interface BackgroundFilters {
@@ -95,6 +95,18 @@ export class Backgrounds implements OnInit {
   // =========================
   // FILTERS
   // =========================
+  onSearchNameChange(value: string): void {
+    const currentFilters = this.filters();
+    this.filters.set({ ...currentFilters, searchName: value });
+    this.onFilterChange();
+  }
+
+  onSourceChange(value: string): void {
+    const currentFilters = this.filters();
+    this.filters.set({ ...currentFilters, source: value });
+    this.onFilterChange();
+  }
+
   onFilterChange(): void {
     this.currentPage.set(1);
     this.applyFilters();
@@ -185,6 +197,38 @@ export class Backgrounds implements OnInit {
   // =========================
   getIdentifier(item: Background): string {
     return item.id || item.name?.toLowerCase().replace(/ /g, '-') || '';
+  }
+
+  getEquipmentLinks(equipment: BackgroundEquipment[]): { id: number, name: string, type: string, url: string }[] {
+    return equipment.map(e => {
+      const eq = e.equipment;
+      // Extract type from URL like "/api/equipment/1" - infer from the reference
+      const type = this.inferItemType(eq.index);
+      const id = this.extractIdFromUrl(eq.url);
+      return {
+        id,
+        name: eq.name,
+        type,
+        url: `/items/${type}/${id}`
+      };
+    });
+  }
+
+  private inferItemType(index: string): string {
+    const lower = index.toLowerCase();
+    if (lower.includes('armor') || lower.includes('shield')) return 'armor';
+    if (lower.includes('sword') || lower.includes('axe') || lower.includes('bow') ||
+        lower.includes('weapon') || lower.includes('dagger') || lower.includes('mace')) return 'weapon';
+    if (lower.includes('tool') || lower.includes('kit') || lower.includes('instrument')) return 'tool';
+    if (lower.includes('mount') || lower.includes('vehicle') || lower.includes('horse')) return 'mount';
+    return 'adventuringgear';
+  }
+
+  private extractIdFromUrl(url: string): number {
+    if (!url) return 0;
+    const parts = url.split('/');
+    const lastPart = parts[parts.length - 1];
+    return parseInt(lastPart, 10) || 0;
   }
 
   navigateToCreate(): void {

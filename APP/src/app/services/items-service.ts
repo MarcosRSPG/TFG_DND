@@ -76,15 +76,26 @@ export class ItemsService {
 
     const category = item.equipment_category?.index || '';
 
-    if (category === 'armor') return 'armor';
-    if (category === 'weapon') return 'weapon';
-    if (category === 'tool') return 'tool';
-    if (category === 'adventuring-gear') return 'adventuringgear';
-    if (category === 'mounts-and-vehicles') return 'mount';
+    if (category || rawType) {
+      if (category === 'armor') return 'armor';
+      if (category === 'weapon') return 'weapon';
+      if (category === 'tool') return 'tool';
+      if (category === 'adventuring-gear') return 'adventuringgear';
+      if (category === 'mounts-and-vehicles') return 'mount';
+      if (item['rarity']?.name) return 'magicitem';
+    }
 
-    if (item['rarity']?.name) return 'magicitem';
+    // Fallback: infer from item name/index
+    const nameOrIndex = (item.name || item['index'] || '').toLowerCase();
+    if (nameOrIndex.includes('armor') || nameOrIndex.includes('shield')) return 'armor';
+    if (nameOrIndex.includes('sword') || nameOrIndex.includes('axe') || nameOrIndex.includes('bow') ||
+        nameOrIndex.includes('dagger') || nameOrIndex.includes('mace') || nameOrIndex.includes('spear') ||
+        nameOrIndex.includes('crossbow') || nameOrIndex.includes('staff') || nameOrIndex.includes('weapon')) return 'weapon';
+    if (nameOrIndex.includes('tool') || nameOrIndex.includes('kit') || nameOrIndex.includes('instrument')) return 'tool';
+    if (nameOrIndex.includes('mount') || nameOrIndex.includes('horse') || nameOrIndex.includes('vehicle')) return 'mount';
 
-    return null;
+    // Default to adventuring gear for unknown items
+    return 'adventuringgear';
   }
 
   async getMagicItemIds(): Promise<string[]> {
