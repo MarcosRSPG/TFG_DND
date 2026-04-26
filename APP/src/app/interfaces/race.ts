@@ -1,5 +1,6 @@
 export interface Race {
-	index: string;
+	id: string;
+	index?: string;
 	name: string;
 	image?: string;
 	speed: number;
@@ -48,6 +49,7 @@ export interface RaceTraitDetail {
 }
 
 export interface RaceSubrace {
+	id?: string;
 	index: string;
 	name: string;
 	url: string;
@@ -59,7 +61,8 @@ export interface RaceListResponse {
 }
 
 export interface RacePreview {
-	index: string;
+	id: string;
+	index?: string;
 	name: string;
 	url: string;
 }

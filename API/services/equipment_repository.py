@@ -3,8 +3,6 @@ from bson import ObjectId
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 from config import MONGODB_URI, MONGODB_DATABASE, MONGODB_COLLECTION_ITEMS
-from config import API_DND5E
-from services.remote_catalog_repository import RemoteCatalogRepository
 
 _client: AsyncIOMotorClient | None = None
 
@@ -14,10 +12,6 @@ async def get_db():
     if _client is None:
         _client = AsyncIOMotorClient(MONGODB_URI)
     return _client[MONGODB_DATABASE]
-
-
-_remote_equipment = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="equipment")
-_remote_magic_items = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="magic-items")
 
 
 _CATEGORY_ALIASES = {
@@ -33,7 +27,6 @@ _CATEGORY_ALIASES = {
     "magic-items": "magic-items",
 }
 
-
 def normalize_category(category: str | None) -> str | None:
     if category is None:
         return None
@@ -44,26 +37,15 @@ def _doc_key(doc: dict[str, Any]) -> str:
     return str(doc.get("index") or doc.get("id") or doc.get("_id"))
 
 
+# Now uses only local MongoDB instead of remote API
 async def get_remote_catalog() -> list[dict[str, Any]]:
-    equipment_docs = await _remote_equipment.get_all()
-    magic_docs = await _remote_magic_items.get_all()
-
-    combined: list[dict[str, Any]] = []
-    seen_keys: set[str] = set()
-
-    for doc in (*equipment_docs, *magic_docs):
-        key = _doc_key(doc)
-        if key in seen_keys:
-            continue
-        seen_keys.add(key)
-        combined.append(doc)
-
-    return combined
+    # Just get all items - filtering by category is done in get_local_docs
+    return await get_local_docs()
 
 
 async def clear_remote_cache() -> None:
-    _remote_equipment.clear_cache()
-    _remote_magic_items.clear_cache()
+    # No cache to clear anymore - we use MongoDB directly
+    pass
 
 
 async def get_local_docs(category: str | None = None) -> list[dict[str, Any]]:
@@ -82,39 +64,31 @@ async def get_local_docs(category: str | None = None) -> list[dict[str, Any]]:
         raise HTTPException(status_code=500, detail=f"Error retrieving items: {exc}") from exc
 
 
+# Now just returns local
 async def get_remote_docs(category: str | None = None) -> list[dict[str, Any]]:
-    normalized_category = normalize_category(category)
-    if normalized_category == "magic-items":
-        return await _remote_magic_items.get_all()
-
-    docs = await get_remote_catalog()
-    if normalized_category is None:
-        return docs
-    return [doc for doc in docs if doc.get("equipment_category", {}).get("index") == normalized_category]
+    return await get_local_docs(category)
 
 
+# Returns only local docs (no merging with remote)
 async def get_all(category: str | None = None) -> list[dict[str, Any]]:
-    local_docs = await get_local_docs(category)
-    local_keys = {_doc_key(doc) for doc in local_docs}
-    merged_docs = list(local_docs)
-    for doc in await get_remote_docs(category):
-        if _doc_key(doc) in local_keys:
-            continue
-        merged_docs.append({**doc, "_id": doc.get("index")})
-    
-    return merged_docs
+    return await get_local_docs(category)
 
 
 async def get_local_doc_by_id(item_id: str) -> dict[str, Any] | None:
-    if not ObjectId.is_valid(item_id):
-        return None
+    # Try as ObjectId first
+    if ObjectId.is_valid(item_id):
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_ITEMS]
+        doc = await collection.find_one({"_id": ObjectId(item_id)})
+        if doc:
+            return doc
+    
+    # Try as index
     db = await get_db()
     collection = db[MONGODB_COLLECTION_ITEMS]
-    return await collection.find_one({"_id": ObjectId(item_id)})
+    return await collection.find_one({"index": item_id})
 
 
+# Now just returns local
 async def get_remote_doc_by_id(item_id: str) -> dict[str, Any] | None:
-    equipment_doc = await _remote_equipment.get_by_index(item_id)
-    if equipment_doc is not None:
-        return equipment_doc
-    return await _remote_magic_items.get_by_index(item_id)
+    return await get_local_doc_by_id(item_id)

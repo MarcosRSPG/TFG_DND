@@ -4,7 +4,7 @@ from bson import ObjectId
 from fastapi import HTTPException
 from pydantic import ValidationError
 from motor.motor_asyncio import AsyncIOMotorClient
-from config import API_DND5E, MONGODB_URI, MONGODB_DATABASE
+from config import MONGODB_URI, MONGODB_DATABASE
 from models.Character import (
     ApiReferenceSchema,
     CharacterSchema,
@@ -17,7 +17,13 @@ from services.characters_repository import (
     save_local_character,
     update_local_character,
 )
-from services.remote_catalog_repository import RemoteCatalogRepository
+from services.local_catalog_repository import (
+    _local_classes,
+    _local_subclasses,
+    _local_races,
+    _local_subraces,
+)
+from services.local_catalog_repository import LocalCatalogRepository
 
 _client: AsyncIOMotorClient | None = None
 
@@ -29,10 +35,11 @@ async def get_db():
     return _client[MONGODB_DATABASE]
 
 
-_remote_classes = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="classes")
-_remote_subclasses = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="subclasses")
-_remote_races = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="races")
-_remote_subraces = RemoteCatalogRepository(base_url=API_DND5E, list_endpoint="subraces")
+# Now uses local MongoDB instead of remote API
+_local_classes = LocalCatalogRepository(collection_name="classes", index_field="index")
+_local_subclasses = LocalCatalogRepository(collection_name="subclasses", index_field="index")
+_local_races = LocalCatalogRepository(collection_name="races", index_field="index")
+_local_subraces = LocalCatalogRepository(collection_name="subraces", index_field="index")
 
 
 def _json_safe(value):
@@ -68,7 +75,7 @@ def _to_schema(doc: dict) -> CharacterSchema:
     return CharacterSchema.model_validate(payload)
 
 
-async def _resolve_reference(reference_data: Any, repository: RemoteCatalogRepository | None = None) -> dict:
+async def _resolve_reference(reference_data: Any, repository: LocalCatalogRepository | None = None) -> dict:
     if reference_data is None:
         raise HTTPException(status_code=422, detail="Missing reference data")
 
@@ -172,12 +179,12 @@ async def _normalize_character_payload(character_data: dict, *, created_by: str 
     if created_by:
         payload["player"] = created_by
 
-    payload["class"] = await _resolve_reference(payload.get("class"), _remote_classes)
+    payload["class"] = await _resolve_reference(payload.get("class"), _local_classes)
     if payload.get("subclass") is not None:
-        payload["subclass"] = await _resolve_reference(payload.get("subclass"), _remote_subclasses)
-    payload["race"] = await _resolve_reference(payload.get("race"), _remote_races)
+        payload["subclass"] = await _resolve_reference(payload.get("subclass"), _local_subclasses)
+    payload["race"] = await _resolve_reference(payload.get("race"), _local_races)
     if payload.get("subrace") is not None:
-        payload["subrace"] = await _resolve_reference(payload.get("subrace"), _remote_subraces)
+        payload["subrace"] = await _resolve_reference(payload.get("subrace"), _local_subraces)
     payload["background"] = await _resolve_background(payload.get("background"))
 
     inventory = payload.get("inventory") or {}

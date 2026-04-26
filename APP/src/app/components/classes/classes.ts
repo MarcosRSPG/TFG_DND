@@ -39,10 +39,11 @@ export class Classes implements OnInit {
   async ngOnInit(): Promise<void> {
     try {
       await this.classesService.getClasses((item) => {
-        if (this.classIndexSet.has(item.index)) {
+        const indexKey = item.id || item.index || '';
+        if (this.classIndexSet.has(indexKey)) {
           return;
         }
-        this.classIndexSet.add(item.index);
+        this.classIndexSet.add(indexKey);
         const sorted = [...this.allClasses(), item].sort((a, b) => a.name.localeCompare(b.name));
         this.allClasses.set(sorted);
         this.applyFilters();

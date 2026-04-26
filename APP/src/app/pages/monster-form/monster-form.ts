@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { Monster, MonsterAction, MonsterAbility, SpellcastingInfo, SpellInfo, MonsterProficiency, MonsterDamage, ResourceReference } from '../../interfaces/monster';
 import { Spell } from '../../interfaces/spell';
 import { MonstersService } from '../../services/monsters-service';
@@ -379,7 +380,7 @@ export class MonsterForm implements OnInit {
       // This works for filtering by name
       const response = await firstValueFrom(
         this.http.get<{ results: { index: string; name: string; url: string }[] }>(
-          'https://www.dnd5eapi.co/api/2014/spells'
+          `${environment.API_URL}/spells`
         )
       );
 
@@ -477,7 +478,7 @@ export class MonsterForm implements OnInit {
     try {
       const index = spellName.toLowerCase().replace(/ /g, '-');
       const detail = await firstValueFrom(
-        this.http.get<any>(`https://www.dnd5eapi.co/api/2014/spells/${index}`)
+        this.http.get<any>(`${environment.API_URL}/spells/${index}`)
       );
 
       // Update the spell with full details

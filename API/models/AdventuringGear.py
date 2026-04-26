@@ -4,7 +4,7 @@ from models.Generico import BaseSchema, ResourceReference, CostSchema
 
 
 class AdventuringGearSchema(BaseSchema):
-    index: str
+    index: Optional[str] = None
     name: str
     desc: List[str] = Field(default_factory=list)
     special: List[str] = Field(default_factory=list)
@@ -19,7 +19,7 @@ class AdventuringGearSchema(BaseSchema):
     quantity: Optional[int] = None
     cost: CostSchema
     weight: Optional[float] = None
-    url: str
+    url: Optional[str] = None
     contents: List[Dict[str, Any]] = Field(default_factory=list)
     properties: List[Dict[str, Any]] = Field(default_factory=list)
 

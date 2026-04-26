@@ -43,8 +43,9 @@ export class Races implements OnInit {
   async ngOnInit(): Promise<void> {
     try {
       await this.racesService.getRaces((item) => {
-        if (this.raceIndexSet.has(item.index)) return;
-        this.raceIndexSet.add(item.index);
+        const indexKey = item.id || item.index || '';
+        if (this.raceIndexSet.has(indexKey)) return;
+        this.raceIndexSet.add(indexKey);
         this.races.update(current =>
           [...current, item].sort((a, b) => a.name.localeCompare(b.name))
         );

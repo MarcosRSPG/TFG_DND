@@ -71,12 +71,12 @@ export const routes: Routes = [
   },
   // Detail routes with parameters (must come AFTER specific routes)
   {
-    path: 'races/:index',
+    path: 'races/:id',
     loadComponent: () => import('./pages/race-detail/race-detail').then(m => m.RaceDetail),
     title: 'Race Details',
   },
   {
-    path: 'classes/:index',
+    path: 'classes/:id',
     loadComponent: () => import('./pages/class-detail/class-detail').then(m => m.ClassDetail),
     title: 'Class Details',
   },

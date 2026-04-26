@@ -44,17 +44,17 @@ export class ClassDetail implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      const index = this.route.snapshot.paramMap.get('index');
+      const id = this.route.snapshot.paramMap.get('id');
 
-      if (!index) {
-        throw new Error('No class index provided');
+      if (!id) {
+        throw new Error('No class id provided');
       }
 
       const [classData, levelData, subclassData, featureData] = await Promise.all([
-        this.classesService.getClass(index),
-        this.classesService.getClassLevels(index),
-        this.classesService.getSubclassesByClass(index),
-        this.classesService.getClassFeatureProgression(index),
+        this.classesService.getClass(id),
+        this.classesService.getClassLevels(id),
+        this.classesService.getSubclassesByClass(id),
+        this.classesService.getClassFeatureProgression(id),
       ]);
 
       this.dndClass.set(classData);

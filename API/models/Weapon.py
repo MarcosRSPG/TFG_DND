@@ -18,26 +18,20 @@ class WeaponRangeSchema(BaseModel):
 
 
 class WeaponSchema(BaseSchema):
-    index: str
+    index: Optional[str] = None
     name: str
     desc: List[str] = Field(default_factory=list)
     special: List[str] = Field(default_factory=list)
-    equipment_category: ResourceReference = Field(
-        default_factory=lambda: ResourceReference(
-            index="weapons",
-            name="Weapons",
-            url="/api/2014/equipment-categories/weapons",
-        )
-    )
-    weapon_category: str
-    weapon_range: str
-    category_range: str
-    cost: CostSchema
+    equipment_category: Optional[ResourceReference] = None
+    weapon_category: Optional[str] = None
+    weapon_range: Optional[str] = None
+    category_range: Optional[str] = None
+    cost: Optional[CostSchema] = None
     damage: Optional[WeaponDamageSchema] = None
-    range: WeaponRangeSchema
+    range: Optional[WeaponRangeSchema] = None
     weight: Optional[float] = None
     properties: List[ResourceReference] = Field(default_factory=list)
-    url: str
+    url: Optional[str] = None
     contents: List[Dict[str, Any]] = Field(default_factory=list)
 
     model_config = ConfigDict(extra="allow")

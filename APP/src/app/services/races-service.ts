@@ -53,11 +53,11 @@ export class RacesService {
       await Promise.all(
         data.results.map(async (racePreview) => {
           try {
-            const race = await this.getRace(racePreview.index);
+            const race = await this.getRace(racePreview.id || racePreview.index || '');
             races.push(race);
             onItemLoaded?.(race);
           } catch (error) {
-            console.error(`Error loading race ${racePreview.index}:`, error);
+            console.error(`Error loading race ${racePreview.id || racePreview.index}:`, error);
           }
         })
       );
@@ -74,20 +74,20 @@ export class RacesService {
     }
   }
 
-  async getRace(index: string): Promise<Race> {
+  async getRace(id: string): Promise<Race> {
     return firstValueFrom(
-      this.http.get<Race>(`${this.apiUrl}/races/${index}`)
+      this.http.get<Race>(`${this.apiUrl}/races/${id}`)
     );
   }
 
-  async getSubrace(index: string): Promise<Subrace> {
+  async getSubrace(id: string): Promise<Subrace> {
     return firstValueFrom(
-      this.http.get<Subrace>(`${this.apiUrl}/subraces/${index}`)
+      this.http.get<Subrace>(`${this.apiUrl}/subraces/${id}`)
     );
   }
 
-  async getSubracesByRace(raceIndex: string): Promise<Subrace[]> {
-    const race = await this.getRace(raceIndex);
+  async getSubracesByRace(raceId: string): Promise<Subrace[]> {
+    const race = await this.getRace(raceId);
 
     if (!race.subraces?.length) {
       return [];
@@ -97,10 +97,10 @@ export class RacesService {
 
     for (const subraceRef of race.subraces) {
       try {
-        const subrace = await this.getSubrace(subraceRef.index);
+        const subrace = await this.getSubrace(subraceRef.id || subraceRef.index);
         subraces.push(subrace);
       } catch (error) {
-        console.error(`Error loading subrace ${subraceRef.index}:`, error);
+        console.error(`Error loading subrace ${subraceRef.id || subraceRef.index}:`, error);
       }
     }
 

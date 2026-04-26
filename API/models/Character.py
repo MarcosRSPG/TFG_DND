@@ -6,8 +6,8 @@ from models.Generico import BaseSchema
 
 
 class ApiReferenceSchema(BaseModel):
-    index: str
-    url: str
+    index: Optional[str] = None
+    url: Optional[str] = None
     name: Optional[str] = None
 
     model_config = ConfigDict(extra="allow")

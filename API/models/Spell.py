@@ -4,9 +4,9 @@ from typing import Optional, List, Dict
 
 class ReferenceSchema(BaseModel):
     """Generic reference to another D&D entity"""
-    index: str
+    index: Optional[str] = None
     name: str
-    url: str
+    url: Optional[str] = None
 
 
 class DamageTypeSchema(BaseModel):
@@ -29,7 +29,7 @@ class AreaOfEffectSchema(BaseModel):
 
 class Spell(BaseModel):
     """D&D 5e Spell model"""
-    index: str
+    index: Optional[str] = None
     name: str
     desc: List[str]
     higher_level: Optional[List[str]] = Field(default_factory=list)
@@ -47,7 +47,7 @@ class Spell(BaseModel):
     school: ReferenceSchema
     classes: List[ReferenceSchema]
     subclasses: Optional[List[ReferenceSchema]] = Field(default_factory=list)
-    url: str
+    url: Optional[str] = None
     updated_at: Optional[str] = None
 
     class Config:

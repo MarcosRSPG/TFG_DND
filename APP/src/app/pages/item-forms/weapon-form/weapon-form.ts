@@ -5,6 +5,9 @@ import { Router } from '@angular/router';
 import { Item, ResourceReference } from '../../../interfaces/item';
 import { ItemsService } from '../../../services/items-service';
 
+// API local
+const API_URL = 'http://localhost:8000';
+
 interface WeaponProperty {
   index: string;
   name: string;
@@ -96,27 +99,17 @@ export class WeaponForm implements OnInit {
   async loadWeaponProperties(): Promise<void> {
     this.weaponPropertiesLoading.set(true);
     try {
-      const response = await fetch('https://www.dnd5eapi.co/api/2014/weapon-properties');
+      const response = await fetch(`${API_URL}/options/weapon-properties`);
       const data = await response.json();
       
       // Load each property with its description
       const properties: WeaponProperty[] = [];
-      for (const prop of data.results) {
-        try {
-          const detailRes = await fetch(`https://www.dnd5eapi.co${prop.url}`);
-          const detail = await detailRes.json();
-          properties.push({
-            index: prop.index,
-            name: prop.name,
-            desc: detail.desc?.[0] || ''
-          });
-        } catch {
-          properties.push({
-            index: prop.index,
-            name: prop.name,
-            desc: ''
-          });
-        }
+      for (const prop of data) {
+        properties.push({
+          index: prop.index,
+          name: prop.name,
+          desc: prop.desc?.[0] || ''
+        });
       }
       this.weaponProperties = properties;
     } catch (err) {

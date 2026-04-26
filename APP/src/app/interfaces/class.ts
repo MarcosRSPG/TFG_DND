@@ -1,37 +1,40 @@
 export interface DndClass {
-  index: string;
-  name: string;
-  image?: string;
-  hit_die: number;
-  proficiency_choices: ClassChoice[];
-  proficiencies: ClassReference[];
-  saving_throws: ClassReference[];
-  starting_equipment: ClassStartingEquipment[];
-  starting_equipment_options: ClassChoice[];
-  class_levels: string;
-  multi_classing?: ClassMultiClassing;
-  subclasses: ClassReference[];
-  spellcasting?: ClassSpellcasting;
-  spells?: string;
-  url: string;
-  updated_at: string;
+	id: string;
+	index?: string;
+	name: string;
+	image?: string;
+	hit_die: number;
+	proficiency_choices: ClassChoice[];
+	proficiencies: ClassReference[];
+	saving_throws: ClassReference[];
+	starting_equipment: ClassStartingEquipment[];
+	starting_equipment_options: ClassChoice[];
+	class_levels: string;
+	multi_classing?: ClassMultiClassing;
+	subclasses: ClassReference[];
+	spellcasting?: ClassSpellcasting;
+	spells?: string;
+	url: string;
+	updated_at: string;
 }
 
 export interface DndClassListResponse {
-  count: number;
-  results: DndClassPreview[];
+	count: number;
+	results: DndClassPreview[];
 }
 
 export interface DndClassPreview {
-  index: string;
-  name: string;
-  url: string;
+	id: string;
+	index?: string;
+	name: string;
+	url: string;
 }
 
 export interface ClassReference {
-  index: string;
-  name: string;
-  url: string;
+	id?: string;
+	index: string;
+	name: string;
+	url: string;
 }
 
 export interface ClassChoice {

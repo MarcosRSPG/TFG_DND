@@ -4,7 +4,7 @@ from models.Generico import BaseSchema, ResourceReference, CostSchema
 
 
 class ToolSchema(BaseSchema):
-	index: str
+	index: Optional[str] = None
 	name: str
 	equipment_category: ResourceReference = Field(
 		default_factory=lambda: ResourceReference(
@@ -18,7 +18,7 @@ class ToolSchema(BaseSchema):
 	weight: Optional[float] = None
 	desc: List[str] = Field(default_factory=list)
 	special: List[str] = Field(default_factory=list)
-	url: str
+	url: Optional[str] = None
 	contents: List[Dict[str, Any]] = Field(default_factory=list)
 	properties: List[Dict[str, Any]] = Field(default_factory=list)
 

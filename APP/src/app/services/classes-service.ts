@@ -8,7 +8,7 @@ import { Subclass, SubclassLevel } from '../interfaces/subclass';
 @Injectable({ providedIn: 'root' })
 export class ClassesService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.API_DND_OFICIAL;
+  private readonly apiUrl = environment.API_URL;
 
   // === SIGNALS ===
   private _classes = signal<DndClass[]>([]);
@@ -49,11 +49,11 @@ export class ClassesService {
       await Promise.all(
         data.results.map(async (classPreview) => {
           try {
-            const classData = await this.getClass(classPreview.index);
+            const classData = await this.getClass(classPreview.id || classPreview.index || '');
             classes.push(classData);
             onItemLoaded?.(classData);
           } catch (error) {
-            console.error(`Error loading class ${classPreview.index}:`, error);
+            console.error(`Error loading class ${classPreview.id || classPreview.index}:`, error);
           }
         })
       );
@@ -70,27 +70,27 @@ export class ClassesService {
     }
   }
 
-  async getClass(index: string): Promise<DndClass> {
+  async getClass(id: string): Promise<DndClass> {
     return firstValueFrom(
-      this.http.get<DndClass>(this.buildUrl(`/classes/${index}`))
+      this.http.get<DndClass>(`${this.apiUrl}/classes/${id}`)
     );
   }
 
-  async getClassLevels(index: string): Promise<DndClassLevel[]> {
+  async getClassLevels(id: string): Promise<DndClassLevel[]> {
     const levels = await firstValueFrom(
-      this.http.get<DndClassLevel[]>(this.buildUrl(`/classes/${index}/levels`))
+      this.http.get<DndClassLevel[]>(`${this.apiUrl}/classes/${id}/levels`)
     );
     return levels.sort((a, b) => a.level - b.level);
   }
 
-  async getSubclass(index: string): Promise<Subclass> {
+  async getSubclass(id: string): Promise<Subclass> {
     return firstValueFrom(
-      this.http.get<Subclass>(this.buildUrl(`/subclasses/${index}`))
+      this.http.get<Subclass>(`${this.apiUrl}/classes/subclasses/${id}`)
     );
   }
 
-  async getSubclassesByClass(classIndex: string): Promise<Subclass[]> {
-    const classData = await this.getClass(classIndex);
+  async getSubclassesByClass(classId: string): Promise<Subclass[]> {
+    const classData = await this.getClass(classId);
 
     if (!classData.subclasses?.length) {
       return [];
@@ -100,29 +100,29 @@ export class ClassesService {
 
     for (const subclassRef of classData.subclasses) {
       try {
-        const subclass = await this.getSubclass(subclassRef.index);
+        const subclass = await this.getSubclass(subclassRef.id || subclassRef.index || '');
         subclasses.push(subclass);
       } catch (error) {
-        console.error(`Error loading subclass ${subclassRef.index}:`, error);
+        console.error(`Error loading subclass ${subclassRef.id || subclassRef.index}:`, error);
       }
     }
 
     return subclasses;
   }
 
-  async getClassFeatureProgression(classIndex: string): Promise<LeveledFeature[]> {
-    const levels = await this.getClassLevels(classIndex);
+  async getClassFeatureProgression(classId: string): Promise<LeveledFeature[]> {
+    const levels = await this.getClassLevels(classId);
     return this.buildFeatureProgression(levels);
   }
 
-  async getSubclassFeatureProgression(subclassIndex: string): Promise<LeveledFeature[]> {
-    const levels = await this.getSubclassLevels(subclassIndex);
+  async getSubclassFeatureProgression(subclassId: string): Promise<LeveledFeature[]> {
+    const levels = await this.getSubclassLevels(subclassId);
     return this.buildFeatureProgression(levels);
   }
 
-  private async getSubclassLevels(subclassIndex: string): Promise<SubclassLevel[]> {
+  private async getSubclassLevels(subclassId: string): Promise<SubclassLevel[]> {
     const levels = await firstValueFrom(
-      this.http.get<SubclassLevel[]>(this.buildUrl(`/subclasses/${subclassIndex}/levels`))
+      this.http.get<SubclassLevel[]>(`${this.apiUrl}/classes/subclasses/${subclassId}/levels`)
     );
     return levels.sort((a, b) => a.level - b.level);
   }
@@ -134,7 +134,7 @@ export class ClassesService {
       const featureResults = await Promise.all(
         (level.features ?? []).map(async (featureRef) => {
           try {
-            const detail = await this.getFeature(featureRef);
+            const detail = await this.getFeature(featureRef.index);
             return detail;
           } catch (error) {
             console.error(`Error loading feature ${featureRef.index}:`, error);
@@ -164,22 +164,9 @@ export class ClassesService {
     });
   }
 
-  private async getFeature(featureRef: ClassReference): Promise<FeatureDetail> {
+  private async getFeature(index: string): Promise<FeatureDetail> {
     return firstValueFrom(
-      this.http.get<FeatureDetail>(this.buildUrl(featureRef.url))
+      this.http.get<FeatureDetail>(`${this.apiUrl}/features/${index}`)
     );
-  }
-
-  private buildUrl(path: string): string {
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return path;
-    }
-
-    if (path.startsWith('/api/2014')) {
-      return `https://www.dnd5eapi.co${path}`;
-    }
-
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    return `${this.apiUrl}${normalizedPath}`;
   }
 }

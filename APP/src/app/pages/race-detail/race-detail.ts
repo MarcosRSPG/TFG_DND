@@ -43,15 +43,15 @@ export class RaceDetail implements OnInit {
     };
 
     try {
-      const index = this.route.snapshot.paramMap.get('index');
-      if (!index) {
-        throw new Error('No race index provided');
+      const id = this.route.snapshot.paramMap.get('id');
+      if (!id) {
+        throw new Error('No race id provided');
       }
 
-      const raceData = await this.racesService.getRace(index);
+      const raceData = await this.racesService.getRace(id);
       this.race.set(raceData);
 
-      const subraceData = await this.racesService.getSubracesByRace(index);
+      const subraceData = await this.racesService.getSubracesByRace(id);
       this.subraces.set(subraceData);
 
       // Load all trait details after both race and subraces are loaded

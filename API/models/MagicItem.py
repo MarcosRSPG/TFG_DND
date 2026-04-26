@@ -10,7 +10,7 @@ class MagicItemRaritySchema(BaseModel):
 
 
 class MagicItemSchema(BaseSchema):
-	index: str
+	index: Optional[str] = None
 	name: str
 	type: str = Field(default="magicItem")
 	equipment_category: ResourceReference
@@ -19,6 +19,6 @@ class MagicItemSchema(BaseSchema):
 	variant: bool = False
 	desc: List[str] = Field(default_factory=list)
 	image: Optional[str] = None
-	url: str
+	url: Optional[str] = None
 
 	model_config = ConfigDict(extra="allow")

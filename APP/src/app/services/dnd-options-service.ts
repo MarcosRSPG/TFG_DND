@@ -31,7 +31,7 @@ export interface DndLanguage {
 @Injectable({ providedIn: 'root' })
 export class DndOptionsService {
   private readonly http = inject(HttpClient);
-  private readonly dndApiUrl = 'https://www.dnd5eapi.co/api/2014';
+  private readonly dndApiUrl = environment.API_URL;
 
   // Signals para almacenar las opciones
   readonly proficiencies = signal<DndProficiency[]>([]);

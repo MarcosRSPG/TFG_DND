@@ -1,9 +1,14 @@
 import hmac
 import hashlib
-from fastapi import Header, HTTPException, status
-from config import API_TOKEN
+from fastapi import Header, HTTPException, Request, status
 
-def require_api_token_hash(x_api_token: str | None = Header(default=None, alias="X-API-Token")) -> None:
+def require_api_token_hash(request: Request, x_api_token: str | None = Header(default=None, alias="X-API-Token")) -> None:
+    from config import API_TOKEN
+    
+    # Allow OPTIONS requests (CORS preflight) without token
+    if request.method == "OPTIONS":
+        return None
+    
     plain_token = API_TOKEN
     if not plain_token:
         raise HTTPException(

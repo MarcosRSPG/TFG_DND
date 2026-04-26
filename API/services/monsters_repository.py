@@ -1,8 +1,6 @@
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from config import MONGODB_URI, MONGODB_DATABASE, MONGODB_COLLECTION_MONSTERS
-from config import API_DND5E
-from services.remote_catalog_repository import RemoteCatalogRepository
 
 _client: AsyncIOMotorClient | None = None
 
@@ -12,12 +10,6 @@ async def get_db():
     if _client is None:
         _client = AsyncIOMotorClient(MONGODB_URI)
     return _client[MONGODB_DATABASE]
-
-
-_remote_monsters = RemoteCatalogRepository(
-    base_url=API_DND5E,
-    list_endpoint="monsters"
-)
 
 
 async def get_local_docs() -> list:
@@ -30,29 +22,13 @@ async def get_local_docs() -> list:
         return []
 
 
+# For backwards compatibility - now just returns local
 async def get_remote_docs() -> list:
-    try:
-        return await _remote_monsters.get_all()
-    except Exception as e:
-        print(f"Error fetching monsters from remote API: {e}")
-        return []
+    return await get_local_docs()
 
 
 async def get_all() -> list:
-    local_monsters = await get_local_docs()
-    remote_monsters = await get_remote_docs()
-
-    merged = {}
-
-    for monster in remote_monsters:
-        if "index" in monster:
-            merged[monster["index"]] = monster
-
-    for monster in local_monsters:
-        if "index" in monster:
-            merged[monster["index"]] = monster
-
-    return list(merged.values())
+    return await get_local_docs()
 
 
 async def get_local_doc_by_id(monster_id: str) -> dict:
@@ -64,6 +40,11 @@ async def get_local_doc_by_id(monster_id: str) -> dict:
     except Exception as e:
         print(f"Error fetching monster {monster_id} from MongoDB: {e}")
         return {}
+
+
+# For backwards compatibility - now just returns local
+async def get_remote_doc_by_id(monster_id: str) -> dict:
+    return await get_local_doc_by_id(monster_id)
 
 
 async def get_remote_doc_by_id(monster_id: str) -> dict:

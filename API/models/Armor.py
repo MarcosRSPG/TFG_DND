@@ -14,7 +14,7 @@ class ArmorClassSchema(BaseModel):
 
 
 class ArmorSchema(BaseSchema):
-	index: str
+	index: Optional[str] = None
 	name: str
 	desc: List[str] = Field(default_factory=list)
 	special: List[str] = Field(default_factory=list)
@@ -31,7 +31,7 @@ class ArmorSchema(BaseSchema):
 	stealth_disadvantage: bool = False
 	weight: Optional[float] = None
 	cost: CostSchema
-	url: str
+	url: Optional[str] = None
 	contents: List[Dict[str, Any]] = Field(default_factory=list)
 	properties: List[Dict[str, Any]] = Field(default_factory=list)
 

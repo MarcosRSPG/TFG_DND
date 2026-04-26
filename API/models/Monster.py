@@ -5,9 +5,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class ReferenceSchema(BaseModel):
     """Generic reference to another D&D entity"""
-    index: str
+    index: Optional[str] = None
     name: str
-    url: str
+    url: Optional[str] = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -100,7 +100,7 @@ class LegendaryActionSchema(BaseModel):
 
 class Monster(BaseModel):
     """D&D 5e Monster model"""
-    index: str
+    index: Optional[str] = None
     name: str
     desc: Optional[str] = None
     size: str
@@ -136,7 +136,7 @@ class Monster(BaseModel):
     image: Optional[str] = None
     forms: Optional[List[str]] = Field(default_factory=list)
     environment: Optional[List[str]] = Field(default_factory=list)
-    url: str
+    url: Optional[str] = None
     updated_at: Optional[str] = None
 
     model_config = ConfigDict(

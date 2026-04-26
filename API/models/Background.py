@@ -18,7 +18,7 @@ class FeatureSchema(BaseModel):
 
 
 class BackgroundSchema(BaseSchema):
-    index: str
+    index: Optional[str] = None
     name: str
     starting_proficiencies: List[ResourceReference] = Field(default_factory=list)
     language_options: Optional[Dict[str, Any]] = None

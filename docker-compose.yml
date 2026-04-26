@@ -12,6 +12,10 @@ services:
     networks:
       - tfg_network
     restart: unless-stopped
+    volumes:
+      - ./API:/app
+      - ./API/.env:/app/.env:ro
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   mongodb:
     image: mongo:7-jammy
