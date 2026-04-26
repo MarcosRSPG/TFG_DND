@@ -51,7 +51,7 @@
 
 .detail h1 {
   margin: 0;
-  color: var(--title-color, #eadab8);
+  color: var(--title-color, #f0d8b0);
   font-weight: normal;
   font-size: clamp(1.8rem, 3vw, 2.4rem);
 }
