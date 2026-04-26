@@ -102,7 +102,7 @@ export class ClassDetail implements OnInit {
       return [];
     }
 
-    return level.features.map((feature) => feature.index);
+    return level.features.map((feature) => feature.id ?? '');
   }
 
   scrollToFeature(id: string): void {
@@ -196,7 +196,8 @@ export class ClassDetail implements OnInit {
     this.showModal.set(true);
 
     try {
-      const features = await this.classesService.getSubclassFeatureProgression(subclass.index);
+      if (!subclass.id) throw new Error('Subclass id is missing');
+      const features = await this.classesService.getSubclassFeatureProgression(subclass.id);
       this.subclassFeatures.set(features);
     } catch (error) {
       console.error('Error loading subclass features:', error);
@@ -287,20 +288,20 @@ export class ClassDetail implements OnInit {
   }
 
   private shouldHideCounterKey(key: string): boolean {
-    const classIndex = this.dndClass()?.index;
+    const classId = this.dndClass()?.id;
 
-    if (!classIndex) {
+    if (!classId) {
       return false;
     }
 
-    const hiddenKeys = this.hiddenCounterKeysByClass[classIndex] ?? [];
+    const hiddenKeys = this.hiddenCounterKeysByClass[classId] ?? [];
     const normalizedKey = key.toLowerCase();
 
     return hiddenKeys.some((hiddenKey) => normalizedKey.includes(hiddenKey));
   }
 
   private isDruidWildShapeMaxCr(column: CounterColumn): boolean {
-    return this.dndClass()?.index === 'druid' && column.key === 'wild_shape_max_cr';
+    return this.dndClass()?.id === 'druid' && column.key === 'wild_shape_max_cr';
   }
 
   private getDruidWildShapeMaxCr(level: number): string {
