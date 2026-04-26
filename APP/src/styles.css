@@ -1,9 +1,49 @@
 /* You can add global styles to this file, and also import other style files */
 
-/* CSS Custom Properties */
+/* Dark Fantasy D&D Theme Variables */
 :root {
-  /* Title color - soft amber gold for headings and titles */
-  --title-color: #c9a25a;
+  /* Primary Accent Colors */
+  --dnd-accent-primary: #B87333;     /* copper */
+  --dnd-accent-secondary: #D4AF37;   /* aged gold */
+  --dnd-accent-muted: #C9A05B;       /* antique bronze */
+  --dnd-accent-bright: #D6B46C;      /* bright bronze */
+  --dnd-accent-glow: #F0D060;        /* glowing gold */
+  
+  /* Background Colors */
+  --dnd-bg-primary: #1a0f08;          /* deep dark brown */
+  --dnd-bg-card: #2d2416;             /* card background */
+  --dnd-bg-elevated: #2f1a0c;         /* elevated surfaces */
+  
+  /* Text Colors */
+  --dnd-text-primary: #ffffff;        /* pure white */
+  --dnd-text-secondary: #eadab8;      /* pale cream (was: #eadab8) */
+  --dnd-text-muted: #cfbc96;          /* muted cream (was: #cfbc96) */
+  --dnd-text-dim: #8b6f47;            /* dim text (was: #8b6f47) */
+  --dnd-text-gold: #f0d8b0;           /* gold text (was: #f0d8b0) */
+  --dnd-text-bright: #f1dfbf;         /* bright gold text (was: #f1dfbf) */
+  --dnd-text-error: #f3c2b9;          /* error color (was: #f3c2b9) */
+  --dnd-text-link: #c9a25a;           /* link color (was: #c9a25a) */
+  --dnd-text-highlight: #ffd900bb;      /* highlight gold (was: #ffd700) */
+  --dnd-text-bronze: #bfa77d;         /* bronze text (was: #bfa77d) */
+  
+  /* Borders */
+  --dnd-border: rgba(201, 162, 90, 0.22);
+  --dnd-border-medium: rgba(201, 162, 90, 0.35);
+  --dnd-border-strong: rgba(201, 162, 90, 0.5);
+  --dnd-border-glow: rgba(216, 180, 112, 0.7);
+
+  /* Shadows */
+  --dnd-shadow: rgba(0, 0, 0, 0.35);
+  --dnd-shadow-strong: rgba(0, 0, 0, 0.4);
+  
+  /* Background Overlays */
+  --dnd-bg-gradient-1: rgba(49, 30, 18, 0.9);
+  --dnd-bg-gradient-2: rgba(29, 18, 10, 0.92);
+  --dnd-bg-dark: rgba(20, 12, 7, 0.35);
+  --dnd-bg-dark-light: rgba(20, 12, 7, 0.6);
+  --dnd-bg-medium: rgba(55, 34, 19, 0.65);
+  --dnd-bg-error: rgba(100, 40, 40, 0.8);
+  --dnd-bg-error-border: rgba(183, 93, 77, 0.6);
 }
 
 html,

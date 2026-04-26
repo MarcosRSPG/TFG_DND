@@ -1,5 +1,5 @@
 """
-D&D 5e API to MongoDB Migration - Super Simple Version
+D&D 5e API to MongoDB Migration - Fixed Version
 """
 
 import json
@@ -14,13 +14,17 @@ def fetch(url):
 
 
 def clean_item(item):
-    """Remove index, add MongoDB metadata."""
-    item.pop("index", None)
+    """Clean item for MongoDB - keep index, add string metadata."""
+    # Remove API-specific fields
     item.pop("updated_at", None)
     item.pop("contents", None)
+    
+    # Add metadata as ISO strings
+    now = datetime.now(timezone.utc).isoformat()
     item["created_by"] = "oficial"
-    item["created_at"] = datetime.now(timezone.utc)
-    item["updated_at"] = datetime.now(timezone.utc)
+    item["created_at"] = now
+    item["updated_at"] = now
+    
     return item
 
 
@@ -74,10 +78,10 @@ for name, url in root.items():
         # Clean and add metadata
         item_data = clean_item(item_data)
 
-        # 5. Insert or update by name (upsert)
-        coll.replace_one({"name": item_data["name"]}, item_data, upsert=True)
+        # 5. Insert or update by index (upsert)
+        coll.replace_one({"index": item_data["index"]}, item_data, upsert=True)
 
-        print(f"  - {item_data['name']}")
+        print(f"  - {item_data.get('index', item_data.get('name'))}")
 
     print(f"  Done: {coll.count_documents({})} documents")
 
