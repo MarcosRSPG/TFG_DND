@@ -10,6 +10,7 @@ env/
 
 # Images (keep folder, ignore contents)
 images/*
+assets/*
 
 # IDE
 .idea/
