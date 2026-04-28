@@ -277,7 +277,7 @@ export class Monsters implements OnInit {
   }
 
   getIdentifier(monster: Monster): string {
-    return monster.id || monster.name?.toLowerCase().replace(/ /g, '-') || '';
+    return monster.index || monster.id || monster.name?.toLowerCase().replace(/ /g, '-') || '';
   }
 
   navigateToCreate(): void {

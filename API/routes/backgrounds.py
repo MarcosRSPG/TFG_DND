@@ -1,6 +1,4 @@
 import fastapi
-from fastapi import Depends
-from services.authorization_service import require_write_authorization
 from models.Background import BackgroundSchema
 from services import backgrounds_service
 
@@ -18,16 +16,15 @@ async def get_background(id: str):
 
 
 @router.post("", response_model_exclude_none=True)
-async def create_background(background: BackgroundSchema, current_user: dict = Depends(require_write_authorization)) -> BackgroundSchema:
-    user_id = current_user.get("user_id") or current_user.get("_id") or current_user.get("email")
-    return await backgrounds_service.create(background, user_id)
+async def create_background(background: BackgroundSchema) -> BackgroundSchema:
+    return await backgrounds_service.create(background)
 
 
 @router.put("/{id}", response_model_exclude_none=True)
-async def update_background(id: str, background: BackgroundSchema, current_user: dict = Depends(require_write_authorization)):
+async def update_background(id: str, background: BackgroundSchema):
     return await backgrounds_service.update(id, background)
 
 
 @router.delete("/{id}")
-async def delete_background(id: str, current_user: dict = Depends(require_write_authorization)):
+async def delete_background(id: str):
     return await backgrounds_service.delete(id)

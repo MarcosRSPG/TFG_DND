@@ -107,12 +107,21 @@ export class ItemsService {
     return items.map((item: any) => item.id || item.index);
   }
 
-  async create(item: Partial<ItemSpecific>, type: ItemType): Promise<ItemSpecific> {
-    return firstValueFrom(
-      this.http.post<ItemSpecific>(`${this.apiUrl}/items?type=${type}`, item, {
-        headers: this.buildHeaders(),
-      })
-    );
+  async create(item: Partial<ItemSpecific> | FormData, type?: ItemType): Promise<ItemSpecific> {
+    const isFormData = item instanceof FormData;
+    const url = type
+      ? `${this.apiUrl}/items?type=${type}`
+      : `${this.apiUrl}/items`;
+
+    if (isFormData) {
+      return firstValueFrom(
+        this.http.post<ItemSpecific>(url, item)
+      ) as Promise<ItemSpecific>;
+    } else {
+      return firstValueFrom(
+        this.http.post<ItemSpecific>(url, item, { headers: this.buildHeaders() })
+      );
+    }
   }
 
   private buildHeaders(): { [header: string]: string } {

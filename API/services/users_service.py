@@ -1,21 +1,13 @@
 from datetime import datetime, timezone
-
-import bcrypt
+from typing import Any
 from bson import ObjectId
 from fastapi import HTTPException
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
-
+from db import get_db
 from models.User import UserSchema
-from config import MONGODB_DATABASE, MONGODB_PASSWORD, MONGODB_PORT, MONGODB_USERNAME
 
-MONGODB_URI = f"mongodb://{MONGODB_USERNAME}:{MONGODB_PASSWORD}@mongodb:{MONGODB_PORT}/{MONGODB_DATABASE}?authSource=admin"
-
-
-_client = MongoClient(MONGODB_URI)
-_db = _client[MONGODB_DATABASE]
-_users = _db["users"]
-
+async def _get_users_collection():
+    db = await get_db()
+    return db["users"]
 
 def _to_schema(doc: dict, include_password: bool = False) -> UserSchema:
     payload = {
@@ -31,100 +23,92 @@ def _to_schema(doc: dict, include_password: bool = False) -> UserSchema:
         payload["password"] = doc.get("password")
     return UserSchema(**payload)
 
-
-def get_all() -> list[UserSchema]:
+async def get_all() -> list[UserSchema]:
     try:
-        docs = list(_users.find({}))
+        collection = await _get_users_collection()
+        docs = await collection.find({}).to_list(length=None)
         return [_to_schema(doc) for doc in docs]
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving users: {exc}") from exc
 
-
-def get_by_id(user_id: str) -> UserSchema:
+async def get_by_id(user_id: str) -> UserSchema:
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user id")
-
-    doc = _users.find_one({"_id": ObjectId(user_id)})
+    
+    collection = await _get_users_collection()
+    doc = await collection.find_one({"_id": ObjectId(user_id)})
     if not doc:
         raise HTTPException(status_code=404, detail="User not found")
     return _to_schema(doc)
 
-
-def get_by_email(email: str, include_password: bool = False) -> UserSchema | None:
-    doc = _users.find_one({"email": email})
+async def get_by_email(email: str, include_password: bool = False) -> UserSchema | None:
+    collection = await _get_users_collection()
+    doc = await collection.find_one({"email": email})
     if not doc:
         return None
     return _to_schema(doc, include_password=include_password)
 
-
-def get_by_login(identifier: str, include_password: bool = False) -> UserSchema | None:
-    doc = _users.find_one({"$or": [{"email": identifier}, {"username": identifier}]})
+async def get_by_login(identifier: str, include_password: bool = False) -> UserSchema | None:
+    collection = await _get_users_collection()
+    doc = await collection.find_one({"$or": [{"email": identifier}, {"username": identifier}]})
     if not doc:
         return None
     return _to_schema(doc, include_password=include_password)
 
-
-def create(user_schema: UserSchema) -> UserSchema:
+async def create(user_schema: UserSchema) -> UserSchema:
     user_data = user_schema.model_dump(exclude_none=True)
-
-    existing = _users.find_one({"email": user_data["email"]})
+    
+    collection = await _get_users_collection()
+    existing = await collection.find_one({"email": user_data["email"]})
     if existing:
         raise HTTPException(status_code=400, detail="El email ya existe en la base de datos.")
-
-    password = user_data.get("password")
-    if not password:
-        raise HTTPException(status_code=400, detail="Password is required")
-
+    
     now = datetime.now(timezone.utc).isoformat()
+    import bcrypt
+    hashed_password = bcrypt.hashpw(user_data["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
     doc = {
         "username": user_data["username"],
         "email": user_data["email"],
-        "password": bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
+        "password": hashed_password,
         "role": user_data.get("role", "user"),
         "created_by": user_data.get("created_by", "api"),
         "created_at": user_data.get("created_at", now),
         "updated_at": user_data.get("updated_at", now),
     }
-
+    
     try:
-        result = _users.insert_one(doc)
-        created = _users.find_one({"_id": result.inserted_id})
-        
+        result = await collection.insert_one(doc)
+        created = await collection.find_one({"_id": result.inserted_id})
         return _to_schema(created)
-    except PyMongoError as exc:
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating user: {exc}") from exc
 
-
-def update(user_id: str, user: UserSchema) -> UserSchema:
+async def update(user_id: str, user: UserSchema) -> UserSchema:
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user id")
-
-    updates = user.model_dump(exclude_none=True, exclude={"_id", "created_by", "created_at"})
-
-    if "password" in updates:
-        updates["password"] = bcrypt.hashpw(
-            updates["password"].encode("utf-8"), bcrypt.gensalt()
-        ).decode("utf-8")
-
+    
+    updates = user.model_dump(exclude_none=True, exclude={"id", "created_by", "created_at"})
+    
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
-
+    
     if not updates:
         raise HTTPException(status_code=400, detail="No data provided for update")
-
-    result = _users.update_one({"_id": ObjectId(user_id)}, {"$set": updates})
+    
+    collection = await _get_users_collection()
+    result = await collection.update_one({"_id": ObjectId(user_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
-
-    updated = _users.find_one({"_id": ObjectId(user_id)})
+    
+    updated = await collection.find_one({"_id": ObjectId(user_id)})
     return _to_schema(updated)
 
-
-def delete(user_id: str) -> dict:
+async def delete(user_id: str) -> dict:
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user id")
-
-    result = _users.delete_one({"_id": ObjectId(user_id)})
+    
+    collection = await _get_users_collection()
+    result = await collection.delete_one({"_id": ObjectId(user_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
-
+    
     return {"deleted": True, "user_id": user_id}

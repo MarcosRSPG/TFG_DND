@@ -3,43 +3,12 @@ from typing import Any
 from bson import ObjectId
 from fastapi import HTTPException
 from pydantic import ValidationError
-from motor.motor_asyncio import AsyncIOMotorClient
-from config import MONGODB_URI, MONGODB_DATABASE
+from db import get_db
 from models.Character import (
     ApiReferenceSchema,
     CharacterSchema,
 )
-from services.backgrounds_repository import get_remote_doc_by_id as get_remote_background_by_id
-from services.characters_repository import (
-    delete_local_character,
-    get_local_doc_by_id,
-    get_local_docs,
-    save_local_character,
-    update_local_character,
-)
-from services.local_catalog_repository import (
-    _local_classes,
-    _local_subclasses,
-    _local_races,
-    _local_subraces,
-)
-from services.local_catalog_repository import LocalCatalogRepository
-
-_client: AsyncIOMotorClient | None = None
-
-
-async def get_db():
-    global _client
-    if _client is None:
-        _client = AsyncIOMotorClient(MONGODB_URI)
-    return _client[MONGODB_DATABASE]
-
-
-# Now uses local MongoDB instead of remote API
-_local_classes = LocalCatalogRepository(collection_name="classes", index_field="index")
-_local_subclasses = LocalCatalogRepository(collection_name="subclasses", index_field="index")
-_local_races = LocalCatalogRepository(collection_name="races", index_field="index")
-_local_subraces = LocalCatalogRepository(collection_name="subraces", index_field="index")
+from services.backgrounds_service import get_remote_doc_by_id as get_remote_background_by_id
 
 
 def _json_safe(value):
@@ -75,7 +44,64 @@ def _to_schema(doc: dict) -> CharacterSchema:
     return CharacterSchema.model_validate(payload)
 
 
-async def _resolve_reference(reference_data: Any, repository: LocalCatalogRepository | None = None) -> dict:
+def _character_filter(character_id: str) -> dict[str, Any]:
+    if ObjectId.is_valid(character_id):
+        return {"$or": [{"_id": ObjectId(character_id)}, {"index": character_id}, {"name": character_id}]}
+    return {"$or": [{"index": character_id}, {"name": character_id}]}
+
+
+async def get_local_docs() -> list[dict[str, Any]]:
+    try:
+        db = await get_db()
+        collection = db["characters"]
+        return await collection.find({}).to_list(length=None)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error retrieving characters: {exc}") from exc
+
+
+async def get_local_doc_by_id(character_id: str) -> dict[str, Any] | None:
+    try:
+        db = await get_db()
+        collection = db["characters"]
+        return await collection.find_one(_character_filter(character_id))
+    except Exception:
+        return None
+
+
+async def save_local_character(character_data: dict) -> dict:
+    try:
+        db = await get_db()
+        collection = db["characters"]
+        result = await collection.insert_one(character_data)
+        character_data["_id"] = result.inserted_id
+        return character_data
+    except Exception:
+        return {}
+
+
+async def update_local_character(character_id: str, character_data: dict) -> dict:
+    try:
+        db = await get_db()
+        collection = db["characters"]
+        result = await collection.update_one(_character_filter(character_id), {"$set": character_data})
+        if result.matched_count > 0:
+            return await collection.find_one(_character_filter(character_id)) or {}
+        return {}
+    except Exception:
+        return {}
+
+
+async def delete_local_character(character_id: str) -> bool:
+    try:
+        db = await get_db()
+        collection = db["characters"]
+        result = await collection.delete_one(_character_filter(character_id))
+        return result.deleted_count > 0
+    except Exception:
+        return False
+
+
+async def _resolve_reference(reference_data: Any, collection_name: str | None = None) -> dict:
     if reference_data is None:
         raise HTTPException(status_code=422, detail="Missing reference data")
 
@@ -89,8 +115,9 @@ async def _resolve_reference(reference_data: Any, repository: LocalCatalogReposi
     if not index:
         raise HTTPException(status_code=422, detail="Reference index is required")
 
-    if repository is not None:
-        remote_doc = await repository.get_by_index(index)
+    if collection_name is not None:
+        db = await get_db()
+        remote_doc = await db[collection_name].find_one({"index": index})
         if remote_doc is not None:
             return {
                 "index": remote_doc.get("index", index),
@@ -179,12 +206,12 @@ async def _normalize_character_payload(character_data: dict, *, created_by: str 
     if created_by:
         payload["player"] = created_by
 
-    payload["class"] = await _resolve_reference(payload.get("class"), _local_classes)
+    payload["class"] = await _resolve_reference(payload.get("class"), "classes")
     if payload.get("subclass") is not None:
-        payload["subclass"] = await _resolve_reference(payload.get("subclass"), _local_subclasses)
-    payload["race"] = await _resolve_reference(payload.get("race"), _local_races)
+        payload["subclass"] = await _resolve_reference(payload.get("subclass"), "subclasses")
+    payload["race"] = await _resolve_reference(payload.get("race"), "races")
     if payload.get("subrace") is not None:
-        payload["subrace"] = await _resolve_reference(payload.get("subrace"), _local_subraces)
+        payload["subrace"] = await _resolve_reference(payload.get("subrace"), "subraces")
     payload["background"] = await _resolve_background(payload.get("background"))
 
     inventory = payload.get("inventory") or {}

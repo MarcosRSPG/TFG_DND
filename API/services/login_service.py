@@ -9,13 +9,13 @@ from models.Login import LoginRequest, LoginResponse
 from services import users_service
 from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
-def _verify_password(plain_password: str, stored_password: str | None) -> bool:
+async def _verify_password(plain_password: str, stored_password: str | None) -> bool:
     if not stored_password:
         return False
-
+    
     if stored_password.startswith("$2"):
         return bcrypt.checkpw(plain_password.encode("utf-8"), stored_password.encode("utf-8"))
-
+    
     # Fallback for seeded/plain legacy records.
     return plain_password == stored_password
 
@@ -38,15 +38,15 @@ def _build_login_response(user, token: str) -> LoginResponse:
     )
 
 
-def authenticate_login(request: LoginRequest) -> LoginResponse:
+async def authenticate_login(request: LoginRequest) -> LoginResponse:
     identifier = request.email or request.username
     if not identifier:
         raise HTTPException(status_code=400, detail="Debes enviar email o username")
-
-    user = users_service.get_by_login(identifier, include_password=True)
-    if not user or not _verify_password(request.password, user.password):
+    
+    user = await users_service.get_by_login(identifier, include_password=True)
+    if not user or not await _verify_password(request.password, user.password):
         raise HTTPException(status_code=401, detail="Credenciales invalidas")
-
+    
     token = _create_access_token(
         {
             "user_id": user.id,
@@ -58,11 +58,11 @@ def authenticate_login(request: LoginRequest) -> LoginResponse:
     return _build_login_response(user, token)
 
 
-def authenticate_login_form(form_data: OAuth2PasswordRequestForm) -> LoginResponse:
-    user = users_service.get_by_login(form_data.username, include_password=True)
-    if not user or not _verify_password(form_data.password, user.password):
+async def authenticate_login_form(form_data: OAuth2PasswordRequestForm) -> LoginResponse:
+    user = await users_service.get_by_login(form_data.username, include_password=True)
+    if not user or not await _verify_password(form_data.password, user.password):
         raise HTTPException(status_code=401, detail="Credenciales invalidas")
-
+    
     token = _create_access_token(
         {
             "user_id": user.id,

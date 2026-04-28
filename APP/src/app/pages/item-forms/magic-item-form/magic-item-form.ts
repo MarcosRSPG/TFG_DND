@@ -37,6 +37,10 @@ export class MagicItemForm implements OnInit {
   // Cost units
   costUnits = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
+  // Image upload
+  imagePreview: string | null = null;
+  selectedFile: File | null = null;
+
   ngOnInit(): void {}
 
   async onSubmit(): Promise<void> {
@@ -53,7 +57,12 @@ export class MagicItemForm implements OnInit {
         },
       };
 
-      await this.itemsService.create(data, 'magicitem');
+      if (this.selectedFile) {
+        const formData = this.buildFormData();
+        await this.itemsService.create(formData, 'magicitem');
+      } else {
+        await this.itemsService.create(data, 'magicitem');
+      }
 
       this.router.navigate(['/manual'], {
         queryParams: { section: 'items' },
@@ -70,5 +79,41 @@ export class MagicItemForm implements OnInit {
     this.router.navigate(['/manual'], {
       queryParams: { section: 'items' },
     });
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.selectedFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  private buildFormData(): FormData {
+    const formData = new FormData();
+
+    // Append all form data fields
+    const data = this.formData();
+    Object.keys(data).forEach(key => {
+      const value = data[key as keyof typeof data];
+      if (value !== undefined && value !== null && key !== 'image') {
+        if (typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+    });
+
+    // Append the image file
+    if (this.selectedFile) {
+      formData.append('image', this.selectedFile, this.selectedFile.name);
+    }
+
+    return formData;
   }
 }

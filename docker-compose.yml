@@ -11,11 +11,13 @@ services:
         condition: service_healthy
     networks:
       - tfg_network
-    restart: unless-stopped
+    # NO restart - querés control manual
+    # NO command - la API no arranca sola
     volumes:
       - ./API:/app
       - ./API/.env:/app/.env:ro
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    # Container queda vivo sin ejecutar nada (para que puedas entrar con docker exec)
+    command: tail -f /dev/null
 
   mongodb:
     image: mongo:7-jammy

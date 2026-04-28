@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from services.local_catalog_repository import get_all as get_all_docs, get_by_id as repo_get_by_id, get_by_index as get_by_index_repo
+from bson import ObjectId
+from db import get_db
 
 router = APIRouter(prefix="/classes", tags=["classes"])
 
@@ -17,7 +18,8 @@ def doc_to_response(doc: dict) -> dict:
 @router.get("")
 async def get_classes():
     """Get all classes"""
-    classes = await get_all_docs("classes")
+    db = await get_db()
+    classes = await db["classes"].find({}).to_list(length=None)
     results = []
     for cls in classes:
         cls_id = str(cls.get("_id", "")) if cls.get("_id") else ""
@@ -35,12 +37,16 @@ async def get_classes():
 @router.get("/{class_id}")
 async def get_class_by_id(class_id: str):
     """Get a class by its _id"""
+    db = await get_db()
+    result = None
+    
     # Try by _id first
-    result = await repo_get_by_id("classes", class_id)
+    if ObjectId.is_valid(class_id):
+        result = await db["classes"].find_one({"_id": ObjectId(class_id)})
     
     if result is None:
         # Fallback: try by index for backwards compatibility
-        result = await get_by_index_repo("classes", class_id)
+        result = await db["classes"].find_one({"index": class_id})
     
     if result is None:
         raise HTTPException(status_code=404, content={"detail": "Class not found"})
@@ -51,17 +57,20 @@ async def get_class_by_id(class_id: str):
 @router.get("/{class_id}/levels")
 async def get_class_levels(class_id: str):
     """Get all levels for a class"""
+    db = await get_db()
     # Check if class exists
-    class_data = await repo_get_by_id("classes", class_id)
+    class_data = None
+    if ObjectId.is_valid(class_id):
+        class_data = await db["classes"].find_one({"_id": ObjectId(class_id)})
     if class_data is None:
-        class_data = await get_by_index_repo("classes", class_id)
+        class_data = await db["classes"].find_one({"index": class_id})
     
     if class_data is None:
         raise HTTPException(status_code=404, content={"detail": "Class not found"})
     
     # Get all levels for this class - stored in class_levels collection
     try:
-        levels = await get_all_docs("class_levels")
+        levels = await db["class_levels"].find({}).to_list(length=None)
         # Find the class index to match levels
         class_index = class_data.get("index")
         class_levels = [level for level in levels if level.get("class") == class_index]
@@ -83,7 +92,8 @@ async def get_class_levels(class_id: str):
 @router.get("/subclasses")
 async def get_subclasses():
     """Get all subclasses"""
-    subclasses = await get_all_docs("subclasses")
+    db = await get_db()
+    subclasses = await db["subclasses"].find({}).to_list(length=None)
     results = [
         {
             "id": str(sc.get("_id", "")),
@@ -102,12 +112,16 @@ async def get_subclasses():
 @router.get("/subclasses/{subclass_id}")
 async def get_subclass_by_id(subclass_id: str):
     """Get a subclass by its _id"""
+    db = await get_db()
+    result = None
+    
     # Try by _id first
-    result = await repo_get_by_id("subclasses", subclass_id)
+    if ObjectId.is_valid(subclass_id):
+        result = await db["subclasses"].find_one({"_id": ObjectId(subclass_id)})
     
     if result is None:
         # Fallback: try by index for backwards compatibility
-        result = await get_by_index_repo("subclasses", subclass_id)
+        result = await db["subclasses"].find_one({"index": subclass_id})
     
     if result is None:
         raise HTTPException(status_code=404, content={"detail": "Subclass not found"})
@@ -118,17 +132,20 @@ async def get_subclass_by_id(subclass_id: str):
 @router.get("/subclasses/{subclass_id}/levels")
 async def get_subclass_levels(subclass_id: str):
     """Get all levels for a subclass"""
+    db = await get_db()
     # Check if subclass exists
-    subclass_data = await repo_get_by_id("subclasses", subclass_id)
+    subclass_data = None
+    if ObjectId.is_valid(subclass_id):
+        subclass_data = await db["subclasses"].find_one({"_id": ObjectId(subclass_id)})
     if subclass_data is None:
-        subclass_data = await get_by_index_repo("subclasses", subclass_id)
+        subclass_data = await db["subclasses"].find_one({"index": subclass_id})
     
     if subclass_data is None:
         raise HTTPException(status_code=404, content={"detail": "Subclass not found"})
     
     # Get all levels for this subclass - stored in subclass_levels collection
     try:
-        levels = await get_all_docs("subclass_levels")
+        levels = await db["subclass_levels"].find({}).to_list(length=None)
         # Find the subclass index to match levels
         subclass_index = subclass_data.get("index")
         subclass_levels = [level for level in levels if level.get("subclass") == subclass_index]

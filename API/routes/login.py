@@ -8,18 +8,17 @@ from services.login_service import authenticate_login, authenticate_login_form, 
 router = fastapi.APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post('/login', response_model=LoginResponse)
-def login(request: LoginRequest):
-    return authenticate_login(request)
+async def login(request: LoginRequest):
+    return await authenticate_login(request)
 
 @router.post('/token', response_model=LoginResponse)
-def login_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    return authenticate_login_form(form_data)
+async def login_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    return await authenticate_login_form(form_data)
 
 @router.post('/logout')
-def logout(current_user: dict = Depends(get_current_user)):
+async def logout(current_user: dict = Depends(get_current_user)):
     return logout_service()
 
-
 @router.post('/verify', response_model=VerifyTokenResponse)
-def verify_token(current_user: dict = Depends(get_current_user)):
+async def verify_token(current_user: dict = Depends(get_current_user)):
     return {"valid": True, "user": current_user}

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from services.local_catalog_repository import get_all as get_all_docs, get_by_id as repo_get_by_id, get_by_index as get_by_index_repo
+from bson import ObjectId
+from db import get_db
 
 router = APIRouter(prefix="/features", tags=["features"])
 
@@ -17,7 +18,8 @@ def doc_to_response(doc: dict) -> dict:
 @router.get("")
 async def get_features():
     """Get all features"""
-    features = await get_all_docs("features")
+    db = await get_db()
+    features = await db["features"].find({}).to_list(length=None)
     results = []
     for feature in features:
         feature_id = str(feature.get("_id", "")) if feature.get("_id") else ""
@@ -35,12 +37,16 @@ async def get_features():
 @router.get("/{feature_id}")
 async def get_feature_by_id(feature_id: str):
     """Get a feature by its _id"""
+    db = await get_db()
+    result = None
+    
     # Try by _id first
-    result = await repo_get_by_id("features", feature_id)
+    if ObjectId.is_valid(feature_id):
+        result = await db["features"].find_one({"_id": ObjectId(feature_id)})
     
     if result is None:
         # Fallback: try by index for backwards compatibility
-        result = await get_by_index_repo("features", feature_id)
+        result = await db["features"].find_one({"index": feature_id})
     
     if result is None:
         raise HTTPException(status_code=404, content={"detail": "Feature not found"})

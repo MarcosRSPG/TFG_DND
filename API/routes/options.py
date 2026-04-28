@@ -1,69 +1,82 @@
 from fastapi import APIRouter
-from services import local_catalog_repository
+from db import get_db
 
 router = APIRouter(prefix="/options", tags=["options"])
 
 
 @router.get("/proficiencies")
 async def get_proficiencies():
-    return await local_catalog_repository.get_all("proficiencies")
+    db = await get_db()
+    return await db["proficiencies"].find({}).to_list(length=None)
 
 
 @router.get("/proficiencies/{prof_id}")
 async def get_proficiency(prof_id: str):
-    return await local_catalog_repository.get_by_index("proficiencies", prof_id)
+    db = await get_db()
+    return await db["proficiencies"].find_one({"index": prof_id})
 
 
 @router.get("/magic-schools")
 async def get_magic_schools():
-    return await local_catalog_repository.get_all("magic-schools")
+    db = await get_db()
+    return await db["magic-schools"].find({}).to_list(length=None)
 
 
 @router.get("/alignments")
 async def get_alignments():
-    return await local_catalog_repository.get_all("alignments")
+    db = await get_db()
+    return await db["alignments"].find({}).to_list(length=None)
 
 
 @router.get("/alignments/{align_id}")
 async def get_alignment(align_id: str):
-    return await local_catalog_repository.get_by_index("alignments", align_id)
+    db = await get_db()
+    return await db["alignments"].find_one({"index": align_id})
 
 
 @router.get("/equipment-categories")
 async def get_equipment_categories():
-    return await local_catalog_repository.get_all("equipment-categories")
+    db = await get_db()
+    return await db["equipment-categories"].find({}).to_list(length=None)
 
 
 @router.get("/languages")
 async def get_languages():
-    return await local_catalog_repository.get_all("languages")
+    db = await get_db()
+    return await db["languages"].find({}).to_list(length=None)
 
 
 @router.get("/conditions")
 async def get_conditions():
-    return await local_catalog_repository.get_all("conditions")
+    db = await get_db()
+    return await db["conditions"].find({}).to_list(length=None)
 
 
 @router.get("/damage-types")
 async def get_damage_types():
-    return await local_catalog_repository.get_all("damage-types")
+    db = await get_db()
+    return await db["damage-types"].find({}).to_list(length=None)
 
 
 @router.get("/weapon-properties")
 async def get_weapon_properties():
-    return await local_catalog_repository.get_all("weapon-properties")
+    db = await get_db()
+    return await db["weapon-properties"].find({}).to_list(length=None)
 
 
 @router.get("/ability-scores")
 async def get_ability_scores():
-    return await local_catalog_repository.get_all("ability-scores")
+    db = await get_db()
+    return await db["ability-scores"].find({}).to_list(length=None)
 
 
 @router.get("/traits")
 async def get_traits():
-    return await local_catalog_repository.get_all("traits")
+    db = await get_db()
+    return await db["traits"].find({}).to_list(length=None)
 
 
 @router.get("/skills")
 async def get_skills():
-    return await local_catalog_repository.get_all("skills")
+    db = await get_db()
+    return await db["skills"].find({}).to_list(length=None)

@@ -8,7 +8,7 @@ import { Subrace } from '../interfaces/subrace';
 @Injectable({ providedIn: 'root' })
 export class RacesService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.API_DND_OFICIAL;
+  private readonly apiUrl = environment.API_URL;
 
   // === SIGNALS ===
   private _races = signal<Race[]>([]);

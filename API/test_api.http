@@ -1,0 +1,146 @@
+# Test API - TFG_DND
+# Usar con REST Client (VS Code) o similar
+
+@baseUrl = http://localhost:8000
+
+### 1. Health Check (sin auth)
+GET {{baseUrl}}/health
+
+### 2. Root endpoint
+GET {{baseUrl}}/
+
+### 3. LOGIN - Obtener token (JSON body)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "username": "",
+    "password": "testpassword"
+}
+
+### 4. LOGIN - Obtener token (Form data - OAuth2)
+POST {{baseUrl}}/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=test@example.com&password=testpassword
+
+### 5. VERIFY TOKEN (requiere auth)
+# Reemplazar {{token}} con el token obtenido en el login
+POST {{baseUrl}}/auth/verify
+Authorization: Bearer {{token}}
+
+### 6. LOGOUT (requiere auth)
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+
+### 7. GET ALL BACKGROUNDS
+GET {{baseUrl}}/backgrounds
+
+### 8. GET BACKGROUND BY ID
+# Reemplazar con un ID válido de MongoDB
+GET {{baseUrl}}/backgrounds/507f1f77bcf86cd799439011
+
+### 9. CREATE BACKGROUND (requiere auth)
+POST {{baseUrl}}/backgrounds
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "index": "acolyte",
+    "name": "Acolyte",
+    "url": "https://www.dnd5eapi.co/api/backgrounds/acolyte",
+    "created_by": "test",
+    "created_at": "2026-04-28T12:00:00Z",
+    "updated_at": "2026-04-28T12:00:00Z"
+}
+
+### 10. UPDATE BACKGROUND (requiere auth)
+PUT {{baseUrl}}/backgrounds/507f1f77bcf86cd799439011
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "index": "acolyte",
+    "name": "Acolyte Updated",
+    "url": "https://www.dnd5eapi.co/api/backgrounds/acolyte",
+    "created_by": "test",
+    "created_at": "2026-04-28T12:00:00Z",
+    "updated_at": "2026-04-28T13:00:00Z"
+}
+
+### 11. DELETE BACKGROUND (requiere auth)
+DELETE {{baseUrl}}/backgrounds/507f1f77bcf86cd799439011
+Authorization: Bearer {{token}}
+
+### 12. GET ALL ITEMS
+GET {{baseUrl}}/items
+
+### 13. GET ITEM BY ID
+GET {{baseUrl}}/items/507f1f77bcf86cd799439012
+
+### 14. GET ALL MONSTERS
+GET {{baseUrl}}/monsters
+
+### 15. GET MONSTER BY ID
+GET {{baseUrl}}/monsters/507f1f77bcf86cd799439013
+
+### 16. GET ALL SPELLS
+GET {{baseUrl}}/spells
+
+### 17. GET SPELL BY ID
+GET {{baseUrl}}/spells/507f1f77bcf86cd799439014
+
+### 18. GET ALL CHARACTERS
+GET {{baseUrl}}/characters
+
+### 19. GET CHARACTER BY ID
+GET {{baseUrl}}/characters/507f1f77bcf86cd799439015
+
+### 20. GET ALL RACES
+GET {{baseUrl}}/races
+
+### 21. GET ALL CLASSES
+GET {{baseUrl}}/classes
+
+### 22. GET ALL SUBCLASSES
+GET {{baseUrl}}/subclasses
+
+### 23. GET ALL TRAITS
+GET {{baseUrl}}/traits
+
+### 24. GET ALL FEATURES
+GET {{baseUrl}}/features
+
+### Ejemplo de flujo completo:
+### 1. Login
+# @name loginResponse
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@tfg.com",
+    "password": "admin123"
+}
+
+### 2. Extraer token (script para REST Client)
+# @caption Extraer token
+# @language javascript
+// Si usás REST Client, podés extraer el token automáticamente:
+// let json = JSON.parse(response.body);
+// let token = json.access_token;
+// editor.setVariable("token", token);
+
+### 3. Usar token para crear un background
+POST {{baseUrl}}/backgrounds
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "index": "test-background",
+    "name": "Test Background",
+    "url": "",
+    "created_by": "api-test",
+    "created_at": "2026-04-28T12:00:00Z",
+    "updated_at": "2026-04-28T12:00:00Z"
+}

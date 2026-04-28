@@ -150,6 +150,10 @@ export class SpellForm implements OnInit {
   // DC success types
   dcSuccessTypes = ['none', 'half', 'quarter'];
 
+  // Image upload
+  imagePreview: string | null = null;
+  selectedFile: File | null = null;
+
   // Search queries (for autocomplete)
   classSearchQuery = signal('');
   classSubclassSearchQuery = signal('');
@@ -461,7 +465,12 @@ export class SpellForm implements OnInit {
         dc: Object.keys(dcObj).length > 0 ? dcObj : undefined,
       };
 
-      await this.spellsService.create(data);
+      if (this.selectedFile) {
+        const formData = this.buildFormData();
+        await this.spellsService.create(formData);
+      } else {
+        await this.spellsService.create(data);
+      }
 
       this.router.navigate(['/manual'], {
         queryParams: { section: 'spells' },
@@ -478,5 +487,41 @@ export class SpellForm implements OnInit {
     this.router.navigate(['/manual'], {
       queryParams: { section: 'spells' },
     });
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.selectedFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  private buildFormData(): FormData {
+    const formData = new FormData();
+
+    // Append all form data fields
+    const data = this.formData();
+    Object.keys(data).forEach(key => {
+      const value = data[key as keyof typeof data];
+      if (value !== undefined && value !== null && key !== 'image') {
+        if (typeof value === 'object') {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+    });
+
+    // Append the image file
+    if (this.selectedFile) {
+      formData.append('image', this.selectedFile, this.selectedFile.name);
+    }
+
+    return formData;
   }
 }

@@ -9,7 +9,7 @@ import { Subrace } from '../interfaces/subrace';
 })
 export class SubracesService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.API_DND_OFICIAL;
+  private readonly apiUrl = environment.API_URL;
 
   // === SIGNALS ===
   private _subraces = signal<Subrace[]>([]);

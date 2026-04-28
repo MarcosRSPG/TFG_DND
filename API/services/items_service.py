@@ -1,32 +1,95 @@
-from services import weapons_service, armors_service, mounts_service, tools_service, adventuringGears_service, magicItems_service
-from services.equipment_repository import get_all
+from typing import Any
 from bson import ObjectId
 from fastapi import HTTPException
-from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import ValidationError
-from httpx import AsyncClient, RequestError
-from models.MagicItem import MagicItemSchema
-from models.Weapon import WeaponSchema
-from models.Armor import ArmorSchema
-from models.Mount import MountSchema
-from models.Tool import ToolSchema
-from models.AdventuringGear import AdventuringGearSchema
-from config import MONGODB_URI, MONGODB_DATABASE
+from db import get_db
+from config import MONGODB_COLLECTION_ITEMS
+from models.item_types.MagicItem import MagicItemSchema
+from models.item_types.Weapon import WeaponSchema
+from models.item_types.Armor import ArmorSchema
+from models.item_types.Mount import MountSchema
+from models.item_types.Tool import ToolSchema
+from models.item_types.AdventuringGear import AdventuringGearSchema
 
-_client: AsyncIOMotorClient | None = None
+# Import individual item services
+from services.item_types import weapons_service, armors_service, mounts_service, tools_service, adventuringGears_service, magicItems_service
 
+# Category aliases from equipment_repository
+_CATEGORY_ALIASES = {
+    "adventuringgear": "adventuring-gear",
+    "adventuring-gear": "adventuring-gear",
+    "armor": "armor",
+    "mount": "mount",
+    "mounts-and-vehicles": "mounts-and-vehicles",
+    "tool": "tool",
+    "weapon": "weapon",
+    "magicItem": "magic-items",
+    "magic-item": "magic-items",
+    "magic-items": "magic-items",
+}
 
-async def get_db():
-    global _client
-    if _client is None:
-        _client = AsyncIOMotorClient(MONGODB_URI)
-    return _client[MONGODB_DATABASE]
+def normalize_category(category: str | None) -> str | None:
+    if category is None:
+        return None
+    return _CATEGORY_ALIASES.get(category, category)
 
+def _doc_key(doc: dict[str, Any]) -> str:
+    return str(doc.get("index") or doc.get("id") or doc.get("_id"))
+
+# Now uses only local MongoDB instead of remote API
+async def get_remote_catalog() -> list[dict[str, Any]]:
+    # Just get all items - filtering by category is done in get_local_docs
+    return await get_local_docs()
+
+async def clear_remote_cache() -> None:
+    # No cache to clear anymore - we use MongoDB directly
+    pass
+
+async def get_local_docs(category: str | None = None) -> list[dict[str, Any]]:
+    try:
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_ITEMS]
+        query: dict[str, Any] = {}
+        normalized_category = normalize_category(category)
+        if normalized_category:
+            if normalized_category == "magic-items":
+                query["rarity.name"] = {"$exists": True}
+            else:
+                query["equipment_category.index"] = normalized_category
+        return await collection.find(query).to_list(length=None)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error retrieving items: {exc}") from exc
+
+# Now just returns local
+async def get_remote_docs(category: str | None = None) -> list[dict[str, Any]]:
+    return await get_local_docs(category)
+
+# Returns only local docs (no merging with remote)
+async def get_all_docs(category: str | None = None) -> list[dict[str, Any]]:
+    return await get_local_docs(category)
+
+async def get_local_doc_by_id(item_id: str) -> dict[str, Any] | None:
+    # Try as ObjectId first
+    if ObjectId.is_valid(item_id):
+        db = await get_db()
+        collection = db[MONGODB_COLLECTION_ITEMS]
+        doc = await collection.find_one({"_id": ObjectId(item_id)})
+        if doc:
+            return doc
+    
+    # Try as index
+    db = await get_db()
+    collection = db[MONGODB_COLLECTION_ITEMS]
+    return await collection.find_one({"index": item_id})
+
+# Now just returns local
+async def get_remote_doc_by_id(item_id: str) -> dict[str, Any] | None:
+    return await get_local_doc_by_id(item_id)
 
 def _normalize_type(type_value: str | None) -> str | None:
     if type_value is None:
         return None
-
+    
     normalized = type_value.strip().lower()
     aliases = {
         "adventuring-gear": "adventuringgear",
@@ -43,9 +106,8 @@ def _normalize_type(type_value: str | None) -> str | None:
         "magic-items": "magicitem",
         "magicitems": "magicitem",
     }
-
+    
     return aliases.get(normalized, normalized)
-
 
 def _json_safe(value):
     if isinstance(value, ObjectId):
@@ -56,24 +118,22 @@ def _json_safe(value):
         return [_json_safe(v) for v in value]
     return value
 
-
 def _is_magic_item_doc(item_data: dict) -> bool:
     rarity = item_data.get("rarity")
     if isinstance(rarity, dict) and rarity.get("name"):
         return True
-
+    
     if isinstance(item_data.get("variant"), bool):
         return True
-
+    
     if isinstance(item_data.get("url"), str) and "/magic-items/" in item_data.get("url", ""):
         return True
-
+    
     return item_data.get("equipment_category", {}).get("index") == "magic-items"
-
 
 def _schema_for_doc(item_data: dict):
     category = item_data.get("equipment_category", {}).get("index")
-
+    
     if _is_magic_item_doc(item_data):
         return MagicItemSchema
     if category == "weapon":
@@ -88,29 +148,27 @@ def _schema_for_doc(item_data: dict):
         return ToolSchema
     if category == "adventuring-gear":
         return AdventuringGearSchema
-
+    
     return None
-
 
 def _format_item_doc(item_data: dict) -> dict:
     payload = dict(item_data)
     mongo_id = payload.pop("_id", None)
     if mongo_id is not None and not payload.get("id"):
         payload["id"] = str(mongo_id)
-
+    
     schema_class = _schema_for_doc(payload)
     if schema_class is None:
         return _json_safe(payload)
-
+    
     try:
         return schema_class.model_validate(payload).model_dump(exclude_none=True)
     except ValidationError:
         return _json_safe(payload)
 
-
 def _schema_for_type(type: str | None):
     normalized_type = _normalize_type(type)
-
+    
     match normalized_type:
         case "adventuringgear":
             return AdventuringGearSchema
@@ -122,25 +180,21 @@ def _schema_for_type(type: str | None):
             return ToolSchema
         case "weapon":
             return WeaponSchema
-        case "magicItem":
+        case "magicitem":
             return MagicItemSchema
         case _:
             raise HTTPException(status_code=400, detail="Invalid item type")
-
 
 def _coerce_item(type: str | None, item_data: dict):
     schema_class = _schema_for_type(type)
     return schema_class.model_validate(item_data)
 
-
 async def get_all():
-    from services.equipment_repository import get_all as get_all_items
-    return [_format_item_doc(doc) for doc in await get_all_items()]
-
+    return [_format_item_doc(doc) for doc in await get_all_docs()]
 
 async def get_by_type(type: str = None):
     normalized_type = _normalize_type(type)
-
+    
     try:
         match normalized_type:
             case "adventuringgear":
@@ -157,13 +211,12 @@ async def get_by_type(type: str = None):
                 return await magicItems_service.get_all()
             case _:
                 raise HTTPException(status_code=400, detail="Invalid item type")
-    except RequestError as exc:
-        raise HTTPException(status_code=500, detail=f"Error retrieving items from external API: {exc}") from exc
-
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error retrieving items: {exc}") from exc
 
 async def get_by_id(item_id: str, type: str = None):
     normalized_type = _normalize_type(type)
-
+    
     try:
         match normalized_type:
             case "adventuringgear":
@@ -180,80 +233,77 @@ async def get_by_id(item_id: str, type: str = None):
                 doc = await magicItems_service.get_by_id(item_id)
             case _:
                 raise HTTPException(status_code=400, detail="Invalid item type")
-    except RequestError as exc:
-        raise HTTPException(status_code=500, detail=f"Error retrieving item from external API: {exc}") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error retrieving item: {exc}") from exc
     if not doc:
         raise HTTPException(status_code=404, detail="Item not found")
     return doc
 
-
 async def create(item_data: dict, type: str = None, created_by: str = None) -> dict:
     normalized_type = _normalize_type(type)
-
+    
     try:
         item_schema = _coerce_item(normalized_type, item_data)
         match normalized_type:
             case "adventuringgear":
-                return await adventuringGears_service.create_adventuringgear(item_schema, created_by)
+                return await adventuringGears_service.create(item_schema, created_by)
             case "armor":
-                return await armors_service.create_armor(item_schema, created_by)
+                return await armors_service.create(item_schema, created_by)
             case "mount":
-                return await mounts_service.create_mount(item_schema, created_by)
+                return await mounts_service.create(item_schema, created_by)
             case "tool":
-                return await tools_service.create_tool(item_schema, created_by)
+                return await tools_service.create(item_schema, created_by)
             case "weapon":
-                return await weapons_service.create_weapon(item_schema, created_by)
+                return await weapons_service.create(item_schema, created_by)
             case "magicitem":
-                return await magicItems_service.create_magicItem(item_schema, created_by)
+                return await magicItems_service.create(item_schema, created_by)
             case _:
                 raise HTTPException(status_code=400, detail="Invalid item type")
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=exc.errors()) from exc
-    except RequestError as exc:
-        raise HTTPException(status_code=500, detail=f"Error creating item from external API: {exc}") from exc
-
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error creating item: {exc}") from exc
 
 async def update(item_id: str, item_data: dict, type: str = None) -> dict:
     if not ObjectId.is_valid(item_id):
         raise HTTPException(status_code=400, detail="Invalid item id")
-
+    
     normalized_type = _normalize_type(type)
-
+    
     try:
         item_schema = _coerce_item(normalized_type, item_data)
         match normalized_type:
             case "adventuringgear":
-                return await adventuringGears_service.update_adventuringgear(item_id, item_schema)
+                return await adventuringGears_service.update(item_id, item_schema)
             case "armor":
-                return await armors_service.update_armor(item_id, item_schema)
+                return await armors_service.update(item_id, item_schema)
             case "mount":
-                return await mounts_service.update_mount(item_id, item_schema)
+                return await mounts_service.update(item_id, item_schema)
             case "tool":
-                return await tools_service.update_tool(item_id, item_schema)
+                return await tools_service.update(item_id, item_schema)
             case "weapon":
-                return await weapons_service.update_weapon(item_id, item_schema)
+                return await weapons_service.update(item_id, item_schema)
             case "magicitem":
-                return await magicItems_service.update_magicItem(item_id, item_schema)
+                return await magicItems_service.update(item_id, item_schema)
             case _:
                 raise HTTPException(status_code=400, detail="Invalid item type")
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=exc.errors()) from exc
-    except RequestError as exc:
-        raise HTTPException(status_code=500, detail=f"Error updating item from external API: {exc}") from exc
-
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error updating item: {exc}") from exc
 
 async def delete(item_id: str) -> dict:
     if not ObjectId.is_valid(item_id):
         raise HTTPException(status_code=400, detail="Invalid item id")
-
+    
     db = await get_db()
     collection = db["items"]
     try:
         result = await collection.delete_one({"_id": ObjectId(item_id)})
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error deleting item: {exc}") from exc
-
+    
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Item not found")
-
+    
     return {"deleted": True, "item_id": item_id}

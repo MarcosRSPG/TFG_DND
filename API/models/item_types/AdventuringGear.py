@@ -15,9 +15,9 @@ class AdventuringGearSchema(BaseSchema):
             url="/api/2014/equipment-categories/adventuring-gear",
         )
     )
-    gear_category: ResourceReference
+    gear_category: Optional[ResourceReference] = None
     quantity: Optional[int] = None
-    cost: CostSchema
+    cost: Optional[CostSchema] = None
     weight: Optional[float] = None
     url: Optional[str] = None
     contents: List[Dict[str, Any]] = Field(default_factory=list)

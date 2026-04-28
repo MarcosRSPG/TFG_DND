@@ -62,12 +62,18 @@ export class SpellsService {
     );
   }
 
-  async create(spell: Partial<Spell>): Promise<Spell> {
-    return firstValueFrom(
-      this.http.post<Spell>(`${this.apiUrl}/spells`, spell, {
-        headers: this.buildHeaders(),
-      })
-    );
+  async create(spell: Partial<Spell> | FormData): Promise<Spell> {
+    const isFormData = spell instanceof FormData;
+    
+    if (isFormData) {
+      return firstValueFrom(
+        this.http.post<Spell>(`${this.apiUrl}/spells`, spell)
+      ) as Promise<Spell>;
+    } else {
+      return firstValueFrom(
+        this.http.post<Spell>(`${this.apiUrl}/spells`, spell, { headers: this.buildHeaders() })
+      );
+    }
   }
 
   private buildHeaders(): { [header: string]: string } {

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from bson import ObjectId
-from services.local_catalog_repository import get_all as get_all_docs, get_by_id as repo_get_by_id, get_by_index as get_by_index_repo
+from db import get_db
 
 router = APIRouter(prefix="/races", tags=["races"])
 
@@ -18,7 +18,8 @@ def doc_to_response(doc: dict) -> dict:
 @router.get("")
 async def get_races():
     """Get all races"""
-    races = await get_all_docs("races")
+    db = await get_db()
+    races = await db["races"].find({}).to_list(length=None)
     results = []
     for race in races:
         race_id = str(race.get("_id", "")) if race.get("_id") else ""
@@ -36,12 +37,16 @@ async def get_races():
 @router.get("/{race_id}")
 async def get_race_by_id(race_id: str):
     """Get a race by its _id"""
+    db = await get_db()
+    result = None
+    
     # Try by _id first
-    result = await repo_get_by_id("races", race_id)
+    if ObjectId.is_valid(race_id):
+        result = await db["races"].find_one({"_id": ObjectId(race_id)})
     
     if result is None:
         # Fallback: try by index for backwards compatibility
-        result = await get_by_index_repo("races", race_id)
+        result = await db["races"].find_one({"index": race_id})
     
     if result is None:
         raise HTTPException(status_code=404, content={"detail": "Race not found"})

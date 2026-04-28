@@ -1,9 +1,7 @@
 import fastapi
-from fastapi import Depends
 
 from models.Character import CharacterSchema
 from services import characters_service
-from services.authorization_service import require_write_authorization
 
 
 router = fastapi.APIRouter(prefix="/characters", tags=["characters"])
@@ -22,24 +20,20 @@ async def get_character(character_id: str) -> dict:
 @router.post("", response_model_exclude_none=True)
 async def create_character(
     character: CharacterSchema,
-    current_user: dict = Depends(require_write_authorization),
 ) -> dict:
-    actor_id = current_user.get("user_id") or current_user.get("_id") or current_user.get("email")
-    return await characters_service.create(character.model_dump(exclude_none=True, by_alias=True), actor_id)
+    return await characters_service.create(character.model_dump(exclude_none=True, by_alias=True))
 
 
 @router.put("/{character_id}", response_model_exclude_none=True)
 async def update_character(
     character_id: str,
     character: CharacterSchema,
-    current_user: dict = Depends(require_write_authorization),
 ) -> dict:
-    actor_id = current_user.get("user_id") or current_user.get("_id") or current_user.get("email")
-    return await characters_service.update(character_id, character.model_dump(exclude_none=True, by_alias=True), actor_id)
+    return await characters_service.update(character_id, character.model_dump(exclude_none=True, by_alias=True))
 
 
 @router.delete("/{character_id}", status_code=204)
-async def delete_character(character_id: str, current_user: dict = Depends(require_write_authorization)):
+async def delete_character(character_id: str):
     success = await characters_service.delete(character_id)
     if not success:
         from fastapi import HTTPException

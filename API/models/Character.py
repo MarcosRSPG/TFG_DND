@@ -102,24 +102,24 @@ class CharacterSchema(BaseSchema):
                 "level": 5,
                 "class": {
                     "index": "cleric",
-                    "url": "https://www.dnd5eapi.co/api/2014/classes/cleric",
+                    "name": "Cleric"
                 },
                 "subclass": {
                     "index": "light-domain",
-                    "url": "https://www.dnd5eapi.co/api/2014/subclasses/light-domain",
+                    "name": "Light Domain"
                 },
                 "race": {
                     "index": "human",
-                    "url": "https://www.dnd5eapi.co/api/2014/races/human",
+                    "name": "Human"
                 },
                 "subrace": {
                     "index": "variant-human",
-                    "url": "https://www.dnd5eapi.co/api/2014/subraces/variant-human",
+                    "name": "Variant Human"
                 },
                 "alignment": "neutral-good",
                 "background": {
                     "index": "acolyte",
-                    "url": "https://www.dnd5eapi.co/api/2014/backgrounds/acolyte",
+                    "name": "Acolyte"
                 },
                 "hit_points": 7,
                 "hit_dice": "2d6",
@@ -132,7 +132,7 @@ class CharacterSchema(BaseSchema):
                 "wisdom": 8,
                 "charisma": 8,
                 "proficiencies": [
-                    {"proficiency": {"index": "skill-insight", "url": "https://www.dnd5eapi.co/api/2014/proficiencies/skill-insight"}}
+                    {"proficiency": {"index": "skill-insight", "name": "Skill: Insight"}}
                 ],
                 "proficiency_bonus": 3,
                 "saving_throws": ["wis", "cha"],

@@ -57,12 +57,18 @@ export class MonstersService {
     );
   }
 
-  async create(monster: Partial<Monster>): Promise<Monster> {
-    return firstValueFrom(
-      this.http.post<Monster>(`${this.apiUrl}/monsters`, monster, {
-        headers: this.buildHeaders(),
-      })
-    );
+  async create(monster: Partial<Monster> | FormData): Promise<Monster> {
+    const isFormData = monster instanceof FormData;
+    
+    if (isFormData) {
+      return firstValueFrom(
+        this.http.post<Monster>(`${this.apiUrl}/monsters`, monster)
+      ) as Promise<Monster>;
+    } else {
+      return firstValueFrom(
+        this.http.post<Monster>(`${this.apiUrl}/monsters`, monster, { headers: this.buildHeaders() })
+      );
+    }
   }
 
   private buildHeaders(): { [header: string]: string } {

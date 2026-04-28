@@ -27,7 +27,7 @@ export class RaceDetail implements OnInit {
 
   getImageUrl(imagePath: string | undefined): string {
     if (!imagePath) return '';
-    return `${environment.API_IMAGES}${imagePath}`;
+    return `${environment.API_URL}${imagePath}`;
   }
   selectedSubrace = signal<Subrace | null>(null);
   showModal = signal(false);
