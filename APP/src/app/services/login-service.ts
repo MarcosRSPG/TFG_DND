@@ -92,6 +92,7 @@ export class LoginService {
     localStorage.removeItem('token');
     this._isLoggedIn.set(false);
     this._currentUser.set(null);
+    window.location.href = '/login';
   }
 
   getToken(): string | null {

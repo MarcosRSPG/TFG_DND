@@ -4,6 +4,7 @@ from db import get_db
 from config import MONGODB_COLLECTION_MONSTERS
 from models.Monster import Monster
 import json
+import re
 from pydantic import ValidationError
 
 
@@ -30,6 +31,11 @@ def _format_monster(monster_data: dict) -> dict:
         return _to_schema(monster_data).model_dump(exclude_none=True)
     except ValidationError:
         return _json_safe(monster_data)
+
+
+def _build_index(name: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    return slug or "monster"
 
 
 async def get_local_docs() -> list:
@@ -129,7 +135,11 @@ async def get_by_id(monster_id: str) -> dict:
 
 async def create(monster: dict) -> dict:
     try:
-        validated_monster = Monster.model_validate(monster)
+        payload = dict(monster)
+        if not payload.get("index") and payload.get("name"):
+            payload["index"] = _build_index(payload["name"])
+
+        validated_monster = Monster.model_validate(payload)
         monster_dict = validated_monster.model_dump(exclude_none=True)
         result = await save_local_monster(monster_dict)
         return _format_monster(result)

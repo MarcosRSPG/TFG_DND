@@ -1,5 +1,6 @@
 export interface Spell {
   id?: string;
+  index?: string;
   name: string;
   desc: string[];
   higher_level?: string[];

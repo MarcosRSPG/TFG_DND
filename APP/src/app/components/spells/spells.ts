@@ -297,7 +297,7 @@ export class Spells implements OnInit {
   // =========================
 
   getIdentifier(item: Spell): string {
-    return item.id || item.name?.toLowerCase().replace(/ /g, '-') || '';
+    return item.id || item.index || item.name?.toLowerCase().replace(/ /g, '-') || '';
   }
 
   navigateToCreate(): void {

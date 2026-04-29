@@ -24,13 +24,13 @@ class ArmorClassSchema(BaseModel):
 
 class SpeedSchema(BaseModel):
     """Movement speeds for monsters"""
-    walk: Optional[str] = None
-    fly: Optional[str] = None
-    swim: Optional[str] = None
-    climb: Optional[str] = None
-    crawl: Optional[str] = None
-    burrow: Optional[str] = None
-    hover: Optional[str] = None
+    walk: Optional[str | int | float] = None
+    fly: Optional[str | int | float] = None
+    swim: Optional[str | int | float] = None
+    climb: Optional[str | int | float] = None
+    crawl: Optional[str | int | float] = None
+    burrow: Optional[str | int | float] = None
+    hover: Optional[bool | str | int | float] = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -107,11 +107,11 @@ class Monster(BaseModel):
     type: str
     subtype: Optional[str] = None
     alignment: str
-    armor_class: List[ArmorClassSchema]
-    hit_points: int
+    armor_class: List[ArmorClassSchema] = Field(default_factory=list)
+    hit_points: Optional[int] = None
     hit_dice: str
-    hit_points_roll: str
-    speed: SpeedSchema
+    hit_points_roll: Optional[str] = None
+    speed: SpeedSchema = Field(default_factory=SpeedSchema)
     strength: int
     dexterity: int
     constitution: int
@@ -122,13 +122,13 @@ class Monster(BaseModel):
     damage_vulnerabilities: Optional[List[str]] = Field(default_factory=list)
     damage_resistances: Optional[List[str]] = Field(default_factory=list)
     damage_immunities: Optional[List[str]] = Field(default_factory=list)
-    condition_immunities: Optional[List[str]] = Field(default_factory=list)
+    condition_immunities: Optional[List[ReferenceSchema | str]] = Field(default_factory=list)
     senses: Optional[SensesSchema] = None
     languages: Optional[str] = None
     spellcasting: Optional[Dict[str, Any]] = None
-    challenge_rating: float
-    proficiency_bonus: int
-    xp: int
+    challenge_rating: float | str
+    proficiency_bonus: Optional[int] = None
+    xp: Optional[int] = None
     special_abilities: Optional[List[AbilitySchema]] = Field(default_factory=list)
     actions: Optional[List[AbilitySchema]] = Field(default_factory=list)
     legendary_actions: Optional[List[LegendaryActionSchema]] = Field(default_factory=list)

@@ -133,7 +133,7 @@
                 <div class="spells-in-level">
                   @for (spell of getSpellByLevel()[level]; track spell.name) {
                     <span class="spell-tag">
-                      <a [routerLink]="['/spells', getSpellIndex(spell.name)]">{{ spell.name }}</a>
+                      <a [routerLink]="['/spells', getSpellIdentifier(spell)]">{{ spell.name }}</a>
                     </span>
                   }
                 </div>

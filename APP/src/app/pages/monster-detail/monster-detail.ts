@@ -128,8 +128,9 @@ export class MonsterDetail implements OnInit {
     return spells?.map((s: any) => s.name).join(', ') || 'None';
   }
 
-  getSpellIndex(spellName: string): string {
-    return spellName.toLowerCase().replace(/ /g, '-');
+  getSpellIdentifier(spell: SpellInfo): string {
+    const fromUrl = spell.url?.match(/\/spells\/([^/?#]+)$/)?.[1];
+    return fromUrl || spell.name.toLowerCase().replace(/ /g, '-');
   }
 
   // Group spells by level for display

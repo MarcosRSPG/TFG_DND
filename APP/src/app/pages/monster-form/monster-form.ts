@@ -463,27 +463,30 @@ export class MonsterForm implements OnInit {
     const current = this.selectedSpells();
     const exists = current.find(s => s.name === spell.name);
     if (!exists) {
+      const spellIdentifier = this.getSpellIdentifier(spell);
+
       // Add with basic info first
       const newSpell = {
         name: spell.name,
         level: spell.level,
-        url: `/api/2014/spells/${spell.name.toLowerCase().replace(/ /g, '-')}`,
+        url: `/spells/${spellIdentifier}`,
       };
 
       this.selectedSpells.set([...current, newSpell]);
       this.searchQuery.set(''); // Clear search after adding
 
       // Then fetch full details from D&D API
-      this.loadSpellDetails(spell.name);
+      this.loadSpellDetails(spellIdentifier, spell.name);
     }
   }
 
-  private async loadSpellDetails(spellName: string): Promise<void> {
+  private getSpellIdentifier(spell: Spell): string {
+    return spell.id || spell.index || spell.name.toLowerCase().replace(/ /g, '-');
+  }
+
+  private async loadSpellDetails(spellIdentifier: string, spellName: string): Promise<void> {
     try {
-      const index = spellName.toLowerCase().replace(/ /g, '-');
-      const detail = await firstValueFrom(
-        this.http.get<any>(`${environment.API_URL}/spells/${index}`)
-      );
+      const detail = await this.spellsService.getSpell(spellIdentifier);
 
       // Update the spell with full details
       this.selectedSpells.update(spells => {
@@ -795,7 +798,7 @@ export class MonsterForm implements OnInit {
       }
 
       if (this.selectedFile) {
-        const formData = this.buildFormData();
+        const formData = this.buildFormData(data);
         await this.monstersService.create(formData);
       } else {
         await this.monstersService.create(data);
@@ -830,11 +833,10 @@ export class MonsterForm implements OnInit {
     }
   }
 
-  private buildFormData(): FormData {
+  private buildFormData(data: Partial<Monster>): FormData {
     const formData = new FormData();
 
     // Append all form data fields
-    const data = this.formData();
     Object.keys(data).forEach(key => {
       const value = data[key as keyof typeof data];
       if (value !== undefined && value !== null && key !== 'image') {

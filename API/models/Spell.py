@@ -29,6 +29,7 @@ class AreaOfEffectSchema(BaseModel):
 
 class Spell(BaseModel):
     """D&D 5e Spell model"""
+    id: Optional[str] = None
     index: Optional[str] = None
     name: str
     desc: List[str]

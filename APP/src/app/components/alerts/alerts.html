@@ -1,0 +1,26 @@
+@if (isOpen) {
+  <div class="alert-modal-backdrop" (click)="close()">
+    <div
+      class="alert-modal-content"
+      [class.alert-modal-content--success]="variant === 'success'"
+      [class.alert-modal-content--error]="variant === 'error'"
+      (click)="$event.stopPropagation()"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="alert-modal-title"
+    >
+      <div class="alert-modal-header">
+        <h2 id="alert-modal-title">{{ title }}</h2>
+        <button type="button" class="alert-modal-close" (click)="close()" aria-label="Close">
+          ✕
+        </button>
+      </div>
+
+      <p class="alert-modal-message">{{ message }}</p>
+
+      <div class="alert-modal-actions">
+        <button type="button" class="alert-modal-button" (click)="close()">{{ closeText }}</button>
+      </div>
+    </div>
+  </div>
+}
