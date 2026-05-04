@@ -212,3 +212,49 @@
   color: var(--title-color, #c9a25a);
   font-weight: 600;
 }
+
+/* Monk Martial Arts die column */
+.martial-arts-dice {
+  color: var(--title-color, #c9a25a);
+  font-weight: 600;
+}
+
+/* Barbarian progression columns */
+.barbarian-rage-damage {
+  color: var(--title-color, #c9a25a);
+  font-weight: 600;
+}
+
+.barbarian-rages-count {
+  color: var(--title-color, #c9a25a);
+  font-weight: 600;
+}
+
+/* Bard progression columns */
+.bard-bardic-inspiration {
+  color: var(--title-color, #c9a25a);
+  font-weight: 600;
+}
+
+.bard-song-of-rest {
+  color: var(--title-color, #c9a25a);
+  font-weight: 600;
+}
+
+/* Fighter progression column */
+.fighter-action-surge {
+  color: var(--title-color, #c9a25a);
+  font-weight: 600;
+}
+
+/* Sorcerer progression column */
+.sorcerer-sorcery-points {
+  color: var(--title-color, #c9a25a);
+  font-weight: 600;
+}
+
+/* Warlock progression column */
+.warlock-mystic-arcanum {
+  color: var(--title-color, #c9a25a);
+  font-weight: 600;
+}

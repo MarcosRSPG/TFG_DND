@@ -1,0 +1,264 @@
+{
+  "barbarian": {
+    "progressionColumns": [
+      {
+        "id": "rage-damage",
+        "label": "Rage Damage",
+        "source": "class_specific",
+        "key": "rage_damage_bonus",
+        "progression": [
+          { "level": 1, "value": "+2" },
+          { "level": 9, "value": "+3" },
+          { "level": 16, "value": "+4" }
+        ]
+      },
+      {
+        "id": "rages-count",
+        "label": "Rages per Day",
+        "source": "class_specific",
+        "key": "rage_count",
+        "progression": [
+          { "level": 1, "value": "2" },
+          { "level": 3, "value": "3" },
+          { "level": 6, "value": "4" },
+          { "level": 12, "value": "5" },
+          { "level": 17, "value": "6" }
+        ]
+      }
+    ]
+  },
+  "bard": {
+    "hiddenKeys": ["magical_secrets"],
+    "spellSlots": true,
+    "progressionColumns": [
+      {
+        "id": "bardic-inspiration",
+        "label": "Bardic Inspiration Die",
+        "source": "class_specific",
+        "key": "bardic_inspiration_die",
+        "progression": [
+          { "level": 1, "value": "d6" },
+          { "level": 5, "value": "d8" },
+          { "level": 10, "value": "d10" },
+          { "level": 15, "value": "d12" }
+        ]
+      },
+      {
+        "id": "song-of-rest",
+        "label": "Song of Rest Die",
+        "source": "class_specific",
+        "key": "song_of_rest_die",
+        "progression": [
+          { "level": 2, "value": "d6" },
+          { "level": 9, "value": "d8" },
+          { "level": 13, "value": "d10" },
+          { "level": 17, "value": "d12" }
+        ]
+      }
+    ]
+  },
+  "cleric": {
+    "spellSlots": true,
+    "progressionColumns": [
+      {
+        "id": "channel-divinity",
+        "label": "Channel Divinity",
+        "source": "class_specific",
+        "key": "channel_divinity",
+        "progression": [
+          { "level": 1, "value": "1" },
+          { "level": 6, "value": "2" }
+        ]
+      }
+    ]
+  },
+  "druid": {
+    "spellSlots": true,
+    "progressionColumns": [
+      {
+        "id": "wild-shape-cr",
+        "label": "Wild Shape Max CR",
+        "source": "class_specific",
+        "key": "wild_shape_max_cr",
+        "progression": [
+          { "level": 2, "value": "1/4" },
+          { "level": 4, "value": "1/2" },
+          { "level": 8, "value": "1" }
+        ]
+      }
+    ]
+  },
+  "fighter": {
+    "progressionColumns": [
+      {
+        "id": "action-surge",
+        "label": "Action Surge",
+        "source": "class_specific",
+        "key": "action_surges",
+        "progression": [
+          { "level": 2, "value": "1" },
+          { "level": 17, "value": "2" }
+        ]
+      }
+    ]
+  },
+  "monk": {
+    "progressionColumns": [
+      {
+        "id": "martial-arts",
+        "label": "Martial Arts Die",
+        "source": "class_specific",
+        "key": "martial_arts",
+        "progression": [
+          { "level": 1, "value": "1d6" },
+          { "level": 5, "value": "1d8" },
+          { "level": 11, "value": "1d10" },
+          { "level": 17, "value": "1d12" }
+        ]
+      },
+      {
+        "id": "ki-points",
+        "label": "Ki Points",
+        "source": "class_specific",
+        "key": "ki_points",
+        "progression": [
+          { "level": 2, "value": "2" },
+          { "level": 3, "value": "3" },
+          { "level": 4, "value": "4" },
+          { "level": 5, "value": "5" },
+          { "level": 6, "value": "6" },
+          { "level": 7, "value": "7" },
+          { "level": 8, "value": "8" },
+          { "level": 9, "value": "9" },
+          { "level": 10, "value": "10" },
+          { "level": 11, "value": "11" },
+          { "level": 12, "value": "12" },
+          { "level": 13, "value": "13" },
+          { "level": 14, "value": "14" },
+          { "level": 15, "value": "15" },
+          { "level": 16, "value": "16" },
+          { "level": 17, "value": "17" },
+          { "level": 18, "value": "18" },
+          { "level": 19, "value": "19" },
+          { "level": 20, "value": "20" }
+        ]
+      },
+      {
+        "id": "unarmored-movement",
+        "label": "Unarmored Movement",
+        "source": "class_specific",
+        "key": "unarmored_movement",
+        "progression": [
+          { "level": 2, "value": "+10ft" },
+          { "level": 6, "value": "+15ft" },
+          { "level": 10, "value": "+20ft" }
+        ]
+      }
+    ]
+  },
+  "paladin": {
+    "spellSlots": true,
+    "progressionColumns": [
+      {
+        "id": "aura-range",
+        "label": "Aura Range",
+        "source": "class_specific",
+        "key": "aura_range",
+        "progression": [
+          { "level": 1, "value": "-" },
+          { "level": 6, "value": "10ft" },
+          { "level": 18, "value": "30ft" }
+        ]
+      }
+    ]
+  },
+  "ranger": {
+    "spellSlots": true,
+    "progressionColumns": [
+      {
+        "id": "favored-enemies",
+        "label": "Favored Enemies",
+        "source": "class_specific",
+        "key": "favored_enemies",
+        "progression": [
+          { "level": 1, "value": "1" },
+          { "level": 6, "value": "2" }
+        ]
+      }
+    ]
+  },
+  "rogue": {
+    "progressionColumns": [
+      {
+        "id": "sneak-attack",
+        "label": "Sneak Attack",
+        "cssClass": "sneak-attack-dice",
+        "progression": [
+          { "level": 1, "value": "1d6" },
+          { "level": 3, "value": "2d6" },
+          { "level": 5, "value": "3d6" },
+          { "level": 7, "value": "4d6" },
+          { "level": 9, "value": "5d6" },
+          { "level": 11, "value": "6d6" },
+          { "level": 13, "value": "7d6" },
+          { "level": 15, "value": "8d6" },
+          { "level": 17, "value": "9d6" },
+          { "level": 19, "value": "10d6" }
+        ]
+      }
+    ]
+  },
+  "sorcerer": {
+    "spellSlots": true,
+    "progressionColumns": [
+      {
+        "id": "sorcery-points",
+        "label": "Sorcery Points",
+        "source": "class_specific",
+        "key": "sorcery_points",
+        "progression": [
+          { "level": 2, "value": "2" },
+          { "level": 3, "value": "3" },
+          { "level": 4, "value": "4" },
+          { "level": 5, "value": "5" },
+          { "level": 6, "value": "6" },
+          { "level": 7, "value": "7" },
+          { "level": 8, "value": "8" },
+          { "level": 9, "value": "9" },
+          { "level": 10, "value": "10" },
+          { "level": 11, "value": "11" },
+          { "level": 12, "value": "12" },
+          { "level": 13, "value": "13" },
+          { "level": 14, "value": "14" },
+          { "level": 15, "value": "15" },
+          { "level": 16, "value": "16" },
+          { "level": 17, "value": "17" },
+          { "level": 18, "value": "18" },
+          { "level": 19, "value": "19" },
+          { "level": 20, "value": "20" }
+        ]
+      }
+    ]
+  },
+  "warlock": {
+    "spellSlots": true,
+    "progressionColumns": [
+      {
+        "id": "mystic-arcanum",
+        "label": "Mystic Arcanum",
+        "source": "class_specific",
+        "key": "mystic_arcanum",
+        "progression": [
+          { "level": 11, "value": "6th" },
+          { "level": 13, "value": "7th" },
+          { "level": 15, "value": "8th" },
+          { "level": 17, "value": "9th" }
+        ]
+      }
+    ]
+  },
+  "wizard": {
+    "spellSlots": true,
+    "progressionColumns": []
+  }
+}

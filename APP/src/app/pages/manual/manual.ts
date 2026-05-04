@@ -54,47 +54,10 @@ export class Manual implements OnInit {
   }
 
   private updateUrl(): void {
+    // Only update the 'section' param. Child components manage their own filters via URL.
     this.router.navigate([], {
       queryParams: { section: this.selectedSectionId },
       queryParamsHandling: 'merge',
     });
-    if (this.selectedSectionId !== 'items' && this.selectedSectionId !== 'races') {
-      setTimeout(() => {
-        this.router.navigate([], {
-          queryParams: {
-            searchName: null,
-            types: null,
-            source: null,
-            costMin: null,
-            costMax: null,
-            size: null,
-            page: null,
-          },
-        });
-      }, 0);
-    }
-    if (this.selectedSectionId === 'items') {
-      setTimeout(() => {
-        this.router.navigate([], {
-          queryParams: {
-            size: null,
-          },
-        });
-      }, 0);
-    }
-    if (this.selectedSectionId === 'races') {
-      setTimeout(() => {
-        this.router.navigate([], {
-          queryParams: {
-            searchName: null,
-            types: null,
-            source: null,
-            costMin: null,
-            costMax: null,
-            page: null,
-          },
-        });
-      }, 0);
-    }
   }
 }

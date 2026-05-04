@@ -32,16 +32,8 @@
               <th>Nivel</th>
               <th>Proficiency Bonus</th>
               <th>Features Gained</th>
-              @if (dndClass()?.index === 'rogue') {
-                <th>Sneak Attack</th>
-              }
-              @for (column of counterColumns(); track column.id) {
+              @for (column of displayColumns(); track column.id) {
                 <th>{{ column.label }}</th>
-              }
-              @if (isSpellcasterClass()) {
-                @for (slotLevel of slotLevels; track slotLevel) {
-                  <th>{{ slotLevel }}</th>
-                }
               }
             </tr>
           </thead>
@@ -51,20 +43,12 @@
                 <td>{{ level.level }}</td>
                 <td>+{{ level.prof_bonus }}</td>
                 <td>
-                  @for (featureIndex of getFeatureIndices(level); track featureIndex; let last = $last) {
-                    <a (click)="scrollToFeature(featureIndex)" class="feature-link">{{ featureIndex }}</a>@if (!last) {, }
+                  @for (feature of getFeatureIndices(level); track feature.index; let last = $last) {
+                    <span (click)="scrollToFeature(feature.index)" class="feature-link">{{ feature.name }}</span>@if (!last) {, }
                   }
                 </td>
-                @for (column of counterColumns(); track column.id) {
-                  <td>{{ getCounterValue(level, column) }}</td>
-                }
-                @if (dndClass()?.index === 'rogue') {
-                  <td class="sneak-attack-dice">{{ getSneakAttackDice(level.level) }}</td>
-                }
-                @if (isSpellcasterClass()) {
-                  @for (slotLevel of slotLevels; track slotLevel) {
-                    <td>{{ getSpellSlot(level, slotLevel) || '-' }}</td>
-                  }
+                @for (column of displayColumns(); track column.id) {
+                  <td>{{ getColumnValue(level, column) }}</td>
                 }
               </tr>
             }

@@ -12,12 +12,11 @@ services:
     networks:
       - tfg_network
     # NO restart - querés control manual
-    # NO command - la API no arranca sola
     volumes:
       - ./API:/app
       - ./API/.env:/app/.env:ro
-    # Container queda vivo sin ejecutar nada (para que puedas entrar con docker exec)
-    command: tail -f /dev/null
+    # La API arranca directamente cuando el contenedor inicia
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   mongodb:
     image: mongo:7-jammy

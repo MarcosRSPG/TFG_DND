@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DndClass } from '../../interfaces/class';
 import { ClassesService } from '../../services/classes-service';
@@ -21,23 +21,37 @@ interface ClassFilters {
 })
 export class Classes implements OnInit {
   private readonly classesService = inject(ClassesService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   allClasses = signal<DndClass[]>([]);
   filteredClasses = signal<DndClass[]>([]);
   paginatedClasses = signal<DndClass[]>([]);
   currentPage = signal(1);
   readonly pageSize = 10;
+  
   filters = signal<ClassFilters>({
     searchName: '',
     isMagical: null,
     source: 'all',
   });
+
   private classIndexSet = new Set<string>();
   loading = signal(true);
   error = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
     try {
+      // 1. Load filters from URL if they exist
+      const params = this.route.snapshot.queryParamMap;
+      const initialFilters: ClassFilters = {
+        searchName: params.get('searchName') || '',
+        isMagical: params.get('isMagical') === 'true' ? true : (params.get('isMagical') === 'false' ? false : null),
+        source: params.get('source') || 'all',
+      };
+      this.filters.set(initialFilters);
+
+      // 2. Load data
       await this.classesService.getClasses((item) => {
         const indexKey = item.id || item.index || '';
         if (this.classIndexSet.has(indexKey)) {
@@ -63,6 +77,7 @@ export class Classes implements OnInit {
   onFilterChange(): void {
     this.currentPage.set(1);
     this.applyFilters();
+    this.updateUrl(); // <--- Update URL when filters change
   }
 
   onMagicalChange(checked: boolean): void {
@@ -74,13 +89,19 @@ export class Classes implements OnInit {
   private applyFilters(): void {
     const filters = this.filters();
     let filtered = this.allClasses();
+    
     if (filters.searchName.trim()) {
       const search = filters.searchName.toLowerCase();
       filtered = filtered.filter((c) => c.name.toLowerCase().includes(search));
     }
+
     if (filters.isMagical !== null) {
       filtered = filtered.filter((c) => !!c.spellcasting === filters.isMagical);
     }
+
+    // Here you can add 'source' filtering if needed
+    // if (filters.source !== 'all') { ... }
+
     this.filteredClasses.set(filtered);
     this.updatePaginatedClasses();
   }
@@ -123,5 +144,17 @@ export class Classes implements OnInit {
     if (current < total - 2) pages.push(total);
 
     return pages;
+  }
+
+  private updateUrl(): void {
+    const filters = this.filters();
+    this.router.navigate([], {
+      queryParams: {
+        searchName: filters.searchName || null,
+        isMagical: filters.isMagical !== null ? filters.isMagical : null,
+        source: filters.source !== 'all' ? filters.source : null,
+      },
+      queryParamsHandling: 'merge', // Keep other params like 'section' from parent
+    });
   }
 }

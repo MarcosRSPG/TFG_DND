@@ -8,11 +8,11 @@ See `_shared/skill-resolver.md` for the full resolution protocol.
 
 | Trigger | Skill | Path |
 |---------|-------|------|
-| creating a GitHub issue, reporting a bug, or requesting a feature | issue-creation | C:\Users\informatica\.config\opencode\skills\issue-creation\SKILL.md |
-| creating a pull request, opening a PR, or preparing changes for review | branch-pr | C:\Users\informatica\.config\opencode\skills\branch-pr\SKILL.md |
-| writing Go tests, using teatest, or adding test coverage | go-testing | C:\Users\informatica\.config\opencode\skills\go-testing\SKILL.md |
-| user says "judgment day", "judgment-day", "review adversarial", "dual review", "doble review", "juzgar", "que lo juzguen" | judgment-day | C:\Users\informatica\.config\opencode\skills\judgment-day\SKILL.md |
-| user asks to create a new skill, add agent instructions, or document patterns for AI | skill-creator | C:\Users\informatica\.config\opencode\skills\skill-creator\SKILL.md |
+| creating a GitHub issue, reporting a bug, or requesting a feature | issue-creation | C:\Users\34652\.claude\skills\issue-creation\SKILL.md |
+| creating a pull request, opening a PR, or preparing changes for review | branch-pr | C:\Users\34652\.claude\skills\branch-pr\SKILL.md |
+| writing Go tests, using teatest, or adding test coverage | go-testing | C:\Users\34652\.claude\skills\go-testing\SKILL.md |
+| user says "judgment day", "judgment-day", "review adversarial", "dual review", "doble review", "juzgar", "que lo juzguen" | judgment-day | C:\Users\34652\.claude\skills\judgment-day\SKILL.md |
+| user asks to create a new skill, add agent instructions, or document patterns for AI | skill-creator | C:\Users\34652\.config\opencode\skills\skill-creator\SKILL.md |
 
 ## Compact Rules
 
@@ -61,6 +61,6 @@ Pre-digested rules per skill. Delegators copy matching blocks into sub-agent pro
 
 | File | Path | Notes |
 |------|------|-------|
-| AGENTS.md | C:\Users\informatica\Documents\TFG\TFG_DND\AGENTS.md | Project instructions: TFG_DND structure, Angular 21 + FastAPI, testing with Vitest, Prettier config, gotchas |
+| AGENTS.md | C:\Users\34652\Documents\TFG\TFG_DND\AGENTS.md | Project instructions: TFG_DND structure, Angular 21 + FastAPI, testing with Vitest, Prettier config, gotchas |
 
 Read the convention files listed above for project-specific patterns and rules. All referenced paths have been extracted — no need to read index files to discover more.
