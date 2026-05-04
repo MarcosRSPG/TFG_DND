@@ -1,0 +1,78 @@
+<mxfile host="app.diagrams.net" modified="2026-05-04T14:20:00.000Z" agent="5.0" version="24.0.0">
+  <diagram name="Sequence Diagram - Login (CU02)" id="secuencia-login">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Lifelines -->
+        <mxCell id="actor1" value="Usuario" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="50" width="100" height="400" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp1" value="Frontend (Angular)&#xa;AuthService" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="50" width="120" height="400" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp2" value="Backend (FastAPI)&#xa;(No JWT required)" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="500" y="50" width="120" height="400" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp3" value="MongoDB" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="700" y="50" width="100" height="400" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 1: User enters credentials -->
+        <mxCell id="msg1" value="1. Introduce email + contraseña" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="actor1" target="comp1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 2: Frontend sends POST /login -->
+        <mxCell id="msg2" value="2. POST /api/auth/login&#xa;{email, password}" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp1" target="comp2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 3: Backend queries MongoDB -->
+        <mxCell id="msg3" value="3. Busca usuario por email en MongoDB" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp2" target="comp3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 4: MongoDB returns user -->
+        <mxCell id="msg4" value="4. Devuelve usuario (con hash de contraseña)" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;directional=1;" edge="1" parent="1" source="comp3" target="comp2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 5: Backend verifies password -->
+        <mxCell id="msg5" value="5. bcrypt.checkpw(password, hash)" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp2" target="comp2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 6: Backend generates JWT -->
+        <mxCell id="msg6" value="6. Genera JWT {sub: user_id, email, role}" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp2" target="comp2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 7: Backend returns JWT to Frontend -->
+        <mxCell id="msg7" value="7. Devuelve JWT (200 OK)" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;directional=1;" edge="1" parent="1" source="comp2" target="comp1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 8: Frontend saves JWT -->
+        <mxCell id="msg8" value="8. Guarda JWT en localStorage" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp1" target="comp1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 9: Frontend redirects -->
+        <mxCell id="msg9" value="9. Redirige a /home" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;directional=1;" edge="1" parent="1" source="comp1" target="actor1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Note -->
+        <mxCell id="note1" value="NOTA: Esta ruta NO tiene middleware de JWT&#xa;(el usuario aún no está autenticado)" style="uml.note;html=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;align=left;" vertex="1" parent="1">
+          <mxGeometry x="500" y="500" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,95 @@
+<mxfile host="app.diagrams.net" modified="2026-05-04T14:10:00.000Z" agent="5.0" version="24.0.0">
+  <diagram name="Use Case Diagram" id="casos-uso">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Actores -->
+        <mxCell id="actor1" value="Usuario No Registrado" style="uml.actor;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="300" width="80" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="actor2" value="Usuario Registrado&#xa;(Jugador / DM)" style="uml.actor;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="300" width="100" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="actor3" value="Administrador" style="uml.actor;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="500" y="300" width="80" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Casos de Uso - Autenticación -->
+        <mxCell id="uc01" value="CU01 - Registrar Usuario" style="uml.usecase;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edge1" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor1" target="uc01">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="uc02" value="CU02 - Iniciar Sesión" style="uml.usecase;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="100" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edge2" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor1" target="uc02">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge3" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor2" target="uc02">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="uc03" value="CU03 - Cerrar Sesión" style="uml.usecase;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="180" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edge4" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor2" target="uc03">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge5" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor3" target="uc03">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Casos de Uso - Catálogo -->
+        <mxCell id="uc04" value="CU04 - Listar Monstruos" style="uml.usecase;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="150" y="500" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edge6" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor2" target="uc04">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="uc05" value="CU05 - Buscar Monstruo" style="uml.usecase;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="310" y="500" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edge7" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor2" target="uc05">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="uc06" value="CU06 - Ver Detalle Monstruo" style="uml.usecase;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="470" y="500" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edge8" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor2" target="uc06">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Casos de Uso - IA -->
+        <mxCell id="uc08" value="CU08 - Generar Monstruo (IA)" style="uml.usecase;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="150" y="600" width="180" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="edge9" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor2" target="uc08">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge10" style="endArrow=none;startArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="actor3" target="uc08">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Herencia: Admin hereda de Usuario Registrado -->
+        <mxCell id="inherit1" value="«extend»" style="endArrow=none;startArrow=uml.generalization;html=1;dashed=1;strokeColor=#000000;" edge="1" parent="1" source="actor3" target="actor2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Nota -->
+        <mxCell id="note1" value="El Administrador hereda todos los casos de uso del Usuario Registrado + gestión adicional" style="uml.note;html=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;align=left;" vertex="1" parent="1">
+          <mxGeometry x="700" y="300" width="280" height="80" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,77 @@
+<mxfile host="app.diagrams.net" modified="2026-05-04T14:15:00.000Z" agent="5.0" version="24.0.0">
+  <diagram name="Sequence Diagram - Generate Monster (CU08)" id="secuencia-generar">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Lifelines -->
+        <mxCell id="actor1" value="Usuario" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="50" width="100" height="600" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp1" value="Frontend (Angular)" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="50" width="120" height="600" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp2" value="Backend (FastAPI)" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="500" y="50" width="120" height="600" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp3" value="MongoDB" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="700" y="50" width="100" height="600" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="comp4" value="IA (Qwen 72B)" style="uml.lifeline;html=1;verticalAlign=top;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="880" y="50" width="100" height="600" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 1: User types description -->
+        <mxCell id="msg1" value="1. Escribe descripción + clic Generar" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="actor1" target="comp1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 2: Frontend validates & sends POST -->
+        <mxCell id="msg2" value="2. POST /api/monsters/generate&#xa;(description, JWT)" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp1" target="comp2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 3: Backend verifies JWT -->
+        <mxCell id="msg3" value="3. Verifica JWT (middleware)&#xa;Extrae user_id, role" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp2" target="comp2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 4: Backend sends to IA -->
+        <mxCell id="msg4" value="4. Envía prompt estructurado a Qwen" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp2" target="comp4">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 5: IA processes and returns JSON -->
+        <mxCell id="msg5" value="5. Procesa y devuelve JSON&#xa;(nombre, cr, hp, ca, fuerza, ...)" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;directional=1;" edge="1" parent="1" source="comp4" target="comp2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 6: Backend validates with Pydantic -->
+        <mxCell id="msg6" value="6. Valida JSON con Pydantic v2" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp2" target="comp2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 7: Backend saves to MongoDB -->
+        <mxCell id="msg7" value="7. Guarda en MongoDB&#xa;(created_by: user_id)" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;" edge="1" parent="1" source="comp2" target="comp3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 8: Backend returns to Frontend -->
+        <mxCell id="msg8" value="8. Devuelve monstruo al Frontend" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;directional=1;" edge="1" parent="1" source="comp2" target="comp1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Step 9: Frontend displays -->
+        <mxCell id="msg9" value="9. Muestra ficha de monstruo&#xa;(Aceptar / Refinar / Descartar)" style="endArrow=block;startArrow=none;html=1;strokeColor=#000000;dashed=0;labelBackgroundColor=none;directional=1;" edge="1" parent="1" source="comp1" target="actor1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

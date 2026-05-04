@@ -1,0 +1,92 @@
+<mxfile host="app.diagrams.net" modified="2026-05-04T14:10:00.000Z" agent="5.0" version="24.0.0">
+  <diagram name="Class Diagram" id="clases">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Usuario -->
+        <mxCell id="class1" value="Usuario" style="uml.class;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="attr1" value="-id: ObjectId&#xa;-email: string&#xa;-passwordHash: string&#xa;-role: enum('user','admin')" style="uml.class.attr;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;" vertex="1" parent="class1">
+          <mxGeometry x="0" y="30" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="meth1" value="+login()&#xa;+logout()&#xa;+changeRole()" style="uml.class.oper;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;fontStyle=2;" vertex="1" parent="class1">
+          <mxGeometry x="0" y="130" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Personaje (PC) -->
+        <mxCell id="class2" value="Personaje (PC)" style="uml.class;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="200" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="attr2" value="-id: ObjectId&#xa;-nombre: string&#xa;-nivel: int&#xa;-fue: int&#xa;-des: int&#xa;-con: int&#xa;-int: int&#xa;-sab: int&#xa;-car: int" style="uml.class.attr;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;" vertex="1" parent="class2">
+          <mxGeometry x="0" y="30" width="200" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="meth2" value="+subirNivel()&#xa;+equipar()" style="uml.class.oper;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;fontStyle=2;" vertex="1" parent="class2">
+          <mxGeometry x="0" y="170" width="200" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Monstruo (NPC) -->
+        <mxCell id="class3" value="Monstruo (NPC)" style="uml.class;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="400" width="200" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="attr3" value="-id: ObjectId&#xa;-nombre: string&#xa;-cr: float&#xa;-hp: int&#xa;-ca: int&#xa;-tipo: enum()" style="uml.class.attr;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;" vertex="1" parent="class3">
+          <mxGeometry x="0" y="30" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="meth3" value="+atacar()&#xa;+recibirDaño()" style="uml.class.oper;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;fontStyle=2;" vertex="1" parent="class3">
+          <mxGeometry x="0" y="130" width="200" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Hechizo -->
+        <mxCell id="class4" value="Hechizo" style="uml.class;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="400" width="200" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="attr4" value="-id: ObjectId&#xa;-nombre: string&#xa;-nivel: int (0-9)&#xa;-escuela: enum()&#xa;-tiempoLanzamiento: string" style="uml.class.attr;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;" vertex="1" parent="class4">
+          <mxGeometry x="0" y="30" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="meth4" value="+lanzar()" style="uml.class.oper;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;fontStyle=2;" vertex="1" parent="class4">
+          <mxGeometry x="0" y="130" width="200" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- Campaña -->
+        <mxCell id="class5" value="Campaña" style="uml.class;html=1;boundedLbl=1;backgroundOutline=1;strokeColor=#bf360c;fillColor=#fff3e0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="250" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="attr5" value="-id: ObjectId&#xa;-nombre: string&#xa;-nivelMin: int&#xa;-nivelMax: int" style="uml.class.attr;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;" vertex="1" parent="class5">
+          <mxGeometry x="0" y="30" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="meth5" value="+agregarPersonaje()" style="uml.class.oper;html=1;align=left;spacingLeft=4;fillColor=none;strokeColor=none;fontStyle=2;" vertex="1" parent="class5">
+          <mxGeometry x="0" y="110" width="200" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- Relaciones -->
+        <!-- Usuario 1:N Personaje -->
+        <mxCell id="edge1" value="1 : N" style="endArrow=diamondThin;startArrow=none;html=1;strokeColor=#000000;dashed=0;" edge="1" parent="1" source="class1" target="class2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Usuario 1:N Campaña -->
+        <mxCell id="edge2" value="1 : N" style="endArrow=diamondThin;startArrow=none;html=1;strokeColor=#000000;dashed=0;" edge="1" parent="1" source="class1" target="class5">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Campaña N:M Personaje -->
+        <mxCell id="edge3" value="N : M" style="endArrow=diamondThin;startArrow=diamondThin;html=1;strokeColor=#000000;dashed=0;" edge="1" parent="1" source="class5" target="class2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Campaña N:M Monstruo (Encuentro) -->
+        <mxCell id="edge4" value="N : M" style="endArrow=diamondThin;startArrow=diamondThin;html=1;strokeColor=#000000;dashed=0;" edge="1" parent="1" source="class5" target="class3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Personaje N:M Hechizo -->
+        <mxCell id="edge5" value="N : M" style="endArrow=diamondThin;startArrow=diamondThin;html=1;strokeColor=#000000;dashed=0;" edge="1" parent="1" source="class2" target="class4">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
