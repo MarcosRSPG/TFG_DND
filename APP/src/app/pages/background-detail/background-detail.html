@@ -40,6 +40,18 @@
       </section>
     }
 
+    @if (item.feature?.is_variant && item.feature?.variant?.name) {
+      <section class="detail-block">
+        <h2>Variant Feature</h2>
+        <div class="feature-block">
+          <p><strong>{{ item.feature!.variant!.name }}</strong></p>
+          @for (line of item.feature!.variant!.desc ?? []; track $index) {
+            <p>{{ line }}</p>
+          }
+        </div>
+      </section>
+    }
+
     <section class="detail-block">
       <h2>Background Proficiencies and Equipment</h2>
       <div class="proficiencies-grid">

@@ -87,6 +87,6 @@ app.include_router(traits.router)
 app.include_router(features.router)
 
 # Static files — mounted last so API routes take priority
-_IMAGES_DIR = "images/images"
+_IMAGES_DIR = "assets/images"
 if os.path.exists(_IMAGES_DIR):
     app.mount("/images", StaticFiles(directory=_IMAGES_DIR), name="images")

@@ -26,7 +26,7 @@
       <h3>Starting Proficiencies</h3>
       <p class="hint">Select or search for proficiencies your character gains from this background.</p>
 
-      <div class="form-group">
+      <div class="form-group" (focusout)="onProficiencyGroupFocusOut($event)">
         <label for="proficiency-input">Add Proficiency</label>
         <input
           type="text"
@@ -34,7 +34,7 @@
           [ngModel]="proficiencyFilter()"
           (ngModelChange)="onProficiencyInputChange($event)"
           (focus)="onProficiencyFocus()"
-          (blur)="onProficiencyBlur()"
+          (keydown)="onProficiencyFilterKeydown($event)"
           [ngModelOptions]="{standalone: true}"
           placeholder="Type to search or click to see all..."
           class="search-input"
@@ -42,10 +42,11 @@
 
         @if (showProficiencyDropdown() && filteredProficiencies.length > 0) {
           <div class="filtered-dropdown">
-            @for (prof of filteredProficiencies; track prof.index) {
+            @for (prof of filteredProficiencies; track prof.index; let i = $index) {
               <button
                 type="button"
                 class="dropdown-item"
+                [class.highlighted]="proficiencyHighlight() === i"
                 (click)="addProficiency(prof.index)"
               >
                 {{ prof.name }}
@@ -98,24 +99,25 @@
             />
           </div>
 
-          <div class="form-group">
+          <div class="form-group" (focusout)="onProfChoiceGroupFocusOut($event)">
             <label>Search proficiencies</label>
             <input
               type="text"
               [value]="getProficiencyChoiceFilter()"
               (input)="setProficiencyChoiceFilter($any($event.target).value)"
               (focus)="openProficiencyChoiceDropdown()"
-              (blur)="closeProficiencyChoiceDropdown()"
+              (keydown)="onProficiencyChoiceFilterKeydown($event, groupIdx)"
               placeholder="Search proficiencies..."
               class="search-input"
             />
 
             @if (isProficiencyChoiceDropdownOpen() && getFilteredProficiencyChoices().length > 0) {
               <div class="filtered-dropdown">
-                @for (prof of getFilteredProficiencyChoices(); track prof.index) {
+                @for (prof of getFilteredProficiencyChoices(); track prof.index; let i = $index) {
                   <button
                     type="button"
                     class="dropdown-item"
+                    [class.highlighted]="profChoiceHighlight() === i"
                     (click)="addProficiencyChoiceOption(groupIdx, prof.index, prof.name)"
                   >
                     {{ prof.name }}
@@ -142,7 +144,7 @@
       <h3>Starting Equipment</h3>
       <p class="hint">Select or search for equipment items for this background.</p>
 
-      <div class="form-group">
+      <div class="form-group" (focusout)="onEquipmentGroupFocusOut($event)">
         <label for="equipment-input">Add Equipment</label>
         <input
           type="text"
@@ -150,7 +152,7 @@
           [ngModel]="itemsFilter()"
           (ngModelChange)="onEquipmentInputChange($event)"
           (focus)="onEquipmentFocus()"
-          (blur)="onEquipmentBlur()"
+          (keydown)="onEquipmentFilterKeydown($event)"
           [ngModelOptions]="{standalone: true}"
           placeholder="Type to search or click to see all..."
           class="search-input"
@@ -158,10 +160,11 @@
 
         @if (showEquipmentDropdown() && itemsOptions.length > 0) {
           <div class="filtered-dropdown">
-            @for (item of itemsOptions; track item['index']) {
+            @for (item of itemsOptions; track item['index']; let i = $index) {
               <button
                 type="button"
                 class="dropdown-item"
+                [class.highlighted]="equipmentHighlight() === i"
                 (click)="addEquipment(item)"
               >
                 {{ item.name }}
@@ -236,24 +239,25 @@
             />
           </div>
 
-          <div class="form-group">
+          <div class="form-group" (focusout)="onEquipChoiceGroupFocusOut($event)">
             <label>Search equipment</label>
             <input
               type="text"
               [value]="getEquipmentChoiceFilter()"
               (input)="setEquipmentChoiceFilter($any($event.target).value)"
               (focus)="openEquipmentChoiceDropdown()"
-              (blur)="closeEquipmentChoiceDropdown()"
+              (keydown)="onEquipmentChoiceFilterKeydown($event, groupIdx)"
               placeholder="Search equipment..."
               class="search-input"
             />
 
             @if (isEquipmentChoiceDropdownOpen() && getFilteredEquipmentOptions().length > 0) {
               <div class="filtered-dropdown">
-                @for (item of getFilteredEquipmentOptions(); track item['index']) {
+                @for (item of getFilteredEquipmentOptions(); track item['index']; let i = $index) {
                   <button
                     type="button"
                     class="dropdown-item"
+                    [class.highlighted]="equipChoiceHighlight() === i"
                     (click)="addEquipmentChoiceOption(groupIdx, item)"
                   >
                     {{ item.name }}

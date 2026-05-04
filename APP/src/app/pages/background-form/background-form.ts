@@ -85,6 +85,12 @@ export class BackgroundForm implements OnInit {
   equipmentChoiceFilter = signal('');
   equipmentChoiceDropdownOpen = signal(false);
 
+  // Keyboard highlight index for each dropdown (-1 = nothing highlighted)
+  proficiencyHighlight = signal(-1);
+  equipmentHighlight = signal(-1);
+  profChoiceHighlight = signal(-1);
+  equipChoiceHighlight = signal(-1);
+
   // Filtered items based on search
   get itemsOptions(): Item[] {
     const query = this.itemsFilter().toLowerCase();
@@ -120,26 +126,135 @@ export class BackgroundForm implements OnInit {
     this.showProficiencyDropdown.set(true);
   }
 
-  onProficiencyBlur(): void {
-    setTimeout(() => this.showProficiencyDropdown.set(false), 200);
+  onProficiencyGroupFocusOut(event: FocusEvent): void {
+    if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node)) {
+      this.showProficiencyDropdown.set(false);
+      this.proficiencyHighlight.set(-1);
+    }
   }
 
   onProficiencyInputChange(value: string): void {
     this.proficiencyFilter.set(value);
     this.showProficiencyDropdown.set(true);
+    this.proficiencyHighlight.set(-1);
   }
 
   onEquipmentFocus(): void {
     this.showEquipmentDropdown.set(true);
   }
 
-  onEquipmentBlur(): void {
-    setTimeout(() => this.showEquipmentDropdown.set(false), 200);
+  onEquipmentGroupFocusOut(event: FocusEvent): void {
+    if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node)) {
+      this.showEquipmentDropdown.set(false);
+      this.equipmentHighlight.set(-1);
+    }
   }
 
   onEquipmentInputChange(value: string): void {
     this.itemsFilter.set(value);
     this.showEquipmentDropdown.set(true);
+    this.equipmentHighlight.set(-1);
+  }
+
+  // ── Keyboard handlers para inputs de filtro ────────────────────────────────
+  // El foco NUNCA sale del input. Tab/ArrowDown mueve el highlight visual.
+
+  private moveHighlight(
+    current: number,
+    total: number,
+    direction: 1 | -1
+  ): number {
+    if (total === 0) return -1;
+    if (current < 0) return direction === 1 ? 0 : total - 1;
+    return (current + direction + total) % total;
+  }
+
+  onProficiencyFilterKeydown(event: KeyboardEvent): void {
+    const options = this.filteredProficiencies;
+    const open = this.showProficiencyDropdown() && options.length > 0;
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (!open) return;
+      const idx = this.proficiencyHighlight();
+      const target = options[idx >= 0 ? idx : 0];
+      if (target) this.addProficiency(target.index);
+    } else if ((event.key === 'Tab' || event.key === 'ArrowDown') && open) {
+      event.preventDefault();
+      this.proficiencyHighlight.set(this.moveHighlight(this.proficiencyHighlight(), options.length, 1));
+    } else if ((event.key === 'ArrowUp') && open) {
+      event.preventDefault();
+      this.proficiencyHighlight.set(this.moveHighlight(this.proficiencyHighlight(), options.length, -1));
+    } else if (event.key === 'Escape') {
+      this.showProficiencyDropdown.set(false);
+      this.proficiencyHighlight.set(-1);
+    }
+  }
+
+  onEquipmentFilterKeydown(event: KeyboardEvent): void {
+    const options = this.itemsOptions;
+    const open = this.showEquipmentDropdown() && options.length > 0;
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (!open) return;
+      const idx = this.equipmentHighlight();
+      const target = options[idx >= 0 ? idx : 0];
+      if (target) this.addEquipment(target);
+    } else if ((event.key === 'Tab' || event.key === 'ArrowDown') && open) {
+      event.preventDefault();
+      this.equipmentHighlight.set(this.moveHighlight(this.equipmentHighlight(), options.length, 1));
+    } else if (event.key === 'ArrowUp' && open) {
+      event.preventDefault();
+      this.equipmentHighlight.set(this.moveHighlight(this.equipmentHighlight(), options.length, -1));
+    } else if (event.key === 'Escape') {
+      this.showEquipmentDropdown.set(false);
+      this.equipmentHighlight.set(-1);
+    }
+  }
+
+  onProficiencyChoiceFilterKeydown(event: KeyboardEvent, groupIdx: number): void {
+    const options = this.getFilteredProficiencyChoices();
+    const open = this.isProficiencyChoiceDropdownOpen() && options.length > 0;
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (!open) return;
+      const idx = this.profChoiceHighlight();
+      const target = options[idx >= 0 ? idx : 0];
+      if (target) this.addProficiencyChoiceOption(groupIdx, target.index, target.name);
+    } else if ((event.key === 'Tab' || event.key === 'ArrowDown') && open) {
+      event.preventDefault();
+      this.profChoiceHighlight.set(this.moveHighlight(this.profChoiceHighlight(), options.length, 1));
+    } else if (event.key === 'ArrowUp' && open) {
+      event.preventDefault();
+      this.profChoiceHighlight.set(this.moveHighlight(this.profChoiceHighlight(), options.length, -1));
+    } else if (event.key === 'Escape') {
+      this.proficiencyChoiceDropdownOpen.set(false);
+      this.profChoiceHighlight.set(-1);
+    }
+  }
+
+  onEquipmentChoiceFilterKeydown(event: KeyboardEvent, groupIdx: number): void {
+    const options = this.getFilteredEquipmentOptions();
+    const open = this.isEquipmentChoiceDropdownOpen() && options.length > 0;
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (!open) return;
+      const idx = this.equipChoiceHighlight();
+      const target = options[idx >= 0 ? idx : 0];
+      if (target) this.addEquipmentChoiceOption(groupIdx, target);
+    } else if ((event.key === 'Tab' || event.key === 'ArrowDown') && open) {
+      event.preventDefault();
+      this.equipChoiceHighlight.set(this.moveHighlight(this.equipChoiceHighlight(), options.length, 1));
+    } else if (event.key === 'ArrowUp' && open) {
+      event.preventDefault();
+      this.equipChoiceHighlight.set(this.moveHighlight(this.equipChoiceHighlight(), options.length, -1));
+    } else if (event.key === 'Escape') {
+      this.equipmentChoiceDropdownOpen.set(false);
+      this.equipChoiceHighlight.set(-1);
+    }
   }
 
   addProficiency(index: string): void {
@@ -147,6 +262,8 @@ export class BackgroundForm implements OnInit {
       this.selectedProficiencies.update(list => [...list, index]);
     }
     this.proficiencyFilter.set('');
+    this.showProficiencyDropdown.set(false);
+    this.proficiencyHighlight.set(-1);
   }
 
   removeProficiency(index: number): void {
@@ -173,6 +290,8 @@ export class BackgroundForm implements OnInit {
       this.selectedEquipment.update(list => [...list, { index, name, quantity: 1 }]);
     }
     this.itemsFilter.set('');
+    this.showEquipmentDropdown.set(false);
+    this.equipmentHighlight.set(-1);
   }
 
   // Aliases for template
@@ -245,9 +364,8 @@ export class BackgroundForm implements OnInit {
 
   setProficiencyChoiceFilter(value: string): void {
     this.proficiencyChoiceFilter.set(value);
-    if (value) {
-      this.proficiencyChoiceDropdownOpen.set(true);
-    }
+    if (value) this.proficiencyChoiceDropdownOpen.set(true);
+    this.profChoiceHighlight.set(-1);
   }
 
   isProficiencyChoiceDropdownOpen(): boolean {
@@ -266,11 +384,11 @@ export class BackgroundForm implements OnInit {
     this.proficiencyChoiceDropdownOpen.set(true);
   }
 
-  closeProficiencyChoiceDropdown(): void {
-    setTimeout(() => {
+  onProfChoiceGroupFocusOut(event: FocusEvent): void {
+    if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node)) {
       this.proficiencyChoiceDropdownOpen.set(false);
       this.proficiencyChoiceFilter.set('');
-    }, 150);
+    }
   }
 
   addProficiencyChoiceOption(groupIndex: number, profIndex: string, profName: string): void {
@@ -286,6 +404,8 @@ export class BackgroundForm implements OnInit {
       return newGroups;
     });
     this.proficiencyChoiceFilter.set('');
+    this.proficiencyChoiceDropdownOpen.set(false);
+    this.profChoiceHighlight.set(-1);
   }
 
   removeProficiencyChoiceOption(groupIndex: number, optionIndex: number): void {
@@ -323,9 +443,8 @@ export class BackgroundForm implements OnInit {
 
   setEquipmentChoiceFilter(value: string): void {
     this.equipmentChoiceFilter.set(value);
-    if (value) {
-      this.equipmentChoiceDropdownOpen.set(true);
-    }
+    if (value) this.equipmentChoiceDropdownOpen.set(true);
+    this.equipChoiceHighlight.set(-1);
   }
 
   isEquipmentChoiceDropdownOpen(): boolean {
@@ -344,11 +463,11 @@ export class BackgroundForm implements OnInit {
     this.equipmentChoiceDropdownOpen.set(true);
   }
 
-  closeEquipmentChoiceDropdown(): void {
-    setTimeout(() => {
+  onEquipChoiceGroupFocusOut(event: FocusEvent): void {
+    if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node)) {
       this.equipmentChoiceDropdownOpen.set(false);
       this.equipmentChoiceFilter.set('');
-    }, 150);
+    }
   }
 
   addEquipmentChoiceOption(groupIndex: number, item: Item): void {
@@ -366,6 +485,8 @@ export class BackgroundForm implements OnInit {
       return newGroups;
     });
     this.equipmentChoiceFilter.set('');
+    this.equipmentChoiceDropdownOpen.set(false);
+    this.equipChoiceHighlight.set(-1);
   }
 
   removeEquipmentChoiceOption(groupIndex: number, itemIndex: number): void {
@@ -531,15 +652,22 @@ export class BackgroundForm implements OnInit {
 
       // Build feature with variant
       const feature = this.formData().feature;
+
+      const toDescArray = (val: string | string[] | undefined): string[] => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val.filter(d => d.trim());
+        return val.trim() ? [val.trim()] : [];
+      };
+
       const featureData: any = {
         name: feature?.name,
-        desc: feature?.desc?.filter((d: string) => d.trim()),
+        desc: toDescArray(feature?.desc as string | string[] | undefined),
         is_variant: feature?.is_variant,
       };
       if (feature?.is_variant && feature.variant?.name) {
         featureData.variant = {
           name: feature.variant.name,
-          desc: feature.variant.desc?.filter((d: string) => d.trim()),
+          desc: toDescArray(feature.variant.desc as string | string[] | undefined),
         };
       }
 
