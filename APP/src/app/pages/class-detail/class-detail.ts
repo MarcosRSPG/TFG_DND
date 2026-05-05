@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SubclassModalComponent } from '../../components/subclass-modal/subclass-modal';
 import { DndClass, DndClassLevel, LeveledFeature } from '../../interfaces/class';
 import { Subclass } from '../../interfaces/subclass';
 import { ClassesService } from '../../services/classes-service';
+import { ClassProgressionService } from '../../services/class-progression-service';
 import { AllClassesProgressionConfig, ProgressionColumn, ProgressionEntry } from '../../interfaces/class-progression-config';
 
 // Extended interface for internal use, supporting both JSON-driven and API-driven columns
@@ -30,8 +30,8 @@ interface DisplayColumn {
 })
 export class ClassDetail implements OnInit {
   private readonly classesService = inject(ClassesService);
+  private readonly classProgressionService = inject(ClassProgressionService);
   private readonly route = inject(ActivatedRoute);
-  private readonly http = inject(HttpClient);
 
   dndClass = signal<DndClass | null>(null);
   levels = signal<DndClassLevel[]>([]);
@@ -61,7 +61,7 @@ export class ClassDetail implements OnInit {
         this.classesService.getClassLevels(id),
         this.classesService.getSubclassesByClass(id),
         this.classesService.getClassFeatureProgression(id),
-        firstValueFrom(this.http.get<AllClassesProgressionConfig>('/assets/class-progression-config.json')),
+        this.classProgressionService.getAllProgressionConfigs(),
       ]);
 
       this.dndClass.set(classData);
@@ -70,8 +70,9 @@ export class ClassDetail implements OnInit {
       this.classFeatures.set(featureData);
       this.progressionConfig.set(config);
 
-      // Generate all columns based on JSON config
-      this.displayColumns.set(this.extractDisplayColumns(levelData, config, id));
+      // Use classData.index (e.g., "barbarian") to look up config, NOT the MongoDB _id
+      const className = classData?.index || id;
+      this.displayColumns.set(this.extractDisplayColumns(levelData, config, className));
 
     } catch (error) {
       console.error('Error loading class detail:', error);

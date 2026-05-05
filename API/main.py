@@ -69,7 +69,7 @@ async def read_root():
 async def health():
     return {"status": "ok"}
 
-from routes import login, users, backgrounds, items, monsters, spells, characters, options, races, subraces, classes, traits, features, subclasses
+from routes import login, users, backgrounds, items, monsters, spells, characters, options, races, subraces, classes, traits, features, subclasses, class_progression
 
 app.include_router(users.router)
 app.include_router(login.router)
@@ -85,6 +85,7 @@ app.include_router(classes.router)
 app.include_router(subclasses.router)
 app.include_router(traits.router)
 app.include_router(features.router)
+app.include_router(class_progression.router)
 
 # Static files — mounted last so API routes take priority
 _IMAGES_DIR = "assets/images"
