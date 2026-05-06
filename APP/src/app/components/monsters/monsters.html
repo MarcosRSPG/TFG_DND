@@ -102,6 +102,16 @@
           <p>{{ monster.size }} {{ monster.type }}</p>
           <p>CR: {{ monster.challenge_rating }} | HP: {{ monster.hit_points }}</p>
         </a>
+        @if (permissionsLoaded() && canEdit(monster)) {
+          <div class="entity-actions">
+            <button class="edit-btn" (click)="$event.stopPropagation(); navigateToEdit(monster)">
+               Edit
+             </button>
+            <button class="delete-btn" (click)="deleteMonster(monster)">
+              Delete
+            </button>
+          </div>
+        }
       </li>
     }
   </ul>

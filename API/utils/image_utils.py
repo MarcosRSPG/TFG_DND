@@ -5,6 +5,7 @@ Supports both JSON and multipart bodies transparently.
 
 import json
 import shutil
+import time
 from pathlib import Path
 
 from fastapi import Request
@@ -52,7 +53,9 @@ async def parse_form_or_json(request: Request, collection: str) -> dict:
             or data.get("name", "custom").lower().replace(" ", "-")
         )
         suffix = Path(image_field.filename).suffix or ".png"
-        filename = f"{index}{suffix}"
+        # Include timestamp so each upload gets a unique URL → browser cache never stale
+        timestamp = int(time.time())
+        filename = f"{index}-{timestamp}{suffix}"
 
         images_dir = Path(f"assets/images/{collection}")
         images_dir.mkdir(parents=True, exist_ok=True)

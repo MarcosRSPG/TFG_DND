@@ -10,8 +10,8 @@ import { MagicItem } from '../../interfaces/items/magic-item';
 import { Tool } from '../../interfaces/items/tool';
 import { Mount } from '../../interfaces/items/mount';
 import { ItemsService, ItemType, ItemSpecific } from '../../services/items-service';
+import { LoginService } from '../../services/login-service';
 import { FilterModalComponent } from '../filter-modal/filter-modal';
-
 
 interface ItemFilters {
   searchName: string;
@@ -34,10 +34,16 @@ interface ItemFilters {
 })
 export class Items implements OnInit {
   private readonly itemsService = inject(ItemsService);
+  private readonly loginService = inject(LoginService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
   @ViewChild('typesModal') typesModal!: FilterModalComponent;
+
+  // 🔹 User info for permissions
+  userId = signal<string | null>(null);
+  userRole = signal<string | null>(null);
+  permissionsLoaded = signal(false);
 
   allItems = signal<Item[]>([]);
   filteredItems = signal<Item[]>([]);
@@ -127,7 +133,52 @@ export class Items implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.loadFiltersFromUrl();
+
+    // Load user info for permissions FIRST
+    this.userId.set(await this.loginService.getUserId());
+    this.userRole.set(await this.loginService.getUserRole());
+    
+    // Set permissionsLoaded BEFORE loading items so buttons render correctly
+    this.permissionsLoaded.set(true);
+
     await this.loadItems();
+  }
+
+  canEdit(item: Item): boolean {
+    const currentUserId = this.userId();
+    const role = this.userRole();
+
+    // Admin can edit everything (including official items without created_by)
+    if (role === 'admin') return true;
+
+    // Creator can edit their own items
+    if (currentUserId && (item as any).created_by && currentUserId === (item as any).created_by) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async deleteItem(item: Item): Promise<void> {
+    if (!confirm(`Are you sure you want to delete ${item.name}?`)) {
+      return;
+    }
+
+    try {
+      const itemType = this.itemsService.inferType(item);
+        // Use MongoDB id first (ObjectId required by PUT/DELETE)
+        const itemId = item['id'] || item['index'] || '';
+      await this.itemsService.delete(itemId, itemType || undefined);
+      // Remove from lists
+      const currentAll = this.allItems();
+      const currentFiltered = this.filteredItems();
+      this.allItems.set(currentAll.filter(i => i !== item));
+      this.filteredItems.set(currentFiltered.filter(i => i !== item));
+      this.updatePaginatedItems();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      alert('Failed to delete item');
+    }
   }
 
   async loadItems(): Promise<void> {
@@ -254,7 +305,8 @@ export class Items implements OnInit {
   }
 
   getIdentifier(item: Item): string {
-    return this.itemsService.getIdentifier(item);
+    // Use D&D index (e.g., "abacus") - that's what the backend expects
+    return item['index'] || (item as any).id || (item as any)['_id'] || '';
   }
 
   getType(item: Item): string | null {
@@ -308,6 +360,15 @@ export class Items implements OnInit {
   navigateToCreate(): void {
     if (this.selectedCreateType) {
       this.router.navigate(['/items', this.selectedCreateType, 'new']);
+    }
+  }
+
+  navigateToEdit(item: Item): void {
+    const itemType = this.itemsService.inferType(item);
+    // Use MongoDB id first (ObjectId required by PUT/DELETE), fall back to index
+    const itemId = item['id'] || item['index'] || '';
+    if (itemType && itemId) {
+      this.router.navigate(['/items', itemType, 'edit', itemId]);
     }
   }
 }

@@ -37,11 +37,13 @@ export class MonstersService {
         })
       );
 
+      console.log('DEBUG getMonsters - response:', monsters);
       monsters.sort((a, b) => a.name.localeCompare(b.name));
       this._monsters.set([...monsters]);
 
       return monsters;
     } catch (err) {
+      console.error('DEBUG getMonsters - error:', err);
       this._error.set('Failed to load monsters');
       return [];
     } finally {
@@ -58,22 +60,36 @@ export class MonstersService {
   }
 
   async create(monster: Partial<Monster> | FormData): Promise<Monster> {
-    const isFormData = monster instanceof FormData;
-    
-    if (isFormData) {
-      return firstValueFrom(
-        this.http.post<Monster>(`${this.apiUrl}/monsters`, monster)
-      ) as Promise<Monster>;
-    } else {
-      return firstValueFrom(
-        this.http.post<Monster>(`${this.apiUrl}/monsters`, monster, { headers: this.buildHeaders() })
-      );
-    }
+    // buildHeaders() no incluye Content-Type, así el browser puede setear multipart/form-data con boundary
+    return firstValueFrom(
+      this.http.post<Monster>(`${this.apiUrl}/monsters`, monster, { headers: this.buildHeaders() })
+    ) as Promise<Monster>;
+  }
+
+  async update(id: string, monster: Partial<Monster> | FormData): Promise<Monster> {
+    // buildHeaders() no incluye Content-Type, así el browser puede setear multipart/form-data con boundary
+    return firstValueFrom(
+      this.http.put<Monster>(`${this.apiUrl}/monsters/${id}`, monster, { headers: this.buildHeaders() })
+    ) as Promise<Monster>;
+  }
+
+  async delete(id: string): Promise<void> {
+    return firstValueFrom(
+      this.http.delete<void>(`${this.apiUrl}/monsters/${id}`, { headers: this.buildHeaders() })
+    );
   }
 
   private buildHeaders(): { [header: string]: string } {
-    return {
+    const headers: { [header: string]: string } = {
       'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),
     };
+    
+    // Include user JWT if available
+    const userToken = localStorage.getItem('token');
+    if (userToken) {
+      headers['Authorization'] = `Bearer ${userToken}`;
+    }
+    
+    return headers;
   }
 }

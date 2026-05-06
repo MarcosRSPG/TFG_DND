@@ -38,38 +38,87 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/monster-form/monster-form').then(m => m.MonsterForm),
     title: 'Create Monster',
   },
-  // Item create routes - one per type
-  {
-    path: 'items/adventuringgear/new',
-    loadComponent: () => import('./pages/item-forms/adventuring-gear-form/adventuring-gear-form').then(m => m.AdventuringGearForm),
-    title: 'Create Adventuring Gear',
-  },
-  {
-    path: 'items/armor/new',
-    loadComponent: () => import('./pages/item-forms/armor-form/armor-form').then(m => m.ArmorForm),
-    title: 'Create Armor',
-  },
-  {
-    path: 'items/weapon/new',
-    loadComponent: () => import('./pages/item-forms/weapon-form/weapon-form').then(m => m.WeaponForm),
-    title: 'Create Weapon',
-  },
-  {
-    path: 'items/magicitem/new',
-    loadComponent: () => import('./pages/item-forms/magic-item-form/magic-item-form').then(m => m.MagicItemForm),
-    title: 'Create Magic Item',
-  },
-  {
-    path: 'items/tool/new',
-    loadComponent: () => import('./pages/item-forms/tool-form/tool-form').then(m => m.ToolForm),
-    title: 'Create Tool',
-  },
-  {
-    path: 'items/mount/new',
-    loadComponent: () => import('./pages/item-forms/mount-form/mount-form').then(m => m.MountForm),
-    title: 'Create Mount/Vehicle',
-  },
-  // Detail routes with parameters (must come AFTER specific routes)
+   // Item create routes - one per type
+   {
+     path: 'items/adventuringgear/new',
+     loadComponent: () => import('./pages/item-forms/adventuring-gear-form/adventuring-gear-form').then(m => m.AdventuringGearForm),
+     title: 'Create Adventuring Gear',
+   },
+   {
+     path: 'items/armor/new',
+     loadComponent: () => import('./pages/item-forms/armor-form/armor-form').then(m => m.ArmorForm),
+     title: 'Create Armor',
+   },
+   {
+     path: 'items/weapon/new',
+     loadComponent: () => import('./pages/item-forms/weapon-form/weapon-form').then(m => m.WeaponForm),
+     title: 'Create Weapon',
+   },
+   {
+     path: 'items/magicitem/new',
+     loadComponent: () => import('./pages/item-forms/magic-item-form/magic-item-form').then(m => m.MagicItemForm),
+     title: 'Create Magic Item',
+   },
+   {
+     path: 'items/tool/new',
+     loadComponent: () => import('./pages/item-forms/tool-form/tool-form').then(m => m.ToolForm),
+     title: 'Create Tool',
+   },
+   {
+     path: 'items/mount/new',
+     loadComponent: () => import('./pages/item-forms/mount-form/mount-form').then(m => m.MountForm),
+     title: 'Create Mount/Vehicle',
+   },
+
+   // Edit routes - MUST come before detail routes
+   {
+     path: 'backgrounds/edit/:id',
+     loadComponent: () => import('./pages/background-form/background-form').then(m => m.BackgroundForm),
+     title: 'Edit Background',
+   },
+   {
+     path: 'spells/edit/:id',
+     loadComponent: () => import('./pages/spell-form/spell-form').then(m => m.SpellForm),
+     title: 'Edit Spell',
+   },
+   {
+     path: 'monsters/edit/:id',
+     loadComponent: () => import('./pages/monster-form/monster-form').then(m => m.MonsterForm),
+     title: 'Edit Monster',
+   },
+   // Item edit routes - one per type
+   {
+     path: 'items/adventuringgear/edit/:id',
+     loadComponent: () => import('./pages/item-forms/adventuring-gear-form/adventuring-gear-form').then(m => m.AdventuringGearForm),
+     title: 'Edit Adventuring Gear',
+   },
+   {
+     path: 'items/armor/edit/:id',
+     loadComponent: () => import('./pages/item-forms/armor-form/armor-form').then(m => m.ArmorForm),
+     title: 'Edit Armor',
+   },
+   {
+     path: 'items/weapon/edit/:id',
+     loadComponent: () => import('./pages/item-forms/weapon-form/weapon-form').then(m => m.WeaponForm),
+     title: 'Edit Weapon',
+   },
+   {
+     path: 'items/magicitem/edit/:id',
+     loadComponent: () => import('./pages/item-forms/magic-item-form/magic-item-form').then(m => m.MagicItemForm),
+     title: 'Edit Magic Item',
+   },
+   {
+     path: 'items/tool/edit/:id',
+     loadComponent: () => import('./pages/item-forms/tool-form/tool-form').then(m => m.ToolForm),
+     title: 'Edit Tool',
+   },
+   {
+     path: 'items/mount/edit/:id',
+     loadComponent: () => import('./pages/item-forms/mount-form/mount-form').then(m => m.MountForm),
+     title: 'Edit Mount/Vehicle',
+   },
+
+   // Detail routes with parameters (must come AFTER specific routes)
   {
     path: 'races/:id',
     loadComponent: () => import('./pages/race-detail/race-detail').then(m => m.RaceDetail),

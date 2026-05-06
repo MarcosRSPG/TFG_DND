@@ -308,7 +308,8 @@
         <label for="feature-desc">Feature Description</label>
         <textarea
           id="feature-desc"
-          [(ngModel)]="formData().feature!.desc"
+          [ngModel]="featureDescString()"
+          (ngModelChange)="featureDescString.set($event)"
           name="featureDesc"
           rows="4"
           placeholder="Describe what this feature does..."
@@ -342,7 +343,8 @@
           <label for="variant-desc">Variant Description</label>
           <textarea
             id="variant-desc"
-            [(ngModel)]="formData().feature!.variant!.desc"
+            [ngModel]="variantDescString()"
+            (ngModelChange)="variantDescString.set($event)"
             name="variantDesc"
             rows="4"
             placeholder="Describe the variant..."
@@ -446,7 +448,7 @@
     <div class="form-actions">
       <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
       <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? 'Creating...' : 'Create Background' }}
+        {{ isSubmitting() ? (isEditMode() ? 'Updating...' : 'Creating...') : (isEditMode() ? 'Update Background' : 'Create Background') }}
       </button>
     </div>
   </form>

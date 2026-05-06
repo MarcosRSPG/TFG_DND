@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Spell } from '../../interfaces/spell';
 import { SpellsService } from '../../services/spells-service';
 import {
@@ -10,6 +10,7 @@ import {
   DndClass,
 } from '../../services/dnd-options-service';
 import { VikingCheck } from '../../components/viking-check/viking-check';
+import { environment } from '../../../environments/environment';
 
 type CastingUnit = 'action' | 'bonus_action' | 'reaction' | 'other';
 type RangeUnit = 'feet' | 'touch' | 'self';
@@ -34,6 +35,7 @@ export class SpellForm implements OnInit {
   private readonly spellsService = inject(SpellsService);
   private readonly dndOptions = inject(DndOptionsService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   isEditMode = signal(false);
   isSubmitting = signal(false);
@@ -152,6 +154,7 @@ export class SpellForm implements OnInit {
 
   // Image upload
   imagePreview: string | null = null;
+  originalImageUrl: string | null = null;
   selectedFile: File | null = null;
 
   // Search queries (for autocomplete)
@@ -233,6 +236,119 @@ export class SpellForm implements OnInit {
     this.dndOptions.loadSchools();
     this.dndOptions.loadClasses();
     this.dndOptions.loadSubclasses();
+
+    // Detect edit mode via route param
+    const spellId = this.route.snapshot.paramMap.get('id');
+    if (spellId) {
+      this.isEditMode.set(true);
+      this.loadSpellData(spellId);
+    }
+  }
+
+  private async loadSpellData(id: string): Promise<void> {
+    try {
+      const spell = await this.spellsService.getSpell(id);
+
+      // Update main formData
+      this.formData.update(d => ({
+        ...d,
+        name: spell.name || '',
+        desc: Array.isArray(spell.desc) ? spell.desc : (spell.desc ? [spell.desc as unknown as string] : ['']),
+        higher_level: spell.higher_level || [],
+        material: spell.material || '',
+        ritual: spell.ritual || false,
+        concentration: spell.concentration || false,
+        level: spell.level ?? 0,
+        school: spell.school,
+        classes: spell.classes || [],
+        subclasses: spell.subclasses || [],
+        damage: spell.damage || {},
+        dc: spell.dc || {},
+        area_of_effect: spell.area_of_effect || { type: 'sphere', size: 0 },
+      }));
+
+      // Parse casting_time → UI signals
+      const ct = spell.casting_time || '';
+      if (ct.toLowerCase().includes('bonus action') || ct.toLowerCase().includes('bonus_action')) {
+        this.castingTimeUnit.set('bonus_action');
+        this.castingTimeNumber.set(1);
+      } else if (ct.toLowerCase().includes('reaction')) {
+        this.castingTimeUnit.set('reaction');
+        this.castingTimeNumber.set(1);
+      } else if (ct.toLowerCase().includes('action')) {
+        const m = ct.match(/^(\d+)/);
+        this.castingTimeUnit.set('action');
+        this.castingTimeNumber.set(m ? parseInt(m[1]) : 1);
+      } else {
+        this.castingTimeUnit.set('other');
+        this.castingTimeOtherText.set(ct);
+      }
+
+      // Parse range → UI signals
+      const rng = spell.range || '';
+      if (rng.toLowerCase() === 'self') {
+        this.rangeUnit.set('self');
+      } else if (rng.toLowerCase() === 'touch') {
+        this.rangeUnit.set('touch');
+      } else {
+        const m = rng.match(/^(\d+)/);
+        this.rangeUnit.set('feet');
+        this.rangeNumber.set(m ? parseInt(m[1]) : 0);
+      }
+
+      // Parse duration → UI signals
+      const dur = spell.duration || '';
+      if (dur.toLowerCase() === 'instantaneous') {
+        this.durationUnit.set('instantaneous');
+      } else if (dur.toLowerCase().includes('up to')) {
+        this.durationUnit.set('up_to');
+        const m = dur.match(/(\d+)\s*minute/i);
+        this.durationUpToMinutes.set(m ? parseInt(m[1]) : 0);
+      } else if (dur.toLowerCase().includes('minute')) {
+        this.durationUnit.set('minutes');
+        const m = dur.match(/^(\d+)/);
+        this.durationNumber.set(m ? parseInt(m[1]) : 1);
+      } else if (dur.toLowerCase().includes('hour')) {
+        this.durationUnit.set('hours');
+        const m = dur.match(/^(\d+)/);
+        this.durationNumber.set(m ? parseInt(m[1]) : 1);
+      } else if (dur.toLowerCase().includes('day')) {
+        this.durationUnit.set('days');
+        const m = dur.match(/^(\d+)/);
+        this.durationNumber.set(m ? parseInt(m[1]) : 1);
+      }
+
+      // Parse components
+      const comps = spell.components || [];
+      this.hasVerbal.set(comps.includes('V'));
+      this.hasSomatic.set(comps.includes('S'));
+      this.hasMaterial.set(comps.includes('M'));
+
+      // Parse damage
+      const dmgType = (spell.damage as any)?.damage_type?.index;
+      if (dmgType) {
+        this.hasDamage.set(true);
+        this.selectedDamageTypes.set([dmgType]);
+      }
+
+      // AoE
+      if (spell.area_of_effect && spell.area_of_effect.size > 0) {
+        this.hasAoE.set(true);
+        this.rangeAoESize.set(spell.area_of_effect.size);
+        this.rangeAoEType.set(spell.area_of_effect.type as AoEUnit);
+      }
+
+      // Load existing image preview
+      if (spell.image) {
+        this.imagePreview = spell.image.startsWith('http')
+          ? spell.image
+          : `${environment.API_URL}${spell.image}`;
+        this.originalImageUrl = this.imagePreview;
+      }
+    } catch (err) {
+      console.error('Error loading spell data:', err);
+      this.error.set('Failed to load spell data');
+    }
   }
 
   onComponentChange(component: string, checked: boolean): void {
@@ -465,19 +581,31 @@ export class SpellForm implements OnInit {
         dc: Object.keys(dcObj).length > 0 ? dcObj : undefined,
       };
 
-      if (this.selectedFile) {
-        const formData = this.buildFormData();
-        await this.spellsService.create(formData);
+      if (this.isEditMode()) {
+        const spellId = this.route.snapshot.paramMap.get('id') || '';
+        if (this.selectedFile) {
+          const formData = this.buildFormData();
+          await this.spellsService.update(spellId, formData);
+        } else {
+          await this.spellsService.update(spellId, data);
+        }
       } else {
-        await this.spellsService.create(data);
+        if (this.selectedFile) {
+          const formData = this.buildFormData();
+          await this.spellsService.create(formData);
+        } else {
+          await this.spellsService.create(data);
+        }
       }
 
       this.router.navigate(['/manual'], {
         queryParams: { section: 'spells' },
       });
     } catch (err) {
-      console.error('Error creating spell:', err);
-      this.error.set('Error creating spell. Please try again.');
+      console.error('Error creating/updating spell:', err);
+      this.error.set(
+        this.isEditMode() ? 'Error updating spell. Please try again.' : 'Error creating spell. Please try again.'
+      );
     } finally {
       this.isSubmitting.set(false);
     }
@@ -499,6 +627,13 @@ export class SpellForm implements OnInit {
       };
       reader.readAsDataURL(this.selectedFile);
     }
+  }
+
+  revertImage(): void {
+    this.selectedFile = null;
+    this.imagePreview = this.originalImageUrl;
+    const input = document.getElementById('spell-image') as HTMLInputElement | null;
+    if (input) input.value = '';
   }
 
   private buildFormData(): FormData {

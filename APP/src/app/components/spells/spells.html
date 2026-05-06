@@ -109,7 +109,7 @@
   <ul class="entity-list" aria-label="List of spells">
     @for (spell of paginatedSpells(); track getIdentifier(spell)) {
       <li class="entity-item">
-        <a [routerLink]="['/spells', getIdentifier(spell)]" class="entity-link">
+        <a [routerLink]="['/spells', spell.id || spell.index]" class="entity-link">
           <h3>{{ spell.name }}</h3>
           <div class="spell-chips">
             <span class="spell-chip spell-chip--level">Lvl {{ spell.level }}</span>
@@ -120,6 +120,16 @@
           <p>School: {{ spell.school?.name || 'Unknown' }}</p>
           <p>Concentration: {{ spell.concentration ? 'Yes' : 'No' }}</p>
         </a>
+    @if (permissionsLoaded() && canEdit(spell)) {
+          <div class="entity-actions">
+            <button class="edit-btn" (click)="$event.stopPropagation(); navigateToEdit(spell)">
+               Edit
+             </button>
+            <button class="delete-btn" (click)="deleteSpell(spell)">
+              Delete
+            </button>
+          </div>
+        }
       </li>
     }
   </ul>

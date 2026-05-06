@@ -15,8 +15,10 @@ services:
     volumes:
       - ./API:/app
       - ./API/.env:/app/.env:ro
-    # La API arranca directamente cuando el contenedor inicia
-    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    # Mantiene el contenedor vivo sin ejecutar nada (tty + stdin_open)
+    # La API NO arranca sola - vos la lanzás manualmente
+    tty: true
+    stdin_open: true
 
   mongodb:
     image: mongo:7-jammy

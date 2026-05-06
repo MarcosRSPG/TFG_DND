@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Item } from '../../../interfaces/item';
 import { ItemsService } from '../../../services/items-service';
 
@@ -15,7 +15,9 @@ import { ItemsService } from '../../../services/items-service';
 export class ToolForm implements OnInit {
   private readonly itemsService = inject(ItemsService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
+  isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
 
@@ -26,6 +28,9 @@ export class ToolForm implements OnInit {
     weight: 0,
     tool_category: '',
   });
+
+  // Separate string for textarea
+  descString = signal('');
 
   // Tool categories
   toolCategories = [
@@ -38,15 +43,46 @@ export class ToolForm implements OnInit {
   // Cost units
   costUnits = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const itemId = this.route.snapshot.paramMap.get('id');
+    if (itemId) {
+      this.isEditMode.set(true);
+      this.loadItemData(itemId);
+    }
+  }
+
+  private async loadItemData(id: string): Promise<void> {
+    try {
+      const item = await this.itemsService.getItem(id, 'tool');
+      this.formData.update(d => ({
+        ...d,
+        name: item.name || '',
+        desc: item.desc || [],
+        cost: item.cost || { quantity: 0, unit: 'gp' },
+        weight: item.weight ?? 0,
+        tool_category: item.tool_category || '',
+      }));
+
+      // Convert desc array to string for textarea
+      const desc = item.desc || [];
+      this.descString.set(Array.isArray(desc) ? desc.join('\n\n') : '');
+    } catch (error) {
+      console.error('Error loading tool data:', error);
+      this.error.set('Failed to load tool data');
+    }
+  }
 
   async onSubmit(): Promise<void> {
     this.isSubmitting.set(true);
     this.error.set(null);
 
     try {
+      // Convert desc string to string[] for API
+      const descArray = this.descString().trim() ? this.descString().split('\n\n').filter(d => d.trim()) : [];
+
       const data: Partial<Item> = {
         ...this.formData(),
+        desc: descArray,
         equipment_category: {
           index: 'tool',
           name: 'Tool',
@@ -54,7 +90,12 @@ export class ToolForm implements OnInit {
         },
       };
 
-      await this.itemsService.create(data, 'tool');
+      if (this.isEditMode()) {
+        const itemId = this.route.snapshot.paramMap.get('id') || '';
+        await this.itemsService.update(itemId, data);
+      } else {
+        await this.itemsService.create(data, 'tool');
+      }
 
       this.router.navigate(['/manual'], {
         queryParams: { section: 'items' },

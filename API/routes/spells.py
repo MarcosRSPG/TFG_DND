@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, Body, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
 from services import spells_service
+from services.auth_service import get_current_user
 from models.Spell import Spell
 from utils.image_utils import parse_form_or_json
 
@@ -32,13 +34,14 @@ async def create_spell(request: Request) -> dict:
 
 
 @router.put("/{spell_id}")
-async def update_spell(spell_id: str, spell: dict = Body(...)) -> dict:
+async def update_spell(spell_id: str, request: Request, current_user: dict = Depends(get_current_user)) -> dict:
     try:
+        spell_data = await parse_form_or_json(request, "spells")
         existing = await spells_service.get_by_id(spell_id)
         if not existing:
             raise HTTPException(status_code=404, detail=f"Spell '{spell_id}' not found")
 
-        return await spells_service.update(spell_id, spell)
+        return await spells_service.update(spell_id, spell_data)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
     except HTTPException:
@@ -46,9 +49,8 @@ async def update_spell(spell_id: str, spell: dict = Body(...)) -> dict:
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @router.delete("/{spell_id}", status_code=204)
-async def delete_spell(spell_id: str):
+async def delete_spell(spell_id: str, current_user: dict = Depends(get_current_user)):
     success = await spells_service.delete(spell_id)
     if not success:
         raise HTTPException(status_code=404, detail=f"Spell '{spell_id}' not found")

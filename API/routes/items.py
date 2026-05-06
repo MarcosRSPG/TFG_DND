@@ -1,6 +1,7 @@
 import fastapi
-from fastapi import Body, Request
+from fastapi import Request, Depends
 from services import items_service
+from services.auth_service import get_current_user
 from utils.image_utils import parse_form_or_json
 
 router = fastapi.APIRouter(prefix="/items", tags=["items"])
@@ -39,10 +40,12 @@ async def create_item(request: Request, type: str = None):
 
 
 @router.put("/{id}", response_model_exclude_none=True)
-async def update_item(id: str, item: dict = Body(...), type: str = None):
-    return await items_service.update(id, item, type)
+async def update_item(id: str, request: Request, type: str = None, current_user: dict = Depends(get_current_user)):
+    image_dir = _TYPE_TO_IMAGE_DIR.get(type or "", "equipment")
+    item_data = await parse_form_or_json(request, image_dir)
+    return await items_service.update(id, item_data, type)
 
 
 @router.delete("/{id}")
-async def delete_item(id: str):
+async def delete_item(id: str, current_user: dict = Depends(get_current_user)):
     return await items_service.delete(id)

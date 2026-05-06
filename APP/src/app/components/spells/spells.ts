@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Spell } from '../../interfaces/spell';
 import { SpellsService } from '../../services/spells-service';
+import { LoginService } from '../../services/login-service';
 import { FilterModalComponent } from '../filter-modal/filter-modal';
 import { VikingCheck } from '../viking-check/viking-check';
 
@@ -34,8 +35,14 @@ export class Spells implements OnInit {
 
   // 🔹 Servicios
   private readonly spellsService = inject(SpellsService);
+  private readonly loginService = inject(LoginService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
+  // 🔹 User info for permissions
+  userId = signal<string | null>(null);
+  userRole = signal<string | null>(null);
+  permissionsLoaded = signal(false);
 
   // 🔹 ViewChild
   @ViewChild('schoolsModal') schoolsModal!: FilterModalComponent;
@@ -93,7 +100,48 @@ export class Spells implements OnInit {
       });
     });
 
+    // Load user info for permissions FIRST
+    this.userId.set(await this.loginService.getUserId());
+    this.userRole.set(await this.loginService.getUserRole());
+    
+    // Set permissionsLoaded BEFORE loading spells so buttons render correctly
+    this.permissionsLoaded.set(true);
+
     await this.loadSpells();
+  }
+
+  canEdit(spell: Spell): boolean {
+    const currentUserId = this.userId();
+    const role = this.userRole();
+
+    // Admin can edit everything (including official items without created_by)
+    if (role === 'admin') return true;
+
+    // Creator can edit their own items
+    if (currentUserId && spell.created_by && currentUserId === spell.created_by) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async deleteSpell(spell: Spell): Promise<void> {
+    if (!confirm(`Are you sure you want to delete ${spell.name}?`)) {
+      return;
+    }
+
+    try {
+      await this.spellsService.delete(spell.id || spell.index || '');
+      // Remove from lists
+      const currentAll = this.allSpells();
+      const currentFiltered = this.filteredSpells();
+      this.allSpells.set(currentAll.filter(s => s !== spell));
+      this.filteredSpells.set(currentFiltered.filter(s => s !== spell));
+      this.updatePaginatedSpells();
+    } catch (error) {
+      console.error('Error deleting spell:', error);
+      alert('Failed to delete spell');
+    }
   }
 
   async loadSpells(): Promise<void> {
@@ -297,10 +345,17 @@ export class Spells implements OnInit {
   // =========================
 
   getIdentifier(item: Spell): string {
-    return item.id || item.index || item.name?.toLowerCase().replace(/ /g, '-') || '';
+    // Use D&D index (e.g., "acid-arrow") - that's what the backend expects
+    return item.index || (item as any).id || (item as any)['_id'] || item.name?.toLowerCase().replace(/ /g, '-') || '';
   }
 
   navigateToCreate(): void {
     this.router.navigate(['/spells/new']);
+  }
+
+  navigateToEdit(spell: Spell): void {
+    // Use MongoDB id first (ObjectId required by PUT/DELETE), fall back to index
+    const spellId = spell.id || spell.index || '';
+    this.router.navigate(['/spells/edit', spellId]);
   }
 }

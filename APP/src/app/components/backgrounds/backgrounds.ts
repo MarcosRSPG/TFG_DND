@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Background, BackgroundEquipment } from '../../interfaces/background';
 import { BackgroundsService } from '../../services/backgrounds-service';
+import { LoginService } from '../../services/login-service';
 
 interface BackgroundFilters {
   searchName: string;
@@ -23,8 +24,16 @@ export class Backgrounds implements OnInit {
   // SERVICES
   // =========================
   private readonly backgroundsService = inject(BackgroundsService);
+  private readonly loginService = inject(LoginService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
+  // =========================
+  // USER INFO FOR PERMISSIONS
+  // =========================
+  userId = signal<string | null>(null);
+  userRole = signal<string | null>(null);
+  permissionsLoaded = signal(false);
 
   // =========================
   // STATE
@@ -60,7 +69,48 @@ export class Backgrounds implements OnInit {
       this.currentPage.set(Number(params['page']) || 1);
     });
 
+    // Load user info for permissions FIRST
+    this.userId.set(await this.loginService.getUserId());
+    this.userRole.set(await this.loginService.getUserRole());
+    
+    // Set permissionsLoaded BEFORE loading backgrounds so buttons render correctly
+    this.permissionsLoaded.set(true);
+
     await this.loadBackgrounds();
+  }
+
+  canEdit(background: Background): boolean {
+    const currentUserId = this.userId();
+    const role = this.userRole();
+
+    // Admin can edit everything (including official items without created_by)
+    if (role === 'admin') return true;
+
+    // Creator can edit their own items
+    if (currentUserId && background.created_by && currentUserId === background.created_by) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async deleteBackground(background: Background): Promise<void> {
+    if (!confirm(`Are you sure you want to delete ${background.name}?`)) {
+      return;
+    }
+
+    try {
+      await this.backgroundsService.delete(background.id || background.index || '');
+      // Remove from lists
+      const currentAll = this.allBackgrounds();
+      const currentFiltered = this.filteredBackgrounds();
+      this.allBackgrounds.set(currentAll.filter(b => b !== background));
+      this.filteredBackgrounds.set(currentFiltered.filter(b => b !== background));
+      this.updatePaginatedBackgrounds();
+    } catch (error) {
+      console.error('Error deleting background:', error);
+      alert('Failed to delete background');
+    }
   }
 
   async loadBackgrounds(): Promise<void> {
@@ -196,7 +246,8 @@ export class Backgrounds implements OnInit {
   // HELPERS
   // =========================
   getIdentifier(item: Background): string {
-    return item.id || item.name?.toLowerCase().replace(/ /g, '-') || '';
+    // Use D&D index - that's what the backend expects
+    return item.index || (item as any).id || (item as any)['_id'] || item.name?.toLowerCase().replace(/ /g, '-') || '';
   }
 
   getEquipmentLinks(equipment: BackgroundEquipment[]): { id: number, name: string, type: string, url: string }[] {
@@ -233,5 +284,13 @@ export class Backgrounds implements OnInit {
 
   navigateToCreate(): void {
     this.router.navigate(['/backgrounds/new']);
+  }
+
+  navigateToEdit(background: Background): void {
+    // Use MongoDB id first (ObjectId required by PUT/DELETE), fall back to index
+    const backgroundId = background.id || background.index || '';
+    if (backgroundId) {
+      this.router.navigate(['/backgrounds/edit', backgroundId]);
+    }
   }
 }

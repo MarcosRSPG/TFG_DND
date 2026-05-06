@@ -65,9 +65,37 @@ export class BackgroundsService {
     );
   }
 
+  async update(id: string, background: Partial<Background> | FormData): Promise<Background> {
+    const isFormData = background instanceof FormData;
+    
+    if (isFormData) {
+      return firstValueFrom(
+        this.http.put<Background>(`${this.apiUrl}/backgrounds/${id}`, background)
+      ) as Promise<Background>;
+    } else {
+      return firstValueFrom(
+        this.http.put<Background>(`${this.apiUrl}/backgrounds/${id}`, background, { headers: this.buildHeaders() })
+      );
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    return firstValueFrom(
+      this.http.delete<void>(`${this.apiUrl}/backgrounds/${id}`, { headers: this.buildHeaders() })
+    );
+  }
+
   private buildHeaders(): { [header: string]: string } {
-    return {
+    const headers: { [header: string]: string } = {
       'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),
     };
+    
+    // Include user JWT if available
+    const userToken = localStorage.getItem('token');
+    if (userToken) {
+      headers['Authorization'] = `Bearer ${userToken}`;
+    }
+    
+    return headers;
   }
 }

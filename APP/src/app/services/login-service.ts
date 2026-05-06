@@ -21,11 +21,38 @@ export class LoginService {
   readonly currentUser = this._currentUser.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
 
-  async getUserRole(): Promise<string | null> {
-    const token = this.getToken();
-    if (!token) return null;
-    const user = await this.verifyToken(token);
-    return user?.role ?? null;
+  async verifyToken(token: string) {
+    const hashedToken = this.tokenHashService.generateHash(this.apiToken);
+
+    console.log('DEBUG verifyToken - token exists:', !!token);
+    console.log('DEBUG verifyToken - apiUrl:', this.apiUrl);
+
+    try {
+      const data = await firstValueFrom(
+        this.http.post<any>(`${this.apiUrl}/auth/verify`, {}, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Token': hashedToken,
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      );
+
+      console.log('DEBUG verifyToken - FULL data:', JSON.stringify(data, null, 2));
+      console.log('DEBUG verifyToken - data.valid:', data?.valid);
+      console.log('DEBUG verifyToken - data.user:', JSON.stringify(data?.user, null, 2));
+      
+      if (data?.user) {
+        console.log('DEBUG verifyToken - user.user_id:', data.user.user_id);
+        console.log('DEBUG verifyToken - user.isAdmin:', data.user.isAdmin);
+        console.log('DEBUG verifyToken - user keys:', Object.keys(data.user));
+      }
+      
+      return data.valid ? data.user : null;
+    } catch (error) {
+      console.error('DEBUG verifyToken - error:', error);
+      return null;
+    }
   }
 
   async login(email: string, password: string) {
@@ -72,22 +99,6 @@ export class LoginService {
     }
   }
 
-  async verifyToken(token: string) {
-    const hashedToken = this.tokenHashService.generateHash(this.apiToken);
-
-    const data = await firstValueFrom(
-      this.http.post<any>(`${this.apiUrl}/auth/verify`, {}, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Token': hashedToken,
-          Authorization: `Bearer ${token}`,
-        },
-      })
-    );
-
-    return data.valid ? data.user : null;
-  }
-
   logout(): void {
     localStorage.removeItem('token');
     this._isLoggedIn.set(false);
@@ -101,9 +112,30 @@ export class LoginService {
 
   async getUserId(): Promise<string | null> {
     const token = this.getToken();
-    if (!token) return null;
+    if (!token) {
+      console.log('DEBUG getUserId - No token');
+      return null;
+    }
 
     const user = await this.verifyToken(token);
-    return user?._id ?? null;
+    console.log('DEBUG getUserId - user from verifyToken:', user);
+    console.log('DEBUG getUserId - user.user_id:', user?.user_id);
+    return user?.user_id ?? null;
+  }
+
+  async getUserRole(): Promise<string | null> {
+    const token = this.getToken();
+    if (!token) {
+      console.log('DEBUG getUserRole - No token');
+      return null;
+    }
+
+    const user = await this.verifyToken(token);
+    console.log('DEBUG getUserRole - user from verifyToken:', user);
+    // API returns `isAdmin: true`, not `role: 'admin'`
+    // Convert isAdmin boolean to role string
+    const role = user?.isAdmin ? 'admin' : 'user';
+    console.log('DEBUG getUserRole - computed role:', role);
+    return role;
   }
 }

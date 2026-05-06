@@ -124,9 +124,44 @@ export class ItemsService {
     }
   }
 
+  async update(id: string, item: Partial<ItemSpecific> | FormData, type?: ItemType): Promise<ItemSpecific> {
+    const isFormData = item instanceof FormData;
+    const url = type
+      ? `${this.apiUrl}/items/${id}?type=${type}`
+      : `${this.apiUrl}/items/${id}`;
+
+    if (isFormData) {
+      return firstValueFrom(
+        this.http.put<ItemSpecific>(url, item)
+      ) as Promise<ItemSpecific>;
+    } else {
+      return firstValueFrom(
+        this.http.put<ItemSpecific>(url, item, { headers: this.buildHeaders() })
+      );
+    }
+  }
+
+  async delete(id: string, type?: ItemType): Promise<void> {
+    const url = type
+      ? `${this.apiUrl}/items/${id}?type=${type}`
+      : `${this.apiUrl}/items/${id}`;
+
+    return firstValueFrom(
+      this.http.delete<void>(url, { headers: this.buildHeaders() })
+    );
+  }
+
   private buildHeaders(): { [header: string]: string } {
-    return {
+    const headers: { [header: string]: string } = {
       'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),
     };
+    
+    // Include user JWT if available
+    const userToken = localStorage.getItem('token');
+    if (userToken) {
+      headers['Authorization'] = `Bearer ${userToken}`;
+    }
+    
+    return headers;
   }
 }

@@ -1,5 +1,5 @@
 <div class="form-container">
-  <h2>Create Armor</h2>
+  <h2>{{ isEditMode() ? 'Edit' : 'Create' }} Armor</h2>
 
   @if (error()) {
     <p class="error-message">{{ error() }}</p>
@@ -136,7 +136,7 @@
     <div class="form-actions">
       <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
       <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? 'Creating...' : 'Create Armor' }}
+        {{ isSubmitting() ? (isEditMode() ? 'Updating...' : 'Creating...') : (isEditMode() ? 'Update Armor' : 'Create Armor') }}
       </button>
     </div>
   </form>

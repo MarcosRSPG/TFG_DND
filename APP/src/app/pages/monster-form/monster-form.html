@@ -100,9 +100,23 @@
           class="file-input"
         />
         @if (imagePreview) {
-          <div class="image-preview">
-            <img [src]="imagePreview" alt="Preview" class="preview-img" />
-          </div>
+          <figure class="image-preview-figure">
+            <img [src]="imagePreview" alt="Image preview" class="preview-img" />
+            <figcaption>
+              @if (selectedFile) {
+                Nueva imagen (pendiente de guardar)
+              } @else if (isEditMode()) {
+                Imagen actual — selecciona un archivo para reemplazarla
+              } @else {
+                Vista previa
+              }
+            </figcaption>
+          </figure>
+          @if (isEditMode() && selectedFile) {
+            <button type="button" class="revert-image-btn" (click)="revertImage()">
+              ✕ Descartar nueva imagen
+            </button>
+          }
         }
       </div>
     </section>
@@ -170,8 +184,9 @@
         @for (entry of speedEntries(); track $index; let idx = $index) {
           <div class="speed-entry-row">
             <select
-              [value]="entry.type"
-              (change)="updateSpeedType(idx, $any($event.target).value)"
+              [ngModel]="entry.type"
+              (ngModelChange)="updateSpeedType(idx, $event)"
+              [ngModelOptions]="{standalone: true}"
               class="speed-type-select"
             >
               @for (type of speedTypes; track type.value) {
@@ -642,7 +657,7 @@
     <footer class="form-actions">
       <button type="button" class="cancel-btn" (click)="cancel()">Cancel</button>
       <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? 'Creating...' : 'Create Monster' }}
+        {{ isSubmitting() ? (isEditMode() ? 'Updating...' : 'Creating...') : (isEditMode() ? 'Update Monster' : 'Create Monster') }}
       </button>
     </footer>
   </form>

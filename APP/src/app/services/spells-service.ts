@@ -63,22 +63,34 @@ export class SpellsService {
   }
 
   async create(spell: Partial<Spell> | FormData): Promise<Spell> {
-    const isFormData = spell instanceof FormData;
-    
-    if (isFormData) {
-      return firstValueFrom(
-        this.http.post<Spell>(`${this.apiUrl}/spells`, spell)
-      ) as Promise<Spell>;
-    } else {
-      return firstValueFrom(
-        this.http.post<Spell>(`${this.apiUrl}/spells`, spell, { headers: this.buildHeaders() })
-      );
-    }
+    return firstValueFrom(
+      this.http.post<Spell>(`${this.apiUrl}/spells`, spell, { headers: this.buildHeaders() })
+    ) as Promise<Spell>;
+  }
+
+  async update(id: string, spell: Partial<Spell> | FormData): Promise<Spell> {
+    return firstValueFrom(
+      this.http.put<Spell>(`${this.apiUrl}/spells/${id}`, spell, { headers: this.buildHeaders() })
+    ) as Promise<Spell>;
+  }
+
+  async delete(id: string): Promise<void> {
+    return firstValueFrom(
+      this.http.delete<void>(`${this.apiUrl}/spells/${id}`, { headers: this.buildHeaders() })
+    );
   }
 
   private buildHeaders(): { [header: string]: string } {
-    return {
+    const headers: { [header: string]: string } = {
       'X-API-Token': this.tokenHashService.generateHash(environment.API_TOKEN),
     };
+    
+    // Include user JWT if available
+    const userToken = localStorage.getItem('token');
+    if (userToken) {
+      headers['Authorization'] = `Bearer ${userToken}`;
+    }
+    
+    return headers;
   }
 }

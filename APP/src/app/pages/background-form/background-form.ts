@@ -27,7 +27,7 @@ export class BackgroundForm implements OnInit {
   isSubmitting = signal(false);
   error = signal<string | null>(null);
 
-// Form data
+  // Form data
   formData = signal<Partial<Background>>({
     name: '',
     starting_proficiencies: [],
@@ -43,6 +43,10 @@ export class BackgroundForm implements OnInit {
     bonds: { options: [] },
     flaws: { options: [] },
   });
+
+  // Separate strings for textareas (since textarea needs string, but API needs string[])
+  featureDescString = signal('');
+  variantDescString = signal('');
 
   // For proficiency selection
   selectedProficiencies = signal<string[]>([]);
@@ -103,6 +107,91 @@ export class BackgroundForm implements OnInit {
   ngOnInit(): void {
     this.dndOptions.loadProficiencies();
     this.loadItems();
+
+    // Check if we're in edit mode
+    const backgroundId = this.route.snapshot.paramMap.get('id');
+    if (backgroundId) {
+      this.isEditMode.set(true);
+      this.loadBackgroundData(backgroundId);
+    }
+  }
+
+  private async loadBackgroundData(id: string): Promise<void> {
+    try {
+      const background = await this.backgroundsService.getBackground(id);
+
+      // Update form data with background data
+      this.formData.update(d => ({
+        ...d,
+        name: background.name || '',
+        starting_proficiencies: background.starting_proficiencies || [],
+        starting_equipment: background.starting_equipment || [],
+        feature: background.feature ? {
+          name: background.feature.name || '',
+          desc: background.feature.desc || [],
+          is_variant: background.feature.is_variant || false,
+          variant: background.feature.variant ? {
+            name: background.feature.variant.name || '',
+            desc: background.feature.variant.desc || [],
+          } : undefined,
+        } : undefined,
+        personality_traits: background.personality_traits || { options: [] },
+        ideals: background.ideals || { options: [] },
+        bonds: background.bonds || { options: [] },
+        flaws: background.flaws || { options: [] },
+      }));
+
+      // Update UI signals
+      this.selectedProficiencies.set((background.starting_proficiencies || []).map((p: any) => p.index));
+      this.selectedEquipment.set(
+        (background.starting_equipment || []).map((e: any) => ({
+          index: e.equipment?.index || e.index || '',
+          name: e.equipment?.name || e.name || '',
+          quantity: e.quantity || 1,
+        }))
+      );
+
+      // Convert desc arrays to strings for textareas
+      const featureDesc = background.feature?.desc || [];
+      this.featureDescString.set(Array.isArray(featureDesc) ? featureDesc.join('\n\n') : '');
+
+      const variantDesc = background.feature?.variant?.desc || [];
+      this.variantDescString.set(Array.isArray(variantDesc) ? variantDesc.join('\n\n') : '');
+
+      // Parse traits/ideals/bonds/flaws — handles both formats:
+      // Custom format:    { options: string[] }
+      // D&D 5e API format: { from: { options: [{ string?: '...', desc?: '...' }] } }
+      const parseOptionGroup = (group: any): string[] => {
+        if (!group) return [];
+        // Custom format
+        if (Array.isArray(group.options) && group.options.length > 0) {
+          return (group.options as any[]).filter((o): o is string => typeof o === 'string');
+        }
+        // D&D 5e API nested format
+        if (group.from?.options && Array.isArray(group.from.options)) {
+          return (group.from.options as any[])
+            .map((o: any) => o.string || o.desc || '')
+            .filter((s: string) => s.length > 0);
+        }
+        return [];
+      };
+
+      const traits = parseOptionGroup(background.personality_traits);
+      this.personalityTraitsOptions.set(traits.length > 0 ? traits : ['']);
+
+      const ideals = parseOptionGroup(background.ideals);
+      this.idealsOptions.set(ideals.length > 0 ? ideals : ['']);
+
+      const bonds = parseOptionGroup(background.bonds);
+      this.bondsOptions.set(bonds.length > 0 ? bonds : ['']);
+
+      const flaws = parseOptionGroup(background.flaws);
+      this.flawsOptions.set(flaws.length > 0 ? flaws : ['']);
+
+    } catch (error) {
+      console.error('Error loading background data:', error);
+      this.error.set('Failed to load background data');
+    }
   }
 
   // Expose Array for template
@@ -650,28 +739,23 @@ export class BackgroundForm implements OnInit {
       const bondsOptions = this.bondsOptions().filter(o => o.trim());
       const flawsOptions = this.flawsOptions().filter(o => o.trim());
 
-      // Build feature with variant
+      // Build feature with variant - convert strings to string[]
       const feature = this.formData().feature;
-
-      const toDescArray = (val: string | string[] | undefined): string[] => {
-        if (!val) return [];
-        if (Array.isArray(val)) return val.filter(d => d.trim());
-        return val.trim() ? [val.trim()] : [];
-      };
-
+      
       const featureData: any = {
         name: feature?.name,
-        desc: toDescArray(feature?.desc as string | string[] | undefined),
+        desc: this.featureDescString().trim() ? this.featureDescString().split('\n\n').filter(d => d.trim()) : [],
         is_variant: feature?.is_variant,
       };
+      
       if (feature?.is_variant && feature.variant?.name) {
         featureData.variant = {
           name: feature.variant.name,
-          desc: toDescArray(feature.variant.desc as string | string[] | undefined),
+          desc: this.variantDescString().trim() ? this.variantDescString().split('\n\n').filter(d => d.trim()) : [],
         };
       }
 
-const data: Partial<Background> = {
+      const data: Partial<Background> = {
         ...this.formData(),
         feature: featureData,
         starting_proficiencies: startingProficiencies as any,
@@ -690,7 +774,13 @@ const data: Partial<Background> = {
         }
       };
 
-      await this.backgroundsService.create(data);
+      if (this.isEditMode()) {
+        // Get the background ID from route
+        const backgroundId = this.route.snapshot.paramMap.get('id') || '';
+        await this.backgroundsService.update(backgroundId, data);
+      } else {
+        await this.backgroundsService.create(data);
+      }
 
       // Navigate back to backgrounds list
       this.router.navigate(['/manual'], {

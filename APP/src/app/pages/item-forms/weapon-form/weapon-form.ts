@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { Item, ResourceReference } from '../../../interfaces/item';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Item } from '../../../interfaces/item';
 import { ItemsService } from '../../../services/items-service';
 
 // API local
@@ -29,7 +29,9 @@ interface DamageType {
 export class WeaponForm implements OnInit {
   private readonly itemsService = inject(ItemsService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
+  isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
 
@@ -46,6 +48,9 @@ export class WeaponForm implements OnInit {
     properties: [],
     two_handed_damage: {},
   });
+
+  // Separate string for textarea
+  descString = signal('');
 
   // Weapon categories
   weaponCategories = ['Simple', 'Martial'];
@@ -88,6 +93,7 @@ export class WeaponForm implements OnInit {
 
   // Image upload
   imagePreview: string | null = null;
+  originalImageUrl: string | null = null;
   selectedFile: File | null = null;
 
   // Damage count for the dice formula (e.g., 2 for 2d6)
@@ -97,7 +103,77 @@ export class WeaponForm implements OnInit {
   twoHandedDamageCount = signal(1);
 
   ngOnInit(): void {
+    const itemId = this.route.snapshot.paramMap.get('id');
+    if (itemId) {
+      this.isEditMode.set(true);
+      this.loadItemData(itemId);
+    }
     this.loadWeaponProperties();
+  }
+
+  private async loadItemData(id: string): Promise<void> {
+    try {
+      const item = await this.itemsService.getItem(id, 'weapon');
+      this.formData.update(d => ({
+        ...d,
+        name: item.name || '',
+        desc: item.desc || [],
+        cost: item.cost || { quantity: 0, unit: 'gp' },
+        weight: item.weight ?? 0,
+        image: item.image || '',
+        weapon_category: item.weapon_category || '',
+        weapon_range: item.weapon_range || 'Melee',
+        damage: item.damage || { damage_dice: '1d4' },
+        range: item.range || { normal: 5, long: 0 },
+        properties: item.properties || [],
+        two_handed_damage: item.two_handed_damage || {},
+      }));
+
+      // Convert desc array to string for textarea
+      const desc = item.desc || [];
+      this.descString.set(Array.isArray(desc) ? desc.join('\n\n') : '');
+
+      // Restore selected properties
+      if (Array.isArray(item.properties)) {
+        const propIndexes = item.properties.map((p: any) => p.index || p);
+        this.selectedProperties.set(propIndexes);
+      }
+
+      // Parse damage dice count and die type
+      if (item.damage?.damage_dice) {
+        const match = item.damage.damage_dice.match(/^(\d+)(d\d+)$/);
+        if (match) {
+          this.damageCount.set(parseInt(match[1], 10));
+          this.formData.update(d => ({
+            ...d,
+            damage: { ...d.damage, damage_dice: match[2] },
+          }));
+        }
+      }
+
+      // Parse two-handed damage dice count and die type
+      if (item.two_handed_damage?.damage_dice) {
+        const match = item.two_handed_damage.damage_dice.match(/^(\d+)(d\d+)$/);
+        if (match) {
+          this.twoHandedDamageCount.set(parseInt(match[1], 10));
+          this.formData.update(d => ({
+            ...d,
+            two_handed_damage: { ...d.two_handed_damage, damage_dice: match[2] },
+          }));
+        }
+      }
+
+      // Load existing image preview
+      if (item.image) {
+        this.imagePreview = item.image.startsWith('http')
+          ? item.image
+          : `${API_URL}${item.image}`;
+        this.originalImageUrl = this.imagePreview;
+      }
+    } catch (error) {
+      console.error('Error loading weapon data:', error);
+      this.error.set('Failed to load weapon data');
+    }
   }
 
   async loadWeaponProperties(): Promise<void> {
@@ -203,6 +279,9 @@ hasProperty(propertyIndex: string): boolean {
     this.error.set(null);
 
     try {
+      // Convert desc string to string[] for API
+      const descArray = this.descString().trim() ? this.descString().split('\n\n').filter(d => d.trim()) : [];
+
       // Build properties array
       const properties = this.selectedProperties().map(index => {
         const prop = this.weaponProperties.find(p => p.index === index);
@@ -229,6 +308,7 @@ hasProperty(propertyIndex: string): boolean {
 
       const data: Partial<Item> = {
         ...this.formData(),
+        desc: descArray,
         equipment_category: {
           index: 'weapon',
           name: 'Weapon',
@@ -245,11 +325,21 @@ hasProperty(propertyIndex: string): boolean {
         properties,
       };
 
-      if (this.selectedFile) {
-        const formData = this.buildFormData();
-        await this.itemsService.create(formData, 'weapon');
+      if (this.isEditMode()) {
+        const itemId = this.route.snapshot.paramMap.get('id') || '';
+        if (this.selectedFile) {
+          const formData = this.buildFormData();
+          await this.itemsService.update(itemId, formData);
+        } else {
+          await this.itemsService.update(itemId, data);
+        }
       } else {
-        await this.itemsService.create(data, 'weapon');
+        if (this.selectedFile) {
+          const formData = this.buildFormData();
+          await this.itemsService.create(formData, 'weapon');
+        } else {
+          await this.itemsService.create(data, 'weapon');
+        }
       }
 
       this.router.navigate(['/manual'], {
@@ -279,6 +369,13 @@ hasProperty(propertyIndex: string): boolean {
       };
       reader.readAsDataURL(this.selectedFile);
     }
+  }
+
+  revertImage(): void {
+    this.selectedFile = null;
+    this.imagePreview = this.originalImageUrl;
+    const input = document.getElementById('image') as HTMLInputElement | null;
+    if (input) input.value = '';
   }
 
   private buildFormData(): FormData {

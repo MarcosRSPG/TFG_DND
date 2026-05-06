@@ -251,6 +251,54 @@
   color: #f3c2b9;
 }
 
+/* ACTION BUTTONS (Edit/Delete) */
+.entity-actions {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  gap: 0.4rem;
+  z-index: 10;
+}
+
+.edit-btn,
+.delete-btn {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  border: 1px solid rgba(201, 162, 90, 0.4);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.edit-btn {
+  background: rgba(30, 60, 30, 0.7);
+  color: #8fbf8f;
+}
+
+.edit-btn:hover {
+  background: rgba(40, 80, 40, 0.85);
+  border-color: rgba(143, 191, 143, 0.7);
+  color: #a8d8a8;
+}
+
+.delete-btn {
+  background: rgba(60, 20, 20, 0.7);
+  color: #bf8f8f;
+}
+
+.delete-btn:hover {
+  background: rgba(80, 30, 30, 0.85);
+  border-color: rgba(191, 143, 143, 0.7);
+  color: #d8a8a8;
+}
+
+/* Asegurar que entity-item tenga position relative para el posicionamiento absoluto */
+.entity-item {
+  position: relative;
+}
+
 @media (max-width: 860px) {
   .entity-list {
     width: min(60vw, 100%);

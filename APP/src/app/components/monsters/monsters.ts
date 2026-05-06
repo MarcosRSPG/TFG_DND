@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Monster } from '../../interfaces/monster';
 import { MonstersService } from '../../services/monsters-service';
+import { LoginService } from '../../services/login-service';
 import { FilterModalComponent } from '../filter-modal/filter-modal';
 
 interface MonsterFilters {
@@ -26,8 +27,13 @@ interface MonsterFilters {
 })
 export class Monsters implements OnInit {
   private readonly monstersService = inject(MonstersService);
+  private readonly loginService = inject(LoginService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
+  userId = signal<string | null>(null);
+  userRole = signal<string | null>(null);
+  permissionsLoaded = signal(false);
 
   @ViewChild('typesModal') typesModal!: FilterModalComponent;
   @ViewChild('sizesModal') sizesModal!: FilterModalComponent;
@@ -78,7 +84,61 @@ export class Monsters implements OnInit {
       });
     });
 
+    // Load user info for permissions FIRST
+    const userId = await this.loginService.getUserId();
+    const userRole = await this.loginService.getUserRole();
+    
+    console.log('DEBUG Monsters - userId:', userId);
+    console.log('DEBUG Monsters - userRole:', userRole);
+    
+    this.userId.set(userId);
+    this.userRole.set(userRole);
+    
+    // Set permissionsLoaded BEFORE loading monsters so buttons render correctly
+    this.permissionsLoaded.set(true);
+
     await this.loadMonsters();
+  }
+
+  canEdit(monster: Monster): boolean {
+    const currentUserId = this.userId();
+    const role = this.userRole();
+
+    console.log('DEBUG canEdit - monster:', monster.name, '| created_by:', (monster as any).created_by);
+    console.log('DEBUG canEdit - currentUserId:', currentUserId, '| role:', role);
+
+    // Admin can edit everything (including official items without created_by)
+    if (role === 'admin') {
+      console.log('DEBUG - User IS admin, returning TRUE');
+      return true;
+    }
+
+    // Creator can edit their own items
+    if (currentUserId && (monster as any).created_by && currentUserId === (monster as any).created_by) {
+      return true;
+    }
+
+    console.log('DEBUG - Returning FALSE');
+    return false;
+  }
+
+  async deleteMonster(monster: Monster): Promise<void> {
+    if (!confirm(`Are you sure you want to delete ${monster.name}?`)) {
+      return;
+    }
+
+    try {
+      await this.monstersService.delete(monster.index || monster.id || '');
+      // Remove from lists
+      const currentAll = this.allMonsters();
+      const currentFiltered = this.filteredMonsters();
+      this.allMonsters.set(currentAll.filter(m => m !== monster));
+      this.filteredMonsters.set(currentFiltered.filter(m => m !== monster));
+      this.updatePaginatedMonsters();
+    } catch (error) {
+      console.error('Error deleting monster:', error);
+      alert('Failed to delete monster');
+    }
   }
 
   async loadMonsters(): Promise<void> {
@@ -277,10 +337,17 @@ export class Monsters implements OnInit {
   }
 
   getIdentifier(monster: Monster): string {
-    return monster.index || monster.id || monster.name?.toLowerCase().replace(/ /g, '-') || '';
+    // Use D&D index (e.g., "adult-gold-dragon") - that's what the backend expects
+    return monster.index || (monster as any).id || (monster as any)['_id'] || '';
   }
 
   navigateToCreate(): void {
     this.router.navigate(['/monsters/new']);
+  }
+
+  navigateToEdit(monster: Monster): void {
+    // Use D&D index for the route
+    const monsterId = monster.index || (monster as any).id || (monster as any)['_id'] || '';
+    this.router.navigate(['/monsters/edit', monsterId]);
   }
 }

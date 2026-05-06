@@ -88,6 +88,16 @@
           <p>Category: {{ item.equipment_category?.name || 'Unknown' }}</p>
           <p>Cost: {{ item.cost?.quantity ?? 0 }} {{ item.cost?.unit || 'gp' }}</p>
         </div>
+        @if (permissionsLoaded() && canEdit(item)) {
+          <div class="entity-actions">
+            <button class="edit-btn" (click)="$event.stopPropagation(); navigateToEdit(item)">
+              Edit
+            </button>
+            <button class="delete-btn" (click)="$event.stopPropagation(); deleteItem(item)">
+              Delete
+            </button>
+          </div>
+        }
       </li>
     }
   </ul>

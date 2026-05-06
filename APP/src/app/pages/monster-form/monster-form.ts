@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, computed, effect } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Monster, MonsterAction, MonsterAbility, SpellcastingInfo, SpellInfo, MonsterProficiency, MonsterDamage, ResourceReference } from '../../interfaces/monster';
@@ -127,6 +127,7 @@ export class MonsterForm implements OnInit {
 
   // Image upload
   imagePreview: string | null = null;
+  originalImageUrl: string | null = null;
   selectedFile: File | null = null;
 
   // Languages management
@@ -327,12 +328,128 @@ export class MonsterForm implements OnInit {
     this.recalculateSpellStats();
   }
 
+  private readonly route = inject(ActivatedRoute);
+
   ngOnInit(): void {
     this.dndOptions.loadAlignments();
     this.dndOptions.loadProficiencies();
     this.dndOptions.loadLanguages();
     this.loadAllSpells();
     this.recalculateSpellStats();
+
+    // Check if we're in edit mode
+    const monsterId = this.route.snapshot.paramMap.get('id');
+    if (monsterId) {
+      this.isEditMode.set(true);
+      this.loadMonsterData(monsterId);
+    }
+  }
+
+  private async loadMonsterData(id: string): Promise<void> {
+    try {
+      const monster = await this.monstersService.getMonster(id);
+      
+      // Update form data with monster data
+      this.formData.update(d => ({
+        ...d,
+        name: monster.name || '',
+        size: monster.size || 'Medium',
+        type: monster.type || '',
+        subtype: monster.subtype || 'any race',
+        alignment: monster.alignment || '',
+        desc: Array.isArray(monster.desc) ? monster.desc.join('\n\n') : (monster.desc || ''),
+        hit_points: monster.hit_points,
+        hit_dice: monster.hit_dice || '1d8',
+        hit_points_roll: monster.hit_points_roll || '',
+        speed: monster.speed || { walk: 30 },
+        strength: monster.strength ?? 10,
+        dexterity: monster.dexterity ?? 10,
+        constitution: monster.constitution ?? 10,
+        intelligence: monster.intelligence ?? 10,
+        wisdom: monster.wisdom ?? 10,
+        charisma: monster.charisma ?? 10,
+        challenge_rating: monster.challenge_rating || '1',
+        damage_vulnerabilities: monster.damage_vulnerabilities || [],
+        damage_resistances: monster.damage_resistances || [],
+        damage_immunities: monster.damage_immunities || [],
+        condition_immunities: monster.condition_immunities || [],
+        languages: monster.languages || '',
+        special_abilities: monster.special_abilities || [],
+        actions: monster.actions || [],
+        reactions: monster.reactions || [],
+        legendary_actions: monster.legendary_actions || [],
+      }));
+
+      // Load existing image preview in edit mode
+      if (monster.image) {
+        this.imagePreview = monster.image.startsWith('http')
+          ? monster.image
+          : `${environment.API_URL}${monster.image}`;
+        this.originalImageUrl = this.imagePreview;
+      }
+
+      // Update separate action signals (these are what the template renders)
+      this.actions.set(monster.actions || []);
+      this.reactions.set(monster.reactions || []);
+      this.legendaryActions.set(monster.legendary_actions || []);
+      this.specialAbilities.set(monster.special_abilities?.filter(a => !a.spellcasting) || []);
+
+      // Load damage lists
+      this.damageVulnerabilitiesList.set(monster.damage_vulnerabilities || []);
+      this.damageResistancesList.set(monster.damage_resistances || []);
+      this.damageImmunitiesList.set(monster.damage_immunities || []);
+
+      // Parse hitDiceCount from hit_dice string (e.g. "18d8" → 18)
+      const hitDiceMatch = (monster.hit_dice || '1d8').match(/^(\d+)/);
+      if (hitDiceMatch) {
+        this.hitDiceCount.set(parseInt(hitDiceMatch[1]));
+      }
+
+      // Update UI signals
+      this.speedEntries.set(
+        Object.entries(monster.speed || { walk: 30 }).map(([type, value]) => ({
+          type: type as SpeedType,
+          value: typeof value === 'string' ? (parseInt(value) || 0) : (value as number),
+        }))
+      );
+
+      // Load selected languages
+      if (monster.languages) {
+        const langs = monster.languages.split(',').map(l => l.trim());
+        this.selectedLanguages.set(
+          langs.map(l => ({ index: l.toLowerCase().replace(/ /g, '-'), name: l }))
+        );
+      }
+
+      // Load proficiencies
+      if (monster.proficiencies) {
+        this.selectedProficiencies.set(
+          monster.proficiencies.map(p => ({
+            index: p.proficiency?.index || '',
+            bonus: p.value || 0,
+          }))
+        );
+      }
+
+      // Load spellcasting if present
+      const spellcastingAbility = monster.special_abilities?.find(a => a.spellcasting);
+      if (spellcastingAbility && spellcastingAbility.spellcasting) {
+        this.hasSpellcasting.set(true);
+        const sc = spellcastingAbility.spellcasting;
+        this.spellcastingAbility.set(sc.ability?.index || 'int');
+        this.spellcastingDC.set(sc.dc || 10);
+        this.spellSlots.set(sc.slots ? Object.entries(sc.slots).map(([level, slots]) => ({
+          level: parseInt(level),
+          slots: slots as number,
+        })) : []);
+        this.selectedSpells.set(sc.spells || []);
+        this.recalculateSpellStats();
+      }
+
+    } catch (error) {
+      console.error('Error loading monster data:', error);
+      this.error.set('Failed to load monster data');
+    }
   }
 
   // Get filtered languages
@@ -797,19 +914,31 @@ export class MonsterForm implements OnInit {
         });
       }
 
-      if (this.selectedFile) {
-        const formData = this.buildFormData(data);
-        await this.monstersService.create(formData);
+      if (this.isEditMode()) {
+        // Get the monster ID from route
+        const monsterId = this.route.snapshot.paramMap.get('id') || '';
+        
+        if (this.selectedFile) {
+          const formData = this.buildFormData(data);
+          await this.monstersService.update(monsterId, formData);
+        } else {
+          await this.monstersService.update(monsterId, data);
+        }
       } else {
-        await this.monstersService.create(data);
+        if (this.selectedFile) {
+          const formData = this.buildFormData(data);
+          await this.monstersService.create(formData);
+        } else {
+          await this.monstersService.create(data);
+        }
       }
 
       this.router.navigate(['/manual'], {
         queryParams: { section: 'monsters' },
       });
     } catch (err) {
-      console.error('Error creating monster:', err);
-      this.error.set('Error creating monster. Please try again.');
+      console.error('Error saving monster:', err);
+      this.error.set(this.isEditMode() ? 'Error updating monster. Please try again.' : 'Error creating monster. Please try again.');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -831,6 +960,14 @@ export class MonsterForm implements OnInit {
       };
       reader.readAsDataURL(this.selectedFile);
     }
+  }
+
+  revertImage(): void {
+    this.selectedFile = null;
+    this.imagePreview = this.originalImageUrl;
+    // Reset the file input so the user can pick the same file again if needed
+    const input = document.getElementById('image') as HTMLInputElement | null;
+    if (input) input.value = '';
   }
 
   private buildFormData(data: Partial<Monster>): FormData {

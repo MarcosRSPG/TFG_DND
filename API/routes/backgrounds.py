@@ -1,6 +1,8 @@
 import fastapi
+from fastapi import Depends
 from models.Background import BackgroundSchema
 from services import backgrounds_service
+from services.auth_service import get_current_user
 
 router = fastapi.APIRouter(prefix="/backgrounds", tags=["backgrounds"])
 
@@ -21,10 +23,10 @@ async def create_background(background: BackgroundSchema) -> BackgroundSchema:
 
 
 @router.put("/{id}", response_model_exclude_none=True)
-async def update_background(id: str, background: BackgroundSchema):
+async def update_background(id: str, background: BackgroundSchema, current_user: dict = Depends(get_current_user)):
     return await backgrounds_service.update(id, background)
 
 
 @router.delete("/{id}")
-async def delete_background(id: str):
+async def delete_background(id: str, current_user: dict = Depends(get_current_user)):
     return await backgrounds_service.delete(id)

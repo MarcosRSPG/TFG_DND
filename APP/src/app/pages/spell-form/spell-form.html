@@ -65,11 +65,25 @@
           (change)="onImageSelected($event)"
           class="file-input"
         />
-        @if (imagePreview) {
-          <div class="image-preview">
-            <img [src]="imagePreview" alt="Preview" class="preview-img" />
-          </div>
-        }
+            @if (imagePreview) {
+              <figure class="image-preview-figure">
+                <img [src]="imagePreview" alt="Image preview" class="preview-img" />
+                <figcaption>
+                  @if (selectedFile) {
+                    Nueva imagen (pendiente de guardar)
+                  } @else if (isEditMode()) {
+                    Imagen actual — selecciona un archivo para reemplazarla
+                  } @else {
+                    Vista previa
+                  }
+                </figcaption>
+              </figure>
+              @if (isEditMode() && selectedFile) {
+                <button type="button" class="revert-image-btn" (click)="revertImage()">
+                  ✕ Descartar nueva imagen
+                </button>
+              }
+            }
       </div>
     </div>
     </div>
