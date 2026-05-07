@@ -164,6 +164,16 @@ export class ClassesService {
     });
   }
 
+  async getLevel1Features(classId: string): Promise<FeatureDetail[]> {
+    const levels = await this.getClassLevels(classId);
+    const level1 = levels.find(l => l.level === 1);
+    if (!level1?.features?.length) return [];
+    const results = await Promise.all(
+      level1.features.map(f => this.getFeature(f.index).catch(() => null))
+    );
+    return results.filter((f): f is FeatureDetail => f !== null);
+  }
+
   private async getFeature(index: string): Promise<FeatureDetail> {
     return firstValueFrom(
       this.http.get<FeatureDetail>(`${this.apiUrl}/features/${index}`)

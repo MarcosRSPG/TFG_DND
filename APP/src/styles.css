@@ -139,3 +139,14 @@ html, body {
   font-family: Arial, sans-serif;
   background-image: url("/dungeon_fire_pro.gif");
 }
+
+/* Alias variables for character pages */
+:root {
+  --accent:       var(--dnd-accent-secondary);
+  --card-bg:      var(--dnd-bg-card);
+  --border-color: var(--dnd-border);
+  --text-muted:   var(--dnd-text-muted);
+  --text:         var(--dnd-text-primary);
+  --tag-bg:       var(--dnd-bg-elevated);
+  --input-bg:     var(--dnd-bg-elevated);
+}

@@ -22,6 +22,23 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/manual/manual').then(m => m.Manual),
     title: 'Manual',
   },
+  // Character routes (new before :id)
+  {
+    path: 'characters',
+    loadComponent: () => import('./pages/characters/characters').then(m => m.Characters),
+    title: 'Mis Personajes',
+  },
+  {
+    path: 'characters/new',
+    loadComponent: () => import('./pages/character-form/character-form').then(m => m.CharacterForm),
+    title: 'Nuevo Personaje',
+  },
+  {
+    path: 'characters/:id',
+    loadComponent: () => import('./pages/character-detail/character-detail').then(m => m.CharacterDetail),
+    title: 'Personaje',
+  },
+
   // Create routes BEFORE detail routes
   {
     path: 'backgrounds/new',

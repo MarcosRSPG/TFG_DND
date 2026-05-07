@@ -1,0 +1,58 @@
+<div class="step-class">
+  <h2>Choose your Class</h2>
+
+  <input class="filter-input" type="text" placeholder="Search class..."
+    [ngModel]="filter()" (ngModelChange)="filter.set($event)" />
+
+  @if (loading()) { <p class="loading-text">Loading classes...</p> }
+
+  <div class="class-grid">
+    @for (cls of filteredClasses(); track cls.index ?? cls.id) {
+      <div class="class-card"
+        [class.selected]="selectedClass()?.index === (cls.index ?? cls.id)"
+        (click)="selectClass(cls)">
+        <h3>{{ cls.name }}</h3>
+        <p class="class-die">Hit Die: d{{ cls.hit_die }}</p>
+        @if (cls.saving_throws.length) {
+          <p class="class-saves">ST: {{ savingThrowsLabel(cls) }}</p>
+        }
+      </div>
+    }
+  </div>
+
+  @if (selectedClass()) {
+    <div class="class-detail">
+      <h3>{{ selectedClass()!.name }}</h3>
+      <div class="detail-row">
+        <span><strong>Hit Die:</strong> d{{ selectedClass()!.hit_die }}</span>
+        @if (selectedClass()!.saving_throws.length) {
+          <span><strong>Saving Throws:</strong> {{ savingThrowsLabel(selectedClass()!) }}</span>
+        }
+      </div>
+
+      @if (resolvedChoices().length) {
+        <div class="choices-section">
+          <h4>Choose Proficiencies</h4>
+          @for (choice of resolvedChoices(); track choice.desc; let choiceIdx = $index) {
+            <div class="choice-group">
+              <p class="choice-desc">
+                {{ choice.desc }}
+                <span class="choice-count">({{ selectedByGroup()[choiceIdx]?.length ?? 0 }}/{{ choice.choose }})</span>
+              </p>
+              <div class="choice-options">
+                @for (opt of choice.options; track opt.index) {
+                  <button
+                    class="choice-btn"
+                    [class.selected]="isSelected(choiceIdx, opt.index)"
+                    [disabled]="isDisabled(choiceIdx, opt.index)"
+                    (click)="toggleChoice(choiceIdx, opt.index)"
+                  >{{ opt.name }}</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

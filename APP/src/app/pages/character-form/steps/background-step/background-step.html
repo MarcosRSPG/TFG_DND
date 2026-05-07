@@ -1,0 +1,145 @@
+<div class="step-bg">
+  <h2>Choose your Background</h2>
+
+  <input class="filter-input" type="text" placeholder="Search background..."
+    [ngModel]="filter()" (ngModelChange)="filter.set($event)" />
+
+  @if (loading()) { <p class="loading-text">Loading backgrounds...</p> }
+
+  <div class="bg-grid">
+    @for (bg of filteredBackgrounds(); track bg.index) {
+      <div class="bg-card"
+        [class.selected]="selectedBackground()?.index === bg.index"
+        (click)="selectBackground(bg)">
+        <h3>{{ bg.name }}</h3>
+        @if (bg.feature?.name) { <p class="bg-feature">{{ bg.feature!.name }}</p> }
+      </div>
+    }
+  </div>
+
+  @if (selectedBackground()) {
+    <div class="bg-detail">
+      <h3>{{ selectedBackground()!.name }}</h3>
+      @if (selectedBackground()!.feature?.name) {
+        <div class="detail-section">
+          <strong>Feature: {{ selectedBackground()!.feature!.name }}</strong>
+          <p>{{ featureDesc(selectedBackground()!) }}</p>
+        </div>
+      }
+      @if (selectedBackground()!.starting_proficiencies?.length) {
+        <div class="detail-section">
+          <strong>Starting Proficiencies:</strong>
+          <p>{{ proficiencyNames(selectedBackground()!) }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Personality Traits -->
+    @if (personalityOptions().length) {
+      <div class="bg-category">
+        <div class="cat-header">
+          <h4>Personality Traits</h4>
+          <span class="cat-count">({{ selectedPersonality().length }}/2)</span>
+        </div>
+        <div class="cat-options">
+          @for (opt of personalityOptions(); track opt) {
+            <button class="opt-btn" [class.selected]="isSelected('personality', opt)"
+              [disabled]="isDisabled('personality', opt)" (click)="toggleOption('personality', opt)">{{ opt }}</button>
+          }
+        </div>
+        <div class="cat-custom">
+          <input placeholder="Custom trait..." [ngModel]="customPersonality()" (ngModelChange)="customPersonality.set($event)" (keydown.enter)="addCustom('personality')" />
+          <button class="btn-add-custom" [disabled]="!customPersonality().trim() || selectedPersonality().length >= 2" (click)="addCustom('personality')">+</button>
+        </div>
+        @if (selectedPersonality().length) {
+          <div class="cat-selected">
+            @for (sel of selectedPersonality(); track sel) {
+              <span class="sel-tag">{{ sel }}<button (click)="toggleOption('personality', sel)">✕</button></span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Ideals -->
+    @if (idealOptions().length) {
+      <div class="bg-category">
+        <div class="cat-header">
+          <h4>Ideals</h4>
+          <span class="cat-count">({{ selectedIdeals().length }}/1)</span>
+        </div>
+        <div class="cat-options">
+          @for (opt of idealOptions(); track opt) {
+            <button class="opt-btn" [class.selected]="isSelected('ideals', opt)"
+              [disabled]="isDisabled('ideals', opt)" (click)="toggleOption('ideals', opt)">{{ opt }}</button>
+          }
+        </div>
+        <div class="cat-custom">
+          <input placeholder="Custom ideal..." [ngModel]="customIdeal()" (ngModelChange)="customIdeal.set($event)" (keydown.enter)="addCustom('ideals')" />
+          <button class="btn-add-custom" [disabled]="!customIdeal().trim() || selectedIdeals().length >= 1" (click)="addCustom('ideals')">+</button>
+        </div>
+        @if (selectedIdeals().length) {
+          <div class="cat-selected">
+            @for (sel of selectedIdeals(); track sel) {
+              <span class="sel-tag">{{ sel }}<button (click)="toggleOption('ideals', sel)">✕</button></span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Bonds -->
+    @if (bondOptions().length) {
+      <div class="bg-category">
+        <div class="cat-header">
+          <h4>Bonds</h4>
+          <span class="cat-count">({{ selectedBonds().length }}/1)</span>
+        </div>
+        <div class="cat-options">
+          @for (opt of bondOptions(); track opt) {
+            <button class="opt-btn" [class.selected]="isSelected('bonds', opt)"
+              [disabled]="isDisabled('bonds', opt)" (click)="toggleOption('bonds', opt)">{{ opt }}</button>
+          }
+        </div>
+        <div class="cat-custom">
+          <input placeholder="Custom bond..." [ngModel]="customBond()" (ngModelChange)="customBond.set($event)" (keydown.enter)="addCustom('bonds')" />
+          <button class="btn-add-custom" [disabled]="!customBond().trim() || selectedBonds().length >= 1" (click)="addCustom('bonds')">+</button>
+        </div>
+        @if (selectedBonds().length) {
+          <div class="cat-selected">
+            @for (sel of selectedBonds(); track sel) {
+              <span class="sel-tag">{{ sel }}<button (click)="toggleOption('bonds', sel)">✕</button></span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Flaws -->
+    @if (flawOptions().length) {
+      <div class="bg-category">
+        <div class="cat-header">
+          <h4>Flaws</h4>
+          <span class="cat-count">({{ selectedFlaws().length }}/1)</span>
+        </div>
+        <div class="cat-options">
+          @for (opt of flawOptions(); track opt) {
+            <button class="opt-btn" [class.selected]="isSelected('flaws', opt)"
+              [disabled]="isDisabled('flaws', opt)" (click)="toggleOption('flaws', opt)">{{ opt }}</button>
+          }
+        </div>
+        <div class="cat-custom">
+          <input placeholder="Custom flaw..." [ngModel]="customFlaw()" (ngModelChange)="customFlaw.set($event)" (keydown.enter)="addCustom('flaws')" />
+          <button class="btn-add-custom" [disabled]="!customFlaw().trim() || selectedFlaws().length >= 1" (click)="addCustom('flaws')">+</button>
+        </div>
+        @if (selectedFlaws().length) {
+          <div class="cat-selected">
+            @for (sel of selectedFlaws(); track sel) {
+              <span class="sel-tag">{{ sel }}<button (click)="toggleOption('flaws', sel)">✕</button></span>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

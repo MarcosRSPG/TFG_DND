@@ -1,0 +1,73 @@
+<div class="step-summary">
+  <h2>Character Summary</h2>
+
+  <div class="form-row">
+    <label>
+      Character name <span class="required">*</span>
+      <input
+        type="text"
+        class="name-input"
+        placeholder="Name..."
+        [ngModel]="name()"
+        (ngModelChange)="onNameChange($event)"
+      />
+    </label>
+    <label>
+      Alignment
+      <select [ngModel]="alignment()" (ngModelChange)="onAlignmentChange($event)">
+        @for (a of alignments(); track a.index) {
+          <option [value]="a.name">{{ a.name }}</option>
+        }
+      </select>
+      @if (alignmentDesc()) {
+        <span class="alignment-desc">{{ alignmentDesc() }}</span>
+      }
+    </label>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <h4>Origin</h4>
+      <p><strong>Race:</strong> {{ draft.race?.name ?? '—' }}</p>
+      @if (draft.subrace) { <p><strong>Subrace:</strong> {{ draft.subrace.name }}</p> }
+      <p><strong>Class:</strong> {{ draft.character_class?.name ?? '—' }}</p>
+      <p><strong>Background:</strong> {{ draft.background?.name ?? '—' }}</p>
+    </div>
+
+    <div class="summary-card">
+      <h4>Combat</h4>
+      <div class="hp-edit-row">
+        <strong>Max HP:</strong>
+        <input class="hp-input" type="number" min="1"
+          [value]="maxHp()"
+          (change)="onHpChange($any($event.target).value)"
+          title="Edit max HP" />
+        @if (customMaxHp() !== null) {
+          <button class="hp-reset" (click)="resetHp()" title="Reset to class default">↺ {{ autoMaxHp() }}</button>
+        }
+      </div>
+      <p><strong>Base AC:</strong> {{ baseAC() }}</p>
+      <p><strong>Proficiency Bonus:</strong> +2</p>
+      @if (draft.character_class_hit_die) {
+        <p><strong>Hit Die:</strong> d{{ draft.character_class_hit_die }}</p>
+      }
+    </div>
+
+    <div class="summary-card stats-card">
+      <h4>Stats</h4>
+      <div class="stats-table">
+        @for (stat of STATS; track stat) {
+          <div class="stat-item">
+            <span class="stat-name-sm">{{ STAT_LABELS[stat].substring(0, 3).toUpperCase() }}</span>
+            <span class="stat-val">{{ finalStat(stat) }}</span>
+            <span class="stat-mod">{{ signedMod(stat) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (!name().trim()) {
+    <p class="warning">⚠️ Character name is required to continue.</p>
+  }
+</div>

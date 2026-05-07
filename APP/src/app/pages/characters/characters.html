@@ -1,0 +1,59 @@
+<div class="characters-page">
+  <header class="page-header">
+    <h1>My Characters</h1>
+    <a routerLink="/characters/new" class="btn-primary">+ New Character</a>
+  </header>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading characters...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <p>{{ error() }}</p>
+      <button (click)="loadCharacters()" class="btn-secondary">Retry</button>
+    </div>
+  } @else if (characters().length === 0) {
+    <div class="empty-state">
+      <p>No characters yet.</p>
+      <a routerLink="/characters/new" class="btn-primary">Create my first character</a>
+    </div>
+  } @else {
+    <div class="characters-grid">
+      @for (character of characters(); track character._id ?? character.index) {
+        <div class="character-card">
+          @if (deletingId() === (character._id ?? character.id ?? character.index)) {
+            <div class="delete-confirm">
+              <p>Delete <strong>{{ character.name }}</strong>?</p>
+              <div class="confirm-actions">
+                <button (click)="deleteCharacter(character)" class="btn-danger">Delete</button>
+                <button (click)="cancelDelete()" class="btn-secondary">Cancel</button>
+              </div>
+            </div>
+          } @else {
+            <div class="card-body" (click)="goToDetail(character)">
+              <h2 class="character-name">{{ character.name }}</h2>
+              <div class="character-meta">
+                <span class="tag">{{ character.race.name }}</span>
+                <span class="tag">{{ character.character_class.name }}</span>
+                <span class="tag">Level {{ character.level }}</span>
+              </div>
+              <div class="character-hp">
+                <span>HP: {{ currentHp(character) }} / {{ character.hit_points }}</span>
+              </div>
+              @if (character.alignment) {
+                <p class="character-alignment">{{ character.alignment }}</p>
+              }
+            </div>
+            <button
+              class="btn-delete"
+              (click)="$event.stopPropagation(); confirmDelete(character)"
+              title="Delete character"
+            >✕</button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

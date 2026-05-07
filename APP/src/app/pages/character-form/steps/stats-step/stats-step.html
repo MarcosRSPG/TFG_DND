@@ -1,0 +1,52 @@
+<div class="step-stats">
+  <h2>Assign your Stats</h2>
+
+  <div class="mode-selector">
+    <button [class.active]="mode() === 'pointbuy'" (click)="setMode('pointbuy')">Point Buy</button>
+    <button [class.active]="mode() === 'manual'" (click)="setMode('manual')">Manual</button>
+  </div>
+
+  @if (mode() === 'pointbuy') {
+    <div class="points-bar">
+      <span>Remaining points:</span>
+      <strong [class.zero]="pointsRemaining() === 0">{{ pointsRemaining() }} / 27</strong>
+    </div>
+  }
+
+  <div class="stats-grid">
+    @for (stat of STATS; track stat) {
+      <div class="stat-row">
+        <div class="stat-label">
+          <span class="stat-abbr">{{ STAT_ABBREVIATIONS[stat] }}</span>
+          <span class="stat-name">{{ STAT_LABELS[stat] }}</span>
+        </div>
+
+        @if (mode() === 'pointbuy') {
+          <div class="stat-controls">
+            <button (click)="decrease(stat)" [disabled]="!canDecrease(stat)">−</button>
+            <span class="base-value">{{ baseStats()[stat] }}</span>
+            <button (click)="increase(stat)" [disabled]="!canIncrease(stat)">+</button>
+          </div>
+        } @else {
+          <input
+            class="manual-input"
+            type="number" min="1" max="20"
+            [value]="baseStats()[stat]"
+            (change)="onManualChange(stat, $any($event.target).value)"
+          />
+        }
+
+        @if (racialBonus(stat) !== 0) {
+          <span class="racial-bonus">+{{ racialBonus(stat) }} racial</span>
+        }
+
+        <div class="stat-total">
+          <span class="total-value">{{ finalStats()[stat] }}</span>
+          <span class="modifier" [class.positive]="modifiers()[stat] > 0" [class.negative]="modifiers()[stat] < 0">
+            {{ signedMod(stat) }}
+          </span>
+        </div>
+      </div>
+    }
+  </div>
+</div>

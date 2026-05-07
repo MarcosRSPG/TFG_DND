@@ -35,25 +35,59 @@ class CharacterSpeedSchema(BaseModel):
 class CharacterCashSchema(BaseModel):
     cp: int = 0
     sp: int = 0
+    ep: int = 0
     gp: int = 0
     pp: int = 0
 
     model_config = ConfigDict(extra="allow")
 
 
+class InventoryItemSchema(BaseModel):
+    id: str
+    name: str
+    type: str = "item"                  # "weapon" | "armor" | "item"
+    quantity: int = 1
+    weight: Optional[float] = None
+    description: Optional[str] = None
+    state: str = "stored"               # "equipped" | "stored" | "carried"
+    weapon_data: Optional[Dict[str, Any]] = None
+    armor_data: Optional[Dict[str, Any]] = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class TraitSchema(BaseModel):
+    id: str
+    name: str
+    description: str
+    source: str = "custom"              # "race" | "subrace" | "class" | "background" | "custom"
+
+    model_config = ConfigDict(extra="allow")
+
+
+class SpellEntrySchema(BaseModel):
+    index: str
+    name: str
+    level: int = 0
+    school: Optional[str] = None
+
+    model_config = ConfigDict(extra="allow")
+
+
 class CharacterInventorySchema(BaseModel):
-    items: List[str] = Field(default_factory=list)
+    items: List[InventoryItemSchema] = Field(default_factory=list)
     cash: CharacterCashSchema = Field(default_factory=CharacterCashSchema)
 
     model_config = ConfigDict(extra="allow")
 
 
 class CharacterSpellcastingSchema(BaseModel):
-    spell_slots: Dict[str, int] = Field(default_factory=dict)
-    known_spells: List[str] = Field(default_factory=list)
-    prepared_spells: List[str] = Field(default_factory=list)
+    spell_slots: Dict[str, Any] = Field(default_factory=dict)
+    known_spells: List[SpellEntrySchema] = Field(default_factory=list)
+    prepared_spells: List[SpellEntrySchema] = Field(default_factory=list)
     spell_save_dc: Optional[int] = None
     spell_attack_bonus: Optional[int] = None
+    spellcasting_ability: Optional[str] = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -79,12 +113,21 @@ class CharacterSchema(BaseSchema):
     intelligence: int
     wisdom: int
     charisma: int
+    hit_points_current: Optional[int] = None
+    temp_hp: Optional[int] = None
     proficiencies: List[CharacterProficiencySchema] = Field(default_factory=list)
     proficiency_bonus: int
     saving_throws: List[str] = Field(default_factory=list)
     inventory: CharacterInventorySchema = Field(default_factory=CharacterInventorySchema)
     spellcasting: Optional[CharacterSpellcastingSchema] = None
+    traits: List[TraitSchema] = Field(default_factory=list)
+    custom_traits: List[TraitSchema] = Field(default_factory=list)
     notes: Optional[str] = None
+    history: Optional[str] = None
+    personality_traits: List[str] = Field(default_factory=list)
+    ideals: List[str] = Field(default_factory=list)
+    bonds: List[str] = Field(default_factory=list)
+    flaws: List[str] = Field(default_factory=list)
     campaings: List[str] = Field(default_factory=list)
     tags: List[str] = Field(default_factory=list)
     image: Optional[str] = None

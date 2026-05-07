@@ -1,0 +1,51 @@
+<div class="wizard-card">
+
+  <div class="wizard-top">
+    <h1>New Character</h1>
+    <nav class="step-nav" aria-label="Wizard steps">
+      @for (step of STEPS; track $index) {
+        <div class="step-pill"
+          [class.active]="currentStep() === $index + 1"
+          [class.done]="currentStep() > $index + 1">
+          <span class="pill-num">{{ $index + 1 }}</span>
+          <span class="pill-label">{{ step.label }}</span>
+        </div>
+      }
+    </nav>
+  </div>
+
+  <div class="wizard-divider"></div>
+
+  <div class="wizard-body">
+    @switch (currentStep()) {
+      @case (1) { <app-race-step       [draft]="draft()" (change)="patchDraft($event)" /> }
+      @case (2) { <app-class-step      [draft]="draft()" (change)="patchDraft($event)" /> }
+      @case (3) { <app-background-step [draft]="draft()" (change)="patchDraft($event)" /> }
+      @case (4) { <app-stats-step      [draft]="draft()" (change)="patchDraft($event)" /> }
+      @case (5) { <app-summary-step    [draft]="draft()" (change)="patchDraft($event)" /> }
+    }
+  </div>
+
+  @if (error()) {
+    <p class="wizard-error">{{ error() }}</p>
+  }
+
+  <div class="wizard-divider"></div>
+
+  <footer class="wizard-footer">
+    <button class="btn-secondary" (click)="prevStep()" [disabled]="currentStep() === 1">
+      ← Previous
+    </button>
+    <span class="step-counter">Step {{ currentStep() }} of 5</span>
+    @if (currentStep() < 5) {
+      <button class="btn-primary" (click)="nextStep()" [disabled]="!canProceed()">
+        Next →
+      </button>
+    } @else {
+      <button class="btn-primary btn-submit" (click)="submit()" [disabled]="!canProceed() || submitting()">
+        {{ submitting() ? 'Creating...' : '⚔️ Create Character' }}
+      </button>
+    }
+  </footer>
+
+</div>

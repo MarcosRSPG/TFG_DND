@@ -1,0 +1,649 @@
+<div class="detail-page">
+  @if (loading()) {
+    <div class="loading-state"><div class="spinner"></div><p>Loading character...</p></div>
+  } @else if (error()) {
+    <div class="error-state"><p>{{ error() }}</p><a routerLink="/characters" class="btn-secondary">← Back</a></div>
+  } @else if (character()) {
+    <header class="detail-header">
+      <div class="header-info">
+        <a routerLink="/characters" class="back-link">← My Characters</a>
+        <h1>{{ character()!.name }}</h1>
+        <div class="header-tags">
+          <span class="tag">{{ character()!.race.name }}</span>
+          <span class="tag">{{ character()!.character_class.name }}</span>
+          <span class="tag">Level {{ character()!.level }}</span>
+          @if (character()!.alignment) { <span class="tag">{{ character()!.alignment }}</span> }
+        </div>
+      </div>
+      @if (saving()) { <span class="saving-indicator">Saving...</span> }
+    </header>
+
+    <nav class="tab-nav">
+      @for (tab of [['basic','⚔️ Basic'],['equipment','🎒 Equipment'],['spells','✨ Spells'],['traits','📖 Traits'],['bio','📜 Bio']]; track tab[0]) {
+        <button class="tab-btn" [class.active]="activeTab() === tab[0]" (click)="setTab($any(tab[0]))">{{ tab[1] }}</button>
+      }
+    </nav>
+
+    <div class="tab-content">
+      @switch (activeTab()) {
+
+        <!-- ===== TAB BASIC ===== -->
+        @case ('basic') {
+          <div class="basic-tab">
+            <div class="combat-row">
+              <div class="combat-card hp-card">
+                <label>HP</label>
+                <div class="hp-controls">
+                  <button (click)="changeHp(-1)">−</button>
+                  <span class="hp-display">{{ currentHp() }}</span>
+                  <span class="hp-sep">/</span>
+                  <input class="hp-max-input" type="number" min="1"
+                    [value]="maxHp()"
+                    (change)="setMaxHp($any($event.target).value)"
+                    title="Max HP (editable)" />
+                  <button (click)="changeHp(1)">+</button>
+                </div>
+                <div class="hp-bar">
+                  <div class="hp-fill" [style.width.%]="maxHp() > 0 ? (currentHp() / maxHp()) * 100 : 0"></div>
+                </div>
+                <div class="temp-hp-row">
+                  <span class="temp-hp-label">TEMP</span>
+                  <input class="temp-hp-input" type="number" min="0"
+                    [value]="tempHp()"
+                    (change)="setTempHp($any($event.target).value)"
+                    placeholder="0" />
+                </div>
+              </div>
+              <div class="combat-card">
+                <label>AC</label>
+                <span class="big-number">{{ calculatedAC() }}</span>
+              </div>
+              <div class="combat-card">
+                <label>Speed</label>
+                <span class="big-number">{{ character()!.speed.walk || '30 ft.' }}</span>
+              </div>
+              <div class="combat-card">
+                <label>Prof.</label>
+                <span class="big-number">+{{ character()!.proficiency_bonus }}</span>
+              </div>
+            </div>
+
+            <div class="stats-grid">
+              @for (stat of STATS; track stat) {
+                <div class="stat-block">
+                  <span class="stat-abbr">{{ STAT_ABBREVIATIONS[stat] }}</span>
+                  <span class="stat-total">{{ finalStat(stat) }}</span>
+                  <span class="stat-mod">{{ signedMod(stat) }}</span>
+                  <span class="stat-label-sm">{{ STAT_LABELS[stat] }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Skills -->
+            <div class="section">
+              <h3>Skills</h3>
+              <div class="skills-grid">
+                @for (skill of SKILLS; track skill.index) {
+                  <div class="skill-row" [class.proficient]="isSkillProficient(skill)">
+                    <span class="skill-prof-dot" [class.filled]="isSkillProficient(skill)"></span>
+                    <span class="skill-name">{{ skill.name }}</span>
+                    <span class="skill-ability">{{ STAT_ABBREVIATIONS[skill.ability] }}</span>
+                    <span class="skill-value" [class.positive]="skillValue(skill) > 0" [class.negative]="skillValue(skill) < 0">
+                      {{ signedSkill(skill) }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            @if (weapons().length || combatSpells().length) {
+              <div class="section">
+                <h3>Attacks & Spells</h3>
+                <table class="combat-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th class="center">Bonus / DC</th>
+                      <th class="center">Damage</th>
+                      <th class="center">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (w of weapons(); track w.id) {
+                      <tr>
+                        <td>{{ w.name }}<span class="combat-tag">weapon</span></td>
+                        <td class="center accent">{{ attackBonus(w) }}</td>
+                        <td class="center">{{ damageLabel(w) }}</td>
+                        <td class="center muted">{{ w.weapon_data?.damage_type ?? '—' }}</td>
+                      </tr>
+                    }
+                    @for (s of combatSpells(); track s.index) {
+                      <tr>
+                        <td>{{ s.name }}<span class="combat-tag spell">{{ spellLevelLabel(s.level) }}</span></td>
+                        <td class="center accent">{{ spellAttackLabel(s) }}</td>
+                        <td class="center">{{ spellDamageLabel(s) }}</td>
+                        <td class="center muted">
+                          {{ s.damage_type ?? '—' }}
+                          @if (s.dc_success === 'half') { <span class="muted-sm">(½ on save)</span> }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            @if (character()!.saving_throws.length) {
+              <div class="section">
+                <h3>Saving Throws</h3>
+                <div class="tags-row">
+                  @for (st of character()!.saving_throws; track st) {
+                    <span class="tag">{{ st }}</span>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (character()!.proficiencies.length) {
+              <div class="section">
+                <h3>Proficiencies</h3>
+                <div class="tags-row">
+                  @for (p of character()!.proficiencies; track p.proficiency.index) {
+                    <span class="tag">{{ p.proficiency.name }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ===== TAB EQUIPMENT ===== -->
+        @case ('equipment') {
+          <div class="equipment-tab">
+            <div class="section-header">
+              <h3>Inventory</h3>
+              @if (!addItemMode()) {
+                <div class="add-item-btns">
+                  <button class="btn-secondary-sm" (click)="openItemPanel('search')">🔍 Search catalog</button>
+                  <button class="btn-secondary-sm" (click)="openItemPanel('custom')">✏️ Create custom</button>
+                </div>
+              } @else {
+                <button class="btn-remove" (click)="closeItemPanel()">✕ Close</button>
+              }
+            </div>
+
+            @if (addItemMode() === 'search') {
+              <div class="item-panel">
+                <input class="search-input" type="text" placeholder="Search equipment..."
+                  [ngModel]="itemSearchQuery()" (ngModelChange)="itemSearchQuery.set($event)" autofocus />
+                @if (loadingCatalog()) {
+                  <p class="loading-text">Loading catalog...</p>
+                } @else {
+                  <div class="catalog-list">
+                    @for (item of filteredCatalog(); track item.id ?? item.name) {
+                      <button class="catalog-row" (click)="addFromCatalog(item)">
+                        <span class="catalog-name">{{ item.name }}</span>
+                        <span class="catalog-meta">
+                          @if (item.damage?.damage_dice) { {{ item.damage!.damage_dice }} · }
+                          @if (item.armor_class?.base) { AC {{ item.armor_class!.base }} · }
+                          {{ itemCategoryLabel(item) }}
+                        </span>
+                        <span class="catalog-add">+</span>
+                      </button>
+                    }
+                    @if (!filteredCatalog().length && !loadingCatalog()) {
+                      <p class="empty-text">No results for "{{ itemSearchQuery() }}"</p>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            @if (addItemMode() === 'custom') {
+              <div class="item-form">
+                <div class="form-row">
+                  <input placeholder="Name *" [ngModel]="newItem().name" (ngModelChange)="newItem.update(i => ({...i, name: $event}))" />
+                  <select [ngModel]="newItem().type" (ngModelChange)="newItem.update(i => ({...i, type: $event}))">
+                    <option value="item">Item</option>
+                    <option value="weapon">Weapon</option>
+                    <option value="armor">Armor</option>
+                  </select>
+                  <input type="number" min="1" placeholder="Qty" [ngModel]="newItem().quantity" (ngModelChange)="newItem.update(i => ({...i, quantity: +$event}))" />
+                </div>
+                <input placeholder="Description (optional)" [ngModel]="newItem().description" (ngModelChange)="newItem.update(i => ({...i, description: $event}))" />
+                @if (newItem().type === 'weapon') {
+                  <div class="form-row">
+                    <input placeholder="Damage (e.g. 1d8)" [ngModel]="newItem().weapon_data?.damage_dice" (ngModelChange)="newItem.update(i => ({...i, weapon_data: {...(i.weapon_data ?? {damage_type:'',ability:'strength'}), damage_dice: $event}}))" />
+                    <input placeholder="Type (e.g. slashing)" [ngModel]="newItem().weapon_data?.damage_type" (ngModelChange)="newItem.update(i => ({...i, weapon_data: {...(i.weapon_data ?? {damage_dice:'1d4',ability:'strength'}), damage_type: $event}}))" />
+                    <select [ngModel]="newItem().weapon_data?.ability ?? 'strength'" (ngModelChange)="newItem.update(i => ({...i, weapon_data: {...(i.weapon_data ?? {damage_dice:'1d4',damage_type:''}), ability: $event}}))">
+                      <option value="strength">Strength</option>
+                      <option value="dexterity">Dexterity</option>
+                    </select>
+                  </div>
+                }
+                @if (newItem().type === 'armor') {
+                  <div class="form-row">
+                    <input type="number" placeholder="Base AC" [ngModel]="newItem().armor_data?.base_ac" (ngModelChange)="newItem.update(i => ({...i, armor_data: {...(i.armor_data ?? {armor_type:'light'}), base_ac: +$event}}))" />
+                    <select [ngModel]="newItem().armor_data?.armor_type ?? 'light'" (ngModelChange)="newItem.update(i => ({...i, armor_data: {...(i.armor_data ?? {base_ac:10}), armor_type: $event}}))">
+                      <option value="light">Light</option>
+                      <option value="medium">Medium</option>
+                      <option value="heavy">Heavy</option>
+                      <option value="shield">Shield</option>
+                    </select>
+                  </div>
+                }
+                <button class="btn-primary" (click)="addItem()">Add</button>
+              </div>
+            }
+
+            @if (weapons().length) {
+              <div class="section">
+                <h4>Weapons</h4>
+                <table class="weapons-table">
+                  <thead><tr><th>Weapon</th><th>Attack</th><th>Damage</th><th>Type</th><th></th></tr></thead>
+                  <tbody>
+                    @for (w of weapons(); track w.id) {
+                      <tr>
+                        <td>
+                          {{ w.name }}
+                          <button class="state-badge" [attr.data-state]="w.state" (click)="cycleState(w.id)">{{ w.state }}</button>
+                        </td>
+                        <td class="center">{{ attackBonus(w) }}</td>
+                        <td class="center">{{ damageLabel(w) }}</td>
+                        <td class="center">{{ w.weapon_data?.damage_type ?? '—' }}</td>
+                        <td><button class="btn-remove" (click)="removeItem(w.id)">✕</button></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            @if (armors().length) {
+              <div class="section">
+                <h4>Armor</h4>
+                <div class="item-list">
+                  @for (a of armors(); track a.id) {
+                    <div class="item-row">
+                      <span class="item-name">{{ a.name }}</span>
+                      <span class="item-meta">{{ a.armor_data?.armor_type }} · AC {{ a.armor_data?.base_ac }}</span>
+                      <button class="state-badge" [attr.data-state]="a.state" (click)="cycleState(a.id)">{{ a.state }}</button>
+                      <button class="btn-remove" (click)="removeItem(a.id)">✕</button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (otherItems().length) {
+              <div class="section">
+                <h4>Other</h4>
+                <div class="item-list">
+                  @for (item of otherItems(); track item.id) {
+                    <div class="item-row">
+                      <span class="item-name">{{ item.name }}</span>
+                      <span class="item-meta">x{{ item.quantity }}</span>
+                      <button class="state-badge" [attr.data-state]="item.state" (click)="cycleState(item.id)">{{ item.state }}</button>
+                      <button class="btn-remove" (click)="removeItem(item.id)">✕</button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (!character()!.inventory.items.length) {
+              <p class="empty-text">No equipment yet.</p>
+            }
+
+            <!-- Coins -->
+            <div class="section">
+              <h4>Currency</h4>
+              <div class="coins-grid">
+                @for (coin of COINS; track coin.key) {
+                  <div class="coin-card" [attr.data-coin]="coin.key">
+                    <label class="coin-label">{{ coin.label }}</label>
+                    <input class="coin-input" type="number" min="0"
+                      [value]="getCoinValue(coin.key)"
+                      (change)="setCoin(coin.key, $any($event.target).value)"
+                    />
+                    <span class="coin-name">{{ coin.name }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ===== TAB SPELLS ===== -->
+        @case ('spells') {
+          <div class="spells-tab">
+
+            <div class="spellcasting-header">
+              <div class="spell-stat">
+                <label>Ability</label>
+                <select class="spell-select"
+                  [ngModel]="character()!.spellcasting?.spellcasting_ability ?? ''"
+                  (ngModelChange)="setSpellcastingAbility($event)">
+                  <option value="">—</option>
+                  <option value="intelligence">Intelligence</option>
+                  <option value="wisdom">Wisdom</option>
+                  <option value="charisma">Charisma</option>
+                </select>
+              </div>
+              <div class="spell-stat">
+                <label>Save DC</label>
+                <span class="spell-big">{{ effectiveDC() || '—' }}</span>
+              </div>
+              <div class="spell-stat">
+                <label>Attack Bonus</label>
+                <span class="spell-big">{{ effectiveAttackBonus() >= 0 ? '+' + effectiveAttackBonus() : effectiveAttackBonus() }}</span>
+              </div>
+              <div class="spell-stat">
+                <label>Modifier</label>
+                <span class="spell-big">{{ spellAbilityMod() >= 0 ? '+' + spellAbilityMod() : spellAbilityMod() }}</span>
+              </div>
+              @if (maxPreparedSpells() !== null) {
+                <div class="spell-stat">
+                  <label>Max Prepared</label>
+                  <span class="spell-big">
+                    {{ character()!.spellcasting?.prepared_spells?.length ?? 0 }}
+                    <span class="spell-max">/ {{ maxPreparedSpells() }}</span>
+                  </span>
+                </div>
+              }
+            </div>
+
+            @if (!spellSlotLevels().length) {
+              <div class="section">
+                <div class="section-header">
+                  <h4>Spell Slots</h4>
+                  <button class="btn-secondary-sm" (click)="loadSlotsFromClass()" [disabled]="loadingSlotsFromClass()">
+                    {{ loadingSlotsFromClass() ? 'Loading...' : '⚡ Load from class' }}
+                  </button>
+                </div>
+                <p class="empty-text">No spell slots configured.</p>
+              </div>
+            }
+
+            @if (spellSlotLevels().length) {
+              <div class="section">
+                <h4>Spell Slots</h4>
+                <div class="slots-grid">
+                  @for (level of spellSlotLevels(); track level) {
+                    <div class="slot-row">
+                      <span class="slot-level">Lv. {{ level }}</span>
+                      <div class="slot-pips">
+                        @for (pip of [].constructor(slotTotal(level)); track $index; let i = $index) {
+                          <span class="slot-pip" [class.used]="i < slotUsed(level)" (click)="changeSlot(level, i < slotUsed(level) ? -1 : 1)"></span>
+                        }
+                      </div>
+                      <span class="slot-count">{{ slotUsed(level) }}/{{ slotTotal(level) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="section">
+              <div class="section-header">
+                <h4>Add Spell</h4>
+                @if (!showSpellPanel()) {
+                  <button class="btn-secondary-sm" (click)="openSpellPanel()">🔍 Search catalog</button>
+                } @else {
+                  <button class="btn-remove" (click)="closeSpellPanel()">✕ Close</button>
+                }
+              </div>
+
+              @if (showSpellPanel()) {
+                <div class="item-panel">
+                  <div class="spell-panel-controls">
+                    <input class="search-input" type="text" placeholder="Search spell..."
+                      [ngModel]="spellSearchQuery()" (ngModelChange)="spellSearchQuery.set($event)" />
+                    <label class="class-filter-toggle">
+                      <input type="checkbox" [ngModel]="onlyClassSpells()" (ngModelChange)="onlyClassSpells.set($event)" />
+                      {{ character()!.character_class.name }} only
+                    </label>
+                  </div>
+                  <div class="level-filters">
+                    @for (lvl of ALL_SPELL_LEVELS; track lvl) {
+                      <button class="level-filter-btn" [class.active]="isLevelSelected(lvl)" (click)="toggleSpellLevel(lvl)">
+                        {{ lvl === 0 ? 'C' : lvl }}
+                      </button>
+                    }
+                  </div>
+                  @if (loadingSpellCatalog()) {
+                    <p class="loading-text">Loading spells...</p>
+                  } @else {
+                    <div class="catalog-list">
+                      @for (spell of filteredSpellCatalog(); track spell.id ?? spell.index) {
+                        <button class="catalog-row" (click)="addFromSpellCatalog(spell)"
+                          [class.class-spell]="isClassSpell(spell)"
+                          [class.other-spell]="!isClassSpell(spell)">
+                          <span class="spell-level-badge sm">{{ spell.level === 0 ? 'C' : spell.level }}</span>
+                          <span class="catalog-name">{{ spell.name }}</span>
+                          <span class="catalog-meta">
+                            {{ spell.school?.name ?? '' }}
+                            @if (spell.damage?.damage_type?.name) { · {{ spell.damage!.damage_type!.name }} }
+                            @if (spell.dc?.dc_type?.name) { · DC {{ spell.dc!.dc_type!.name }} }
+                          </span>
+                          @if (isClassSpell(spell)) {
+                            <span class="class-badge">{{ character()!.character_class.name }}</span>
+                          }
+                          <span class="catalog-add">+</span>
+                        </button>
+                      }
+                      @if (!filteredSpellCatalog().length && !loadingSpellCatalog()) {
+                        <p class="empty-text">No results
+                          @if (onlyClassSpells()) { for {{ character()!.character_class.name }} }
+                        </p>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="section">
+              <h4>Cantrips <span class="spell-count">({{ cantrips().length }})</span></h4>
+              @if (!cantrips().length) {
+                <p class="empty-text">No cantrips.</p>
+              } @else {
+                <div class="spell-list">
+                  @for (spell of cantrips(); track spell.index) {
+                    <div class="spell-row">
+                      <span class="spell-level-badge cantrip">C</span>
+                      <span class="spell-name">{{ spell.name }}</span>
+                      @if (spell.damage_dice) { <span class="spell-damage">{{ spell.damage_dice }}</span> }
+                      @if (spell.attack_type === 'save' && spell.save_type) { <span class="spell-save">DC {{ spell.save_type }}</span> }
+                      <button class="btn-remove" (click)="removeKnownSpell(spell.index)">✕</button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="section">
+              <h4>Known Spells <span class="spell-count">({{ levelSpells().length }})</span></h4>
+              @if (!levelSpells().length) {
+                <p class="empty-text">No spells known.</p>
+              } @else {
+                <div class="spell-list">
+                  @for (spell of levelSpells(); track spell.index) {
+                    <div class="spell-row" [class.prepared]="isSpellPrepared(spell.index)">
+                      <span class="spell-level-badge">{{ spell.level }}</span>
+                      <span class="spell-name">{{ spell.name }}</span>
+                      @if (spell.damage_dice) { <span class="spell-damage">{{ spell.damage_dice }}</span> }
+                      @if (spell.attack_type === 'save' && spell.save_type) { <span class="spell-save">DC {{ spell.save_type }}</span> }
+                      @if (spell.school) { <span class="spell-school">{{ spell.school }}</span> }
+                      <button class="btn-prepare" [class.active]="isSpellPrepared(spell.index)"
+                        (click)="isSpellPrepared(spell.index) ? unprepareSpell(spell.index) : prepareSpell(spell)"
+                        [title]="isSpellPrepared(spell.index) ? 'Unprepare' : 'Prepare'">
+                        {{ isSpellPrepared(spell.index) ? '★' : '☆' }}
+                      </button>
+                      <button class="btn-remove" (click)="removeKnownSpell(spell.index)">✕</button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (character()!.spellcasting?.prepared_spells?.length) {
+              <div class="section">
+                <h4>Prepared <span class="spell-count">({{ character()!.spellcasting!.prepared_spells.length }}{{ maxPreparedSpells() !== null ? ' / ' + maxPreparedSpells() : '' }})</span></h4>
+                <div class="spell-list">
+                  @for (spell of character()!.spellcasting!.prepared_spells; track spell.index) {
+                    <div class="spell-row prepared">
+                      <span class="spell-level-badge">{{ spell.level }}</span>
+                      <span class="spell-name">{{ spell.name }}</span>
+                      @if (spell.damage_dice) { <span class="spell-damage">{{ spell.damage_dice }}</span> }
+                      <button class="btn-remove" (click)="unprepareSpell(spell.index)">✕</button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ===== TAB TRAITS ===== -->
+        @case ('traits') {
+          <div class="traits-tab">
+            <div class="section-header">
+              <h3>Traits & Features</h3>
+              <button class="btn-primary" (click)="showTraitForm.set(!showTraitForm())">
+                {{ showTraitForm() ? 'Cancel' : '+ Add trait' }}
+              </button>
+            </div>
+
+            @if (showTraitForm()) {
+              <div class="trait-form">
+                <input placeholder="Trait name *" [ngModel]="newTrait().name" (ngModelChange)="newTrait.update(t => ({...t, name: $event}))" />
+                <textarea placeholder="Description" rows="3" [ngModel]="newTrait().description" (ngModelChange)="newTrait.update(t => ({...t, description: $event}))"></textarea>
+                <button class="btn-primary" (click)="addCustomTrait()">Add</button>
+              </div>
+            }
+
+            @for (source of [['race','Racial'],['subrace','Subrace'],['class','Class'],['background','Background'],['custom','Custom']]; track source[0]) {
+              @if (traitsBySource($any(source[0])).length) {
+                <div class="section">
+                  <h4>{{ source[1] }}</h4>
+                  @for (trait of traitsBySource($any(source[0])); track trait.id) {
+                    <details class="trait-detail">
+                      <summary>
+                        {{ trait.name }}
+                        @if (trait.source === 'custom') {
+                          <button class="btn-remove inline" (click)="$event.preventDefault(); removeCustomTrait(trait.id)">✕</button>
+                        }
+                      </summary>
+                      <p>{{ trait.description || 'No description.' }}</p>
+                    </details>
+                  }
+                </div>
+              }
+            }
+
+            @if (!allTraits().length) {
+              <p class="empty-text">No traits yet.</p>
+            }
+          </div>
+        }
+        <!-- ===== TAB BIO ===== -->
+        @case ('bio') {
+          <div class="bio-tab">
+
+            <!-- Image -->
+            <div class="section">
+              <h4>Character Image</h4>
+              <div class="bio-image-row">
+                @if (character()!.image) {
+                  <img class="char-portrait" [src]="character()!.image" alt="Character portrait" />
+                }
+                <input class="bio-input" type="url" placeholder="Image URL..."
+                  [value]="character()!.image ?? ''"
+                  (change)="updateField('image', $any($event.target).value)" />
+              </div>
+            </div>
+
+            <!-- History -->
+            <div class="section">
+              <h4>History & Backstory</h4>
+              <textarea class="bio-textarea" rows="6" placeholder="Write your character's history..."
+                [value]="character()!.history ?? ''"
+                (change)="updateField('history', $any($event.target).value)"></textarea>
+            </div>
+
+            <!-- Notes -->
+            <div class="section">
+              <h4>Notes</h4>
+              <textarea class="bio-textarea" rows="3" placeholder="Additional notes..."
+                [value]="character()!.notes ?? ''"
+                (change)="updateField('notes', $any($event.target).value)"></textarea>
+            </div>
+
+            <!-- Personality Traits -->
+            <div class="section">
+              <h4>Personality Traits</h4>
+              <div class="bio-list">
+                @for (entry of getBioList('personality_traits'); track $index; let i = $index) {
+                  <div class="bio-entry"><span>{{ entry }}</span><button class="btn-remove" (click)="removeBioEntry('personality_traits', i)">✕</button></div>
+                }
+                @if (!getBioList('personality_traits').length) { <p class="empty-text">None set.</p> }
+              </div>
+              <div class="bio-add-row">
+                <input class="bio-input" placeholder="Add personality trait..." [ngModel]="newPersonality()" (ngModelChange)="newPersonality.set($event)" (keydown.enter)="addBioEntry('personality_traits', newPersonality()); newPersonality.set('')" />
+                <button class="btn-primary" (click)="addBioEntry('personality_traits', newPersonality()); newPersonality.set('')" [disabled]="!newPersonality().trim()">Add</button>
+              </div>
+            </div>
+
+            <!-- Ideals -->
+            <div class="section">
+              <h4>Ideals</h4>
+              <div class="bio-list">
+                @for (entry of getBioList('ideals'); track $index; let i = $index) {
+                  <div class="bio-entry"><span>{{ entry }}</span><button class="btn-remove" (click)="removeBioEntry('ideals', i)">✕</button></div>
+                }
+                @if (!getBioList('ideals').length) { <p class="empty-text">None set.</p> }
+              </div>
+              <div class="bio-add-row">
+                <input class="bio-input" placeholder="Add ideal..." [ngModel]="newIdeal()" (ngModelChange)="newIdeal.set($event)" (keydown.enter)="addBioEntry('ideals', newIdeal()); newIdeal.set('')" />
+                <button class="btn-primary" (click)="addBioEntry('ideals', newIdeal()); newIdeal.set('')" [disabled]="!newIdeal().trim()">Add</button>
+              </div>
+            </div>
+
+            <!-- Bonds -->
+            <div class="section">
+              <h4>Bonds</h4>
+              <div class="bio-list">
+                @for (entry of getBioList('bonds'); track $index; let i = $index) {
+                  <div class="bio-entry"><span>{{ entry }}</span><button class="btn-remove" (click)="removeBioEntry('bonds', i)">✕</button></div>
+                }
+                @if (!getBioList('bonds').length) { <p class="empty-text">None set.</p> }
+              </div>
+              <div class="bio-add-row">
+                <input class="bio-input" placeholder="Add bond..." [ngModel]="newBond()" (ngModelChange)="newBond.set($event)" (keydown.enter)="addBioEntry('bonds', newBond()); newBond.set('')" />
+                <button class="btn-primary" (click)="addBioEntry('bonds', newBond()); newBond.set('')" [disabled]="!newBond().trim()">Add</button>
+              </div>
+            </div>
+
+            <!-- Flaws -->
+            <div class="section">
+              <h4>Flaws</h4>
+              <div class="bio-list">
+                @for (entry of getBioList('flaws'); track $index; let i = $index) {
+                  <div class="bio-entry"><span>{{ entry }}</span><button class="btn-remove" (click)="removeBioEntry('flaws', i)">✕</button></div>
+                }
+                @if (!getBioList('flaws').length) { <p class="empty-text">None set.</p> }
+              </div>
+              <div class="bio-add-row">
+                <input class="bio-input" placeholder="Add flaw..." [ngModel]="newFlaw()" (ngModelChange)="newFlaw.set($event)" (keydown.enter)="addBioEntry('flaws', newFlaw()); newFlaw.set('')" />
+                <button class="btn-primary" (click)="addBioEntry('flaws', newFlaw()); newFlaw.set('')" [disabled]="!newFlaw().trim()">Add</button>
+              </div>
+            </div>
+
+          </div>
+        }
+
+      }
+    </div>
+  }
+</div>

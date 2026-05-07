@@ -1,0 +1,83 @@
+<div class="step-race">
+  <h2>Choose your Race</h2>
+
+  <input
+    class="filter-input"
+    type="text"
+    placeholder="Search race..."
+    [ngModel]="filter()"
+    (ngModelChange)="filter.set($event)"
+  />
+
+  @if (loading()) { <p class="loading-text">Loading races...</p> }
+
+  <div class="race-grid">
+    @for (race of filteredRaces(); track race.index ?? race.id) {
+      <div
+        class="race-card"
+        [class.selected]="selectedRace()?.index === (race.index ?? race.id)"
+        (click)="selectRace(race)"
+      >
+        <h3>{{ race.name }}</h3>
+        <p class="race-speed">Speed: {{ race.speed }} ft.</p>
+        @if (race.ability_bonuses.length) {
+          <p class="race-bonuses">{{ abilityBonusLabel(race) }}</p>
+        }
+        @if (race.traits.length) {
+          <p class="race-traits">Traits: {{ race.traits.length }}</p>
+        }
+      </div>
+    }
+  </div>
+
+  @if (selectedRace()) {
+    <div class="race-detail">
+      <h3>{{ selectedRace()!.name }}</h3>
+      @if (selectedRace()!.ability_bonuses.length) {
+        <div class="detail-section">
+          <strong>Ability Bonuses:</strong>
+          <ul>
+            @for (ab of selectedRace()!.ability_bonuses; track ab.ability_score.index) {
+              <li>{{ ab.ability_score.name }}: +{{ ab.bonus }}</li>
+            }
+          </ul>
+        </div>
+      }
+      @if (selectedRace()!.traits.length) {
+        <div class="detail-section">
+          <strong>Racial Traits:</strong>
+          <ul>
+            @for (t of selectedRace()!.traits; track t.index) {
+              <li>{{ t.name }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (subraces().length) {
+        <div class="subrace-section">
+          <h4>Subraces (optional)</h4>
+          @if (loadingSubraces()) { <p class="loading-text">Loading subraces...</p> }
+          <div class="subrace-grid">
+            @for (sub of subraces(); track sub.index) {
+              <div
+                class="subrace-card"
+                [class.selected]="selectedSubrace()?.index === sub.index"
+                (click)="selectSubrace(sub)"
+              >
+                <h4>{{ sub.name }}</h4>
+                @if (sub.ability_bonuses.length) {
+                  <p>
+                    @for (ab of sub.ability_bonuses; track ab.ability_score.index) {
+                      {{ ab.ability_score.name }} +{{ ab.bonus }}
+                    }
+                  </p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

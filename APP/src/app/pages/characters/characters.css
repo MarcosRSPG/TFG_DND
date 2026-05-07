@@ -1,0 +1,226 @@
+:host {
+  --ink: #eadab8;
+  --ink-soft: #cfbc96;
+  --gold: #d8b470;
+  --line: rgba(241, 213, 154, 0.2);
+  --paper: rgba(46, 29, 17, 0.88);
+  --paper-deep: rgba(29, 18, 10, 0.95);
+  --accent: #8d4f25;
+  --danger: #c0392b;
+  --header-offset: clamp(120px, 14vw, 180px);
+  display: block;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--header-offset));
+  padding: calc(var(--header-offset) + 11rem) 0 3rem;
+}
+
+.characters-page {
+  width: min(90vw, 1200px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ── Header ── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(170deg, var(--paper), var(--paper-deep));
+  border: 2px solid rgba(210, 167, 89, 0.4);
+  border-radius: 14px;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.35);
+}
+
+.page-header h1 {
+  margin: 0;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+/* ── Grid ── */
+.characters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ── Card ── */
+.character-card {
+  position: relative;
+  background: linear-gradient(165deg, var(--paper), var(--paper-deep));
+  border: 2px solid rgba(210, 167, 89, 0.3);
+  border-radius: 14px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.character-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.4);
+  border-color: rgba(216, 180, 112, 0.6);
+}
+
+.card-body {
+  padding: 1.4rem;
+  cursor: pointer;
+}
+
+.character-name {
+  margin: 0 0 0.8rem;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: 1.2rem;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+}
+
+.character-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.tag {
+  background: rgba(141, 79, 37, 0.35);
+  border: 1px solid rgba(216, 180, 112, 0.35);
+  border-radius: 6px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+
+.character-hp {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.character-alignment {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: var(--gold);
+  font-style: italic;
+}
+
+/* ── Delete button ── */
+.btn-delete {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  color: rgba(201, 162, 90, 0.4);
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.btn-delete:hover {
+  color: #e07070;
+  background: rgba(180, 60, 60, 0.15);
+}
+
+/* ── Delete confirm ── */
+.delete-confirm {
+  padding: 1.25rem;
+  color: var(--ink);
+}
+
+.delete-confirm p {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ── States ── */
+.loading-state,
+.empty-state,
+.error-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(170deg, var(--paper), var(--paper-deep));
+  border: 2px solid rgba(210, 167, 89, 0.4);
+  border-radius: 14px;
+  color: var(--ink-soft);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(216, 180, 112, 0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1.25rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Buttons ── */
+.btn-primary {
+  display: inline-block;
+  background: linear-gradient(180deg, #7f542f, #5a371f);
+  color: #fff4dc;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  border: 1px solid rgba(216, 180, 112, 0.5);
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s, box-shadow 0.15s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(55, 34, 19, 0.65);
+  color: var(--ink);
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-secondary:hover {
+  background: rgba(84, 50, 26, 0.8);
+  border-color: var(--gold);
+}
+
+.btn-danger {
+  background: rgba(150, 40, 40, 0.7);
+  color: #ffd5d5;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(200, 80, 80, 0.4);
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: background 0.15s;
+}
+
+.btn-danger:hover {
+  background: rgba(180, 50, 50, 0.85);
+}
+
+@media (max-width: 720px) {
+  :host { --header-offset: 96px; }
+  .page-header { flex-direction: column; gap: 1rem; text-align: center; }
+  .characters-grid { grid-template-columns: 1fr; }
+}

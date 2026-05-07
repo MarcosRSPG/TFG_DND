@@ -1,0 +1,188 @@
+:host {
+  --ink: #eadab8;
+  --ink-soft: #cfbc96;
+  --gold: #d8b470;
+  --line: rgba(241, 213, 154, 0.2);
+  --paper: rgba(46, 29, 17, 0.88);
+  --paper-deep: rgba(29, 18, 10, 0.95);
+  --accent: #8d4f25;
+  --header-offset: clamp(120px, 14vw, 180px);
+  display: block;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--header-offset));
+  padding: calc(var(--header-offset) + 11rem) 0 3rem;
+}
+
+/* ── Card única ── */
+.wizard-card {
+  width: min(90vw, 900px);
+  margin: 0 auto;
+  background: linear-gradient(170deg, var(--paper), var(--paper-deep));
+  border: 2px solid rgba(210, 167, 89, 0.4);
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+/* ── Top: título + stepper ── */
+.wizard-top {
+  padding: 1.75rem 2rem 1.5rem;
+}
+
+.wizard-top h1 {
+  margin: 0 0 1.25rem;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+/* ── Step pills ── */
+.step-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.step-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  border: 1px solid rgba(201, 162, 90, 0.22);
+  background: rgba(15, 10, 6, 0.35);
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.step-pill.active {
+  border-color: var(--gold);
+  background: linear-gradient(90deg, rgba(141, 79, 37, 0.55), rgba(141, 79, 37, 0.22));
+  color: #fff4dc;
+  font-weight: 600;
+}
+
+.step-pill.done {
+  border-color: rgba(216, 180, 112, 0.4);
+  background: rgba(141, 79, 37, 0.18);
+  color: var(--gold);
+}
+
+.pill-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(201, 162, 90, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.step-pill.active .pill-num,
+.step-pill.done .pill-num {
+  background: linear-gradient(180deg, #7f542f, #5a371f);
+  color: #fff4dc;
+}
+
+/* ── Divisor ── */
+.wizard-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 0;
+}
+
+/* ── Body ── */
+.wizard-body {
+  padding: 2rem;
+  min-height: 380px;
+  color: var(--ink);
+}
+
+/* ── Error ── */
+.wizard-error {
+  margin: 0;
+  padding: 0.75rem 2rem;
+  color: #e07070;
+  font-size: 0.88rem;
+  background: rgba(150, 40, 40, 0.18);
+  border-top: 1px solid rgba(200, 80, 80, 0.25);
+}
+
+/* ── Footer ── */
+.wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  background: rgba(15, 10, 6, 0.25);
+}
+
+.step-counter {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.03em;
+}
+
+/* ── Botones ── */
+.btn-primary {
+  background: linear-gradient(180deg, #7f542f, #5a371f);
+  color: #fff4dc;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(216, 180, 112, 0.5);
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s, box-shadow 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.btn-primary:disabled { opacity: 0.32; cursor: not-allowed; }
+
+.btn-submit {
+  padding: 0.6rem 2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+.btn-secondary {
+  background: rgba(55, 34, 19, 0.65);
+  color: var(--ink);
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid rgba(201, 162, 90, 0.3);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(84, 50, 26, 0.8);
+  border-color: var(--gold);
+}
+
+.btn-secondary:disabled { opacity: 0.32; cursor: not-allowed; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  :host { --header-offset: clamp(110px, 16vw, 150px); }
+}
+
+@media (max-width: 720px) {
+  :host { --header-offset: 96px; padding-top: calc(var(--header-offset) + 3rem); }
+  .wizard-top, .wizard-body { padding: 1.25rem; }
+  .wizard-footer { padding: 1rem 1.25rem; }
+  .step-pill .pill-label { display: none; }
+  .step-pill { padding: 0.4rem 0.6rem; }
+}

@@ -7,6 +7,7 @@ from db import get_db
 from models.Character import (
     ApiReferenceSchema,
     CharacterSchema,
+    InventoryItemSchema,
 )
 from services.backgrounds_service import get_remote_doc_by_id as get_remote_background_by_id
 
@@ -195,7 +196,7 @@ async def _existing_item_refs(item_refs: list[str]) -> list[str]:
 
 
 async def _normalize_character_payload(character_data: dict, *, created_by: str | None = None, strict_items: bool = False) -> dict:
-    payload = dict(character_data)
+    payload = _json_safe(dict(character_data))  # convierte ObjectId → str
 
     for managed_field in ("id", "created_by", "created_at", "updated_at"):
         payload.pop(managed_field, None)
@@ -224,13 +225,22 @@ async def _normalize_character_payload(character_data: dict, *, created_by: str 
     if not isinstance(item_refs, list):
         raise HTTPException(status_code=422, detail="inventory.items must be a list")
 
-    existing_refs = await _existing_item_refs(item_refs)
-    if strict_items:
-        missing_refs = [ref for ref in item_refs if ref not in existing_refs]
-        if missing_refs:
-            raise HTTPException(status_code=422, detail={"missing_item_refs": missing_refs})
+    # Full InventoryItemSchema objects → pass through directly (no catalog validation needed)
+    if not item_refs or isinstance(item_refs[0], dict):
+        inventory["items"] = item_refs
+    else:
+        # Legacy string refs → validate against items catalog
+        existing_refs = await _existing_item_refs(item_refs)
+        if strict_items:
+            missing_refs = [ref for ref in item_refs if ref not in existing_refs]
+            if missing_refs:
+                raise HTTPException(status_code=422, detail={"missing_item_refs": missing_refs})
+        # Convert legacy strings to minimal InventoryItemSchema dicts
+        inventory["items"] = [
+            {"id": ref, "name": ref, "type": "item", "quantity": 1, "state": "stored"}
+            for ref in existing_refs
+        ]
 
-    inventory["items"] = existing_refs if strict_items else existing_refs
     payload["inventory"] = inventory
 
     character = CharacterSchema.model_validate(payload)
@@ -252,6 +262,19 @@ async def get_all() -> list[dict]:
     for doc in docs:
         result.append(await _format_character_doc_async(doc))
     return result
+
+
+async def get_by_user(username: str) -> list[dict]:
+    try:
+        db = await get_db()
+        collection = db["characters"]
+        docs = await collection.find({"player": username}).to_list(length=None)
+        result = []
+        for doc in docs:
+            result.append(await _format_character_doc_async(doc))
+        return result
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error retrieving characters: {exc}") from exc
 
 
 async def _format_character_doc_async(doc: dict) -> dict:
