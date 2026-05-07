@@ -11,12 +11,23 @@ from pydantic import ValidationError
 def _is_mount_doc(doc: dict) -> bool:
     return doc.get("equipment_category", {}).get("index") == "mounts-and-vehicles"
 
-def _to_schema(doc: dict) -> MountSchema:
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, ObjectId):
+        return str(value)
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(v) for v in value]
+    return value
+def _to_schema(doc: dict) -> dict:
     payload = dict(doc)
     mongo_id = payload.pop("_id", None)
     if mongo_id is not None and not payload.get("id"):
         payload["id"] = str(mongo_id)
-    return MountSchema(**payload)
+    try:
+        return MountSchema(**payload).model_dump(exclude_none=True)
+    except ValidationError:
+        return _json_safe(payload)
 
 async def get_local_docs() -> list[dict[str, Any]]:
     try:
@@ -41,7 +52,7 @@ async def get_local_doc_by_id(mount_id: str) -> dict[str, Any] | None:
     collection = db[MONGODB_COLLECTION_ITEMS]
     return await collection.find_one({"index": mount_id, "equipment_category.index": "mounts-and-vehicles"})
 
-async def get_all() -> list[MountSchema]:
+async def get_all() -> list[dict]:
     docs = await get_local_docs()
     seen_ids = set()
     valid_mounts = []
@@ -58,16 +69,14 @@ async def get_all() -> list[MountSchema]:
             continue
     return valid_mounts
 
-async def get_by_id(mount_id: str) -> MountSchema:
+async def get_by_id(mount_id: str) -> dict:
     doc = await get_local_doc_by_id(mount_id)
     if doc is not None:
-        if not _is_mount_doc(doc):
-            raise HTTPException(status_code=404, detail="Mount not found")
         return _to_schema(doc)
     
     raise HTTPException(status_code=404, detail="Mount not found")
 
-async def create(mount_schema: MountSchema, created_by: str | None) -> MountSchema:
+async def create(mount_schema: MountSchema, created_by: str | None) -> dict:
     mount_data = mount_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -94,7 +103,7 @@ async def create(mount_schema: MountSchema, created_by: str | None) -> MountSche
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating mount: {exc}") from exc
 
-async def update(mount_id: str, mount: MountSchema) -> MountSchema:
+async def update(mount_id: str, mount: MountSchema) -> dict:
     if not ObjectId.is_valid(mount_id):
         raise HTTPException(status_code=400, detail="Invalid mount id")
     
@@ -120,16 +129,16 @@ async def update(mount_id: str, mount: MountSchema) -> MountSchema:
     updated = await collection.find_one({"_id": ObjectId(mount_id)})
     return _to_schema(updated)
 
-async def get_all_mounts() -> list[MountSchema]:
+async def get_all_mounts() -> list[dict]:
     return await get_all()
 
-async def get_mount_by_id(mount_id: str) -> MountSchema:
+async def get_mount_by_id(mount_id: str) -> dict:
     return await get_by_id(mount_id)
 
-async def create_mount(mount: MountSchema, created_by: str | None) -> MountSchema:
+async def create_mount(mount: MountSchema, created_by: str | None) -> dict:
     return await create(mount, created_by)
 
-async def update_mount(mount_id: str, mount: MountSchema) -> MountSchema:
+async def update_mount(mount_id: str, mount: MountSchema) -> dict:
     return await update(mount_id, mount)
 
 async def delete_mount(mount_id: str) -> dict:

@@ -92,7 +92,7 @@ export class ToolForm implements OnInit {
 
       if (this.isEditMode()) {
         const itemId = this.route.snapshot.paramMap.get('id') || '';
-        await this.itemsService.update(itemId, data);
+        await this.itemsService.update(itemId, data, 'tool');
       } else {
         await this.itemsService.create(data, 'tool');
       }

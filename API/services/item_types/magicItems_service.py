@@ -21,12 +21,23 @@ def _is_magic_item(doc: dict) -> bool:
     
     return doc.get("equipment_category", {}).get("index") == "magic-items"
 
-def _to_schema(doc: dict) -> MagicItemSchema:
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, ObjectId):
+        return str(value)
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(v) for v in value]
+    return value
+def _to_schema(doc: dict) -> dict:
     payload = dict(doc)
     mongo_id = payload.pop("_id", None)
     if mongo_id is not None and not payload.get("id"):
         payload["id"] = str(mongo_id)
-    return MagicItemSchema(**payload)
+    try:
+        return MagicItemSchema(**payload).model_dump(exclude_none=True)
+    except ValidationError:
+        return _json_safe(payload)
 
 async def get_local_docs() -> list[dict[str, Any]]:
     try:
@@ -51,20 +62,18 @@ async def get_local_doc_by_id(magicItem_id: str) -> dict[str, Any] | None:
     collection = db[MONGODB_COLLECTION_ITEMS]
     return await collection.find_one({"index": magicItem_id, "rarity.name": {"$exists": True}})
 
-async def get_all() -> list[MagicItemSchema]:
+async def get_all() -> list[dict]:
     docs = await get_local_docs()
     return [_to_schema(doc) for doc in docs if _is_magic_item(doc)]
 
-async def get_by_id(magicItem_id: str) -> MagicItemSchema:
+async def get_by_id(magicItem_id: str) -> dict:
     doc = await get_local_doc_by_id(magicItem_id)
     if doc is not None:
-        if not _is_magic_item(doc):
-            raise HTTPException(status_code=404, detail="MagicItem not found")
         return _to_schema(doc)
     
     raise HTTPException(status_code=404, detail="MagicItem not found")
 
-async def create(magicItem_schema: MagicItemSchema, created_by: str | None) -> MagicItemSchema:
+async def create(magicItem_schema: MagicItemSchema, created_by: str | None) -> dict:
     magicItem_data = magicItem_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -91,7 +100,7 @@ async def create(magicItem_schema: MagicItemSchema, created_by: str | None) -> M
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating magicItem: {exc}") from exc
 
-async def update(magicItem_id: str, magicItem: MagicItemSchema) -> MagicItemSchema:
+async def update(magicItem_id: str, magicItem: MagicItemSchema) -> dict:
     if not ObjectId.is_valid(magicItem_id):
         raise HTTPException(status_code=400, detail="Invalid magicItem id")
     
@@ -117,16 +126,16 @@ async def update(magicItem_id: str, magicItem: MagicItemSchema) -> MagicItemSche
     updated = await collection.find_one({"_id": ObjectId(magicItem_id)})
     return _to_schema(updated)
 
-async def get_all_magicItems() -> list[MagicItemSchema]:
+async def get_all_magicItems() -> list[dict]:
     return await get_all()
 
-async def get_magicItem_by_id(magicItem_id: str) -> MagicItemSchema:
+async def get_magicItem_by_id(magicItem_id: str) -> dict:
     return await get_by_id(magicItem_id)
 
-async def create_magicItem(magicItem: MagicItemSchema, created_by: str | None) -> MagicItemSchema:
+async def create_magicItem(magicItem: MagicItemSchema, created_by: str | None) -> dict:
     return await create(magicItem, created_by)
 
-async def update_magicItem(magicItem_id: str, magicItem: MagicItemSchema) -> MagicItemSchema:
+async def update_magicItem(magicItem_id: str, magicItem: MagicItemSchema) -> dict:
     return await update(magicItem_id, magicItem)
 
 async def delete_magicItem(magicItem_id: str) -> dict:

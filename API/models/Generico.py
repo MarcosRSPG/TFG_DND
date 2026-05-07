@@ -20,7 +20,7 @@ class ResourceReference(BaseModel):
 
 
 class CostSchema(BaseModel):
-    quantity: int
-    unit: str
+    quantity: Optional[int] = None
+    unit: Optional[str] = None
 
     model_config = ConfigDict(extra="allow")

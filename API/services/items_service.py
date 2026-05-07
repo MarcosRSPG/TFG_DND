@@ -233,6 +233,8 @@ async def get_by_id(item_id: str, type: str = None):
                 doc = await magicItems_service.get_by_id(item_id)
             case _:
                 raise HTTPException(status_code=400, detail="Invalid item type")
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving item: {exc}") from exc
     if not doc:
@@ -287,6 +289,8 @@ async def update(item_id: str, item_data: dict, type: str = None) -> dict:
                 return await magicItems_service.update(item_id, item_schema)
             case _:
                 raise HTTPException(status_code=400, detail="Invalid item type")
+    except HTTPException:
+        raise
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=exc.errors()) from exc
     except Exception as exc:

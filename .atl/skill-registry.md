@@ -12,6 +12,7 @@ See `_shared/skill-resolver.md` for the full resolution protocol.
 | When user asks to create a new skill, add agent instructions, or document patterns for AI | skill-creator | C:\Users\34652\.config\opencode\skills\skill-creator\SKILL.md |
 | When creating a pull request, opening a PR, or preparing changes for review | branch-pr | C:\Users\34652\.config\opencode\skills\branch-pr\SKILL.md |
 | When creating a GitHub issue, reporting a bug, or requesting a feature | issue-creation | C:\Users\34652\.config\opencode\skills\issue-creation\SKILL.md |
+| When user says "judgment day", "judgment-day", "review adversarial", "dual review", "doble review", "juzgar", "que lo juzguen" | judgment-day | C:\Users\34652\.config\opencode\skills\judgment-day\SKILL.md |
 
 ## Compact Rules
 
@@ -47,6 +48,15 @@ Pre-digested rules per skill. Delegators copy matching blocks into sub-agent pro
 - Feature Request required: Pre-flight checks, Problem Description, Proposed Solution, Affected Area
 - Questions go to Discussions, NOT issues
 - Labels: Bug Report → `bug` + `status:needs-review`; Feature → `enhancement` + `status:needs-review`
+
+### judgment-day
+- Resolve skills BEFORE launching judges: obtain registry → match by code context and task context → inject compact rules into ALL sub-agent prompts
+- Launch TWO blind, independent judges via `delegate` (async, parallel) — NEVER sequential, NEVER do review yourself
+- Synthesis: Confirmed (both found), Suspect A/B (one found), Contradiction (disagree)
+- WARNING classification: real (causes bug in realistic scenario, fix required) vs theoretical (contrived scenario, report as INFO, do NOT fix)
+- Fix-and-re-judge cycle: max 2 iterations before asking user; Round 1 ask user before fixing
+- Convergence threshold: 0 confirmed CRITICALs + 0 confirmed real WARNINGs = APPROVED
+- Theoretical warnings and suggestions may remain after approval
 
 ## Project Conventions
 

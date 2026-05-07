@@ -8,12 +8,23 @@ from config import MONGODB_COLLECTION_ITEMS
 from pydantic import ValidationError
 
 
-def _to_schema(doc: dict) -> ArmorSchema:
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, ObjectId):
+        return str(value)
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(v) for v in value]
+    return value
+def _to_schema(doc: dict) -> dict:
     payload = dict(doc)
     mongo_id = payload.pop("_id", None)
     if mongo_id is not None and not payload.get("id"):
         payload["id"] = str(mongo_id)
-    return ArmorSchema(**payload)
+    try:
+        return ArmorSchema(**payload).model_dump(exclude_none=True)
+    except ValidationError:
+        return _json_safe(payload)
 
 async def get_local_docs() -> list[dict[str, Any]]:
     try:
@@ -38,20 +49,17 @@ async def get_local_doc_by_id(armor_id: str) -> dict[str, Any] | None:
     collection = db[MONGODB_COLLECTION_ITEMS]
     return await collection.find_one({"index": armor_id, "equipment_category.index": "armor"})
 
-async def get_all() -> list[ArmorSchema]:
+async def get_all() -> list[dict]:
     docs = await get_local_docs()
     return [_to_schema(doc) for doc in docs]
 
-async def get_by_id(armor_id: str) -> ArmorSchema:
+async def get_by_id(armor_id: str) -> dict:
     doc = await get_local_doc_by_id(armor_id)
     if doc is not None:
-        if doc.get("equipment_category", {}).get("index") != "armor":
-            raise HTTPException(status_code=404, detail="Armor not found")
         return _to_schema(doc)
-    
     raise HTTPException(status_code=404, detail="Armor not found")
 
-async def create(armor_schema: ArmorSchema, created_by: str | None) -> ArmorSchema:
+async def create(armor_schema: ArmorSchema, created_by: str | None) -> dict:
     armor_data = armor_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -78,7 +86,7 @@ async def create(armor_schema: ArmorSchema, created_by: str | None) -> ArmorSche
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating armor: {exc}") from exc
 
-async def update(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
+async def update(armor_id: str, armor: ArmorSchema) -> dict:
     if not ObjectId.is_valid(armor_id):
         raise HTTPException(status_code=400, detail="Invalid armor id")
     
@@ -100,20 +108,19 @@ async def update(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
     result = await collection.update_one({"_id": ObjectId(armor_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Armor not found")
-    
     updated = await collection.find_one({"_id": ObjectId(armor_id)})
     return _to_schema(updated)
 
-async def get_all_armors() -> list[ArmorSchema]:
+async def get_all_armors() -> list[dict]:
     return await get_all()
 
-async def get_armor_by_id(armor_id: str) -> ArmorSchema:
+async def get_armor_by_id(armor_id: str) -> dict:
     return await get_by_id(armor_id)
 
-async def create_armor(armor: ArmorSchema, created_by: str | None) -> ArmorSchema:
+async def create_armor(armor: ArmorSchema, created_by: str | None) -> dict:
     return await create(armor, created_by)
 
-async def update_armor(armor_id: str, armor: ArmorSchema) -> ArmorSchema:
+async def update_armor(armor_id: str, armor: ArmorSchema) -> dict:
     return await update(armor_id, armor)
 
 async def delete_armor(armor_id: str) -> dict:
@@ -128,5 +135,4 @@ async def delete(armor_id: str) -> dict:
     result = await collection.delete_one({"_id": ObjectId(armor_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Armor not found")
-    
     return {"deleted": True, "armor_id": armor_id}

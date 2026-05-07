@@ -8,12 +8,23 @@ from config import MONGODB_COLLECTION_ITEMS
 from pydantic import ValidationError
 
 
-def _to_schema(doc: dict) -> WeaponSchema:
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, ObjectId):
+        return str(value)
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(v) for v in value]
+    return value
+def _to_schema(doc: dict) -> dict:
     payload = dict(doc)
     mongo_id = payload.pop("_id", None)
     if mongo_id is not None and not payload.get("id"):
         payload["id"] = str(mongo_id)
-    return WeaponSchema(**payload)
+    try:
+        return WeaponSchema(**payload).model_dump(exclude_none=True)
+    except ValidationError:
+        return _json_safe(payload)
 
 
 async def get_local_docs() -> list[dict[str, Any]]:
@@ -41,7 +52,7 @@ async def get_local_doc_by_id(weapon_id: str) -> dict[str, Any] | None:
     return await collection.find_one({"index": weapon_id, "equipment_category.index": "weapon"})
 
 
-async def get_all() -> list[WeaponSchema]:
+async def get_all() -> list[dict]:
     docs = await get_local_docs()
     weapons = []
     for doc in docs:
@@ -52,17 +63,14 @@ async def get_all() -> list[WeaponSchema]:
     return weapons
 
 
-async def get_by_id(weapon_id: str) -> WeaponSchema:
+async def get_by_id(weapon_id: str) -> dict:
     doc = await get_local_doc_by_id(weapon_id)
     if doc is not None:
-        if doc.get("equipment_category", {}).get("index") != "weapon":
-            raise HTTPException(status_code=404, detail="Weapon not found")
         return _to_schema(doc)
-    
     raise HTTPException(status_code=404, detail="Weapon not found")
 
 
-async def create(weapon_schema: WeaponSchema, created_by: str | None) -> WeaponSchema:
+async def create(weapon_schema: WeaponSchema, created_by: str | None) -> dict:
     weapon_data = weapon_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -90,7 +98,7 @@ async def create(weapon_schema: WeaponSchema, created_by: str | None) -> WeaponS
         raise HTTPException(status_code=500, detail=f"Error creating weapon: {exc}") from exc
 
 
-async def update(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
+async def update(weapon_id: str, weapon: WeaponSchema) -> dict:
     if not ObjectId.is_valid(weapon_id):
         raise HTTPException(status_code=400, detail="Invalid weapon id")
     
@@ -112,7 +120,6 @@ async def update(weapon_id: str, weapon: WeaponSchema) -> WeaponSchema:
     result = await collection.update_one({"_id": ObjectId(weapon_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Weapon not found")
-    
     updated = await collection.find_one({"_id": ObjectId(weapon_id)})
     return _to_schema(updated)
 
@@ -126,5 +133,4 @@ async def delete(weapon_id: str) -> dict:
     result = await collection.delete_one({"_id": ObjectId(weapon_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Weapon not found")
-    
     return {"deleted": True, "weapon_id": weapon_id}

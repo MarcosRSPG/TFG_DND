@@ -195,14 +195,50 @@ async def create(spell: dict) -> dict:
         raise
 
 
+def _sanitize_spell_input(data: dict) -> dict:
+    """
+    Strip empty or structurally invalid sub-objects before Pydantic validation.
+    Prevents 422 errors caused by the frontend sending {} for optional nested fields.
+    """
+    cleaned = {k: v for k, v in data.items()}
+
+    # dc needs a dc_type; discard if absent or empty
+    dc = cleaned.get("dc")
+    if dc is not None and (not isinstance(dc, dict) or not dc.get("dc_type")):
+        del cleaned["dc"]
+
+    # damage needs a damage_type; discard if absent or empty
+    damage = cleaned.get("damage")
+    if damage is not None and (not isinstance(damage, dict) or not damage.get("damage_type")):
+        del cleaned["damage"]
+
+    # area_of_effect needs type + size > 0; discard otherwise
+    aoe = cleaned.get("area_of_effect")
+    if aoe is not None and (not isinstance(aoe, dict) or not aoe.get("type") or not aoe.get("size")):
+        del cleaned["area_of_effect"]
+
+    # image: never overwrite with empty string
+    if "image" in cleaned and not cleaned["image"]:
+        del cleaned["image"]
+
+    return cleaned
+
+
 async def update(spell_id: str, spell: dict) -> dict:
     try:
-        validated_spell = Spell(**spell)
+        cleaned = _sanitize_spell_input(spell)
+        validated_spell = Spell.model_validate(cleaned)
         spell_dict = validated_spell.model_dump(exclude_unset=True)
+        # Extra guard: never overwrite image with empty/null
+        if "image" in spell_dict and not spell_dict["image"]:
+            del spell_dict["image"]
         result = await update_local_spell(spell_id, spell_dict)
         return _json_safe(result)
+    except ValidationError as e:
+        print(f"Validation error updating spell {spell_id}: {e.json()}")
+        raise
     except Exception as e:
-        print(f"Error updating spell: {e}")
+        print(f"Error updating spell {spell_id}: {e}")
         raise
 
 

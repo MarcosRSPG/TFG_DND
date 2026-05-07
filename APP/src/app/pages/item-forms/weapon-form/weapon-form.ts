@@ -329,9 +329,9 @@ hasProperty(propertyIndex: string): boolean {
         const itemId = this.route.snapshot.paramMap.get('id') || '';
         if (this.selectedFile) {
           const formData = this.buildFormData();
-          await this.itemsService.update(itemId, formData);
+          await this.itemsService.update(itemId, formData, 'weapon');
         } else {
-          await this.itemsService.update(itemId, data);
+          await this.itemsService.update(itemId, data, 'weapon');
         }
       } else {
         if (this.selectedFile) {

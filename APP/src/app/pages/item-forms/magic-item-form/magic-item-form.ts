@@ -116,9 +116,9 @@ export class MagicItemForm implements OnInit {
         
         if (this.selectedFile) {
           const formData = this.buildFormData();
-          await this.itemsService.update(itemId, formData);
+          await this.itemsService.update(itemId, formData, 'magicitem');
         } else {
-          await this.itemsService.update(itemId, data);
+          await this.itemsService.update(itemId, data, 'magicitem');
         }
       } else {
         if (this.selectedFile) {

@@ -82,7 +82,7 @@ export class AdventuringGearForm implements OnInit {
 
       if (this.isEditMode()) {
         const itemId = this.route.snapshot.paramMap.get('id') || '';
-        await this.itemsService.update(itemId, data);
+        await this.itemsService.update(itemId, data, 'adventuringgear');
       } else {
         await this.itemsService.create(data, 'adventuringgear');
       }

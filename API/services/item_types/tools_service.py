@@ -8,12 +8,23 @@ from config import MONGODB_COLLECTION_ITEMS
 from pydantic import ValidationError
 
 
-def _to_schema(doc: dict) -> ToolSchema:
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, ObjectId):
+        return str(value)
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(v) for v in value]
+    return value
+def _to_schema(doc: dict) -> dict:
     payload = dict(doc)
     mongo_id = payload.pop("_id", None)
     if mongo_id is not None and not payload.get("id"):
         payload["id"] = str(mongo_id)
-    return ToolSchema(**payload)
+    try:
+        return ToolSchema(**payload).model_dump(exclude_none=True)
+    except ValidationError:
+        return _json_safe(payload)
 
 async def get_local_docs() -> list[dict[str, Any]]:
     try:
@@ -38,20 +49,17 @@ async def get_local_doc_by_id(tool_id: str) -> dict[str, Any] | None:
     collection = db[MONGODB_COLLECTION_ITEMS]
     return await collection.find_one({"index": tool_id, "equipment_category.index": "tool"})
 
-async def get_all() -> list[ToolSchema]:
+async def get_all() -> list[dict]:
     docs = await get_local_docs()
     return [_to_schema(doc) for doc in docs]
 
-async def get_by_id(tool_id: str) -> ToolSchema:
+async def get_by_id(tool_id: str) -> dict:
     doc = await get_local_doc_by_id(tool_id)
     if doc is not None:
-        if doc.get("equipment_category", {}).get("index") != "tool":
-            raise HTTPException(status_code=404, detail="Tool not found")
         return _to_schema(doc)
-    
     raise HTTPException(status_code=404, detail="Tool not found")
 
-async def create(tool_schema: ToolSchema, created_by: str | None) -> ToolSchema:
+async def create(tool_schema: ToolSchema, created_by: str | None) -> dict:
     tool_data = tool_schema.model_dump(exclude_none=True)
     actor_id = created_by or "api"
     now = datetime.now(timezone.utc).isoformat()
@@ -78,7 +86,7 @@ async def create(tool_schema: ToolSchema, created_by: str | None) -> ToolSchema:
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error creating tool: {exc}") from exc
 
-async def update(tool_id: str, tool: ToolSchema) -> ToolSchema:
+async def update(tool_id: str, tool: ToolSchema) -> dict:
     if not ObjectId.is_valid(tool_id):
         raise HTTPException(status_code=400, detail="Invalid tool id")
     
@@ -100,20 +108,19 @@ async def update(tool_id: str, tool: ToolSchema) -> ToolSchema:
     result = await collection.update_one({"_id": ObjectId(tool_id)}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Tool not found")
-    
     updated = await collection.find_one({"_id": ObjectId(tool_id)})
     return _to_schema(updated)
 
-async def get_all_tools() -> list[ToolSchema]:
+async def get_all_tools() -> list[dict]:
     return await get_all()
 
-async def get_tool_by_id(tool_id: str) -> ToolSchema:
+async def get_tool_by_id(tool_id: str) -> dict:
     return await get_by_id(tool_id)
 
-async def create_tool(tool: ToolSchema, created_by: str | None) -> ToolSchema:
+async def create_tool(tool: ToolSchema, created_by: str | None) -> dict:
     return await create(tool, created_by)
 
-async def update_tool(tool_id: str, tool: ToolSchema) -> ToolSchema:
+async def update_tool(tool_id: str, tool: ToolSchema) -> dict:
     return await update(tool_id, tool)
 
 async def delete_tool(tool_id: str) -> dict:
@@ -128,5 +135,4 @@ async def delete(tool_id: str) -> dict:
     result = await collection.delete_one({"_id": ObjectId(tool_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Tool not found")
-    
     return {"deleted": True, "tool_id": tool_id}

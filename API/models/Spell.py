@@ -18,7 +18,7 @@ class DamageTypeSchema(BaseModel):
 class DCSchema(BaseModel):
     """Difficulty class for spell saves"""
     dc_type: ReferenceSchema
-    dc_success: str
+    dc_success: Optional[str] = None
 
 
 class AreaOfEffectSchema(BaseModel):
@@ -48,8 +48,11 @@ class Spell(BaseModel):
     school: ReferenceSchema
     classes: List[ReferenceSchema]
     subclasses: Optional[List[ReferenceSchema]] = Field(default_factory=list)
+    image: Optional[str] = None
     url: Optional[str] = None
     updated_at: Optional[str] = None
+    created_by: Optional[str] = None
+    created_at: Optional[str] = None
 
     class Config:
         json_schema_extra = {

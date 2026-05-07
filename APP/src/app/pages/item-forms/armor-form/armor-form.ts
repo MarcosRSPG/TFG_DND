@@ -94,7 +94,7 @@ export class ArmorForm implements OnInit {
 
       if (this.isEditMode()) {
         const itemId = this.route.snapshot.paramMap.get('id') || '';
-        await this.itemsService.update(itemId, data);
+        await this.itemsService.update(itemId, data, 'armor');
       } else {
         await this.itemsService.create(data, 'armor');
       }

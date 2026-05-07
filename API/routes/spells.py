@@ -37,16 +37,20 @@ async def create_spell(request: Request) -> dict:
 async def update_spell(spell_id: str, request: Request, current_user: dict = Depends(get_current_user)) -> dict:
     try:
         spell_data = await parse_form_or_json(request, "spells")
+        print(f"[UPDATE SPELL] {spell_id} — incoming keys: {list(spell_data.keys())}")
         existing = await spells_service.get_by_id(spell_id)
         if not existing:
             raise HTTPException(status_code=404, detail=f"Spell '{spell_id}' not found")
 
         return await spells_service.update(spell_id, spell_data)
     except ValidationError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        error_detail = e.json()
+        print(f"[UPDATE SPELL VALIDATION ERROR] {spell_id}: {error_detail}")
+        raise HTTPException(status_code=422, detail=error_detail)
     except HTTPException:
         raise
     except Exception as e:
+        print(f"[UPDATE SPELL ERROR] {spell_id}: {type(e).__name__}: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/{spell_id}", status_code=204)

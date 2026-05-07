@@ -561,8 +561,9 @@ export class SpellForm implements OnInit {
         // Store all types in a separate field if needed, for now just the primary
       }
 
-      // Build dc object
-      const dcObj = this.formData().dc || {};
+      // Build dc object - only send if it has a valid dc_type (avoid sending {} which fails Pydantic)
+      const dcRaw = this.formData().dc || {};
+      const dcObj = (dcRaw as Record<string, unknown>)['dc_type'] ? dcRaw : {};
 
       const data: Partial<Spell> = {
         ...this.formData(),
@@ -579,10 +580,15 @@ export class SpellForm implements OnInit {
         subclasses,
         damage: this.hasDamage() ? damageObj : undefined,
         dc: Object.keys(dcObj).length > 0 ? dcObj : undefined,
+        // Never send image as empty string in JSON - only via FormData when there is an actual file
+        image: undefined,
+        // Only send area_of_effect when the user explicitly enabled it
+        area_of_effect: this.hasAoE() ? this.formData().area_of_effect : undefined,
       };
 
       if (this.isEditMode()) {
         const spellId = this.route.snapshot.paramMap.get('id') || '';
+        console.log('[SPELL UPDATE] id:', spellId, 'data:', JSON.stringify(data, null, 2));
         if (this.selectedFile) {
           const formData = this.buildFormData();
           await this.spellsService.update(spellId, formData);
@@ -601,10 +607,14 @@ export class SpellForm implements OnInit {
       this.router.navigate(['/manual'], {
         queryParams: { section: 'spells' },
       });
-    } catch (err) {
-      console.error('Error creating/updating spell:', err);
+    } catch (err: unknown) {
+      const httpErr = err as { error?: { detail?: string }; status?: number };
+      const detail = httpErr?.error?.detail;
+      const detailStr = typeof detail === 'string' ? detail : JSON.stringify(detail);
+      console.error('[SPELL] Error HTTP status:', httpErr?.status, '| detail:', detailStr);
+      const msg = detailStr || 'Please try again.';
       this.error.set(
-        this.isEditMode() ? 'Error updating spell. Please try again.' : 'Error creating spell. Please try again.'
+        this.isEditMode() ? 'Error updating spell: ' + msg : 'Error creating spell: ' + msg
       );
     } finally {
       this.isSubmitting.set(false);
