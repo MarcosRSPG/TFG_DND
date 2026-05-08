@@ -31,6 +31,7 @@ export class CharacterForm implements OnInit {
   draft = signal<CharacterDraft>({});
   submitting = signal(false);
   error = signal<string | null>(null);
+  selectedImageFile = signal<File | null>(null);
 
   readonly STEPS = [
     { label: 'Race' },
@@ -44,6 +45,10 @@ export class CharacterForm implements OnInit {
 
   patchDraft(patch: Partial<CharacterDraft>): void {
     this.draft.update(current => ({ ...current, ...patch }));
+  }
+
+  onFileSelected(file: File | null): void {
+    this.selectedImageFile.set(file);
   }
 
   canProceed(): boolean {
@@ -90,6 +95,17 @@ export class CharacterForm implements OnInit {
       const payload = this.buildPayload();
       const created = await this.charactersService.createCharacter(payload);
       const id = created._id ?? created.id ?? created.index;
+
+      // Upload portrait after creation so we can use the _id as filename
+      const imageFile = this.selectedImageFile();
+      if (imageFile && id) {
+        try {
+          await this.charactersService.uploadImage(id, imageFile);
+        } catch (err) {
+          console.error('Portrait upload failed (character was still created):', err);
+        }
+      }
+
       this.router.navigate(['/characters', id]);
     } catch {
       this.error.set('Error creating character. Please try again.');
@@ -139,6 +155,8 @@ export class CharacterForm implements OnInit {
       bonds: d.selected_bonds ?? [],
       flaws: d.selected_flaws ?? [],
       custom_traits: [],
+      notes: d.notes,
+      history: d.history,
       inventory: { items: [], cash: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 } },
       spellcasting: {
         spellcasting_ability: d.class_spellcasting_ability || undefined,

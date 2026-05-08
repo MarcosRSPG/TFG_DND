@@ -1,5 +1,8 @@
+import shutil
+from pathlib import Path
+
 import fastapi
-from fastapi import Depends
+from fastapi import Depends, File, UploadFile
 
 from models.Character import CharacterSchema
 from services import characters_service
@@ -34,6 +37,27 @@ async def update_character(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     return await characters_service.update(character_id, character.model_dump(exclude_none=True, by_alias=True), current_user["username"])
+
+
+@router.post("/{character_id}/image", status_code=200)
+async def upload_character_image(
+    character_id: str,
+    image: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    images_dir = Path("assets/images/characters")
+    images_dir.mkdir(parents=True, exist_ok=True)
+
+    suffix = Path(image.filename or "image.png").suffix or ".png"
+    filename = f"{character_id}{suffix}"
+    file_path = images_dir / filename
+
+    with open(file_path, "wb") as f:
+        shutil.copyfileobj(image.file, f)
+
+    image_path = f"/images/characters/{filename}"
+    await characters_service.update_image(character_id, image_path)
+    return {"image": image_path}
 
 
 @router.delete("/{character_id}", status_code=204)

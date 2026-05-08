@@ -84,11 +84,15 @@ async def update_local_character(character_id: str, character_data: dict) -> dic
     try:
         db = await get_db()
         collection = db["characters"]
-        result = await collection.update_one(_character_filter(character_id), {"$set": character_data})
+        # MongoDB raises "Mod on _id not allowed" if _id is included in $set
+        safe_data = {k: v for k, v in character_data.items() if k != "_id"}
+        result = await collection.update_one(_character_filter(character_id), {"$set": safe_data})
         if result.matched_count > 0:
             return await collection.find_one(_character_filter(character_id)) or {}
         return {}
-    except Exception:
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).error("update_local_character error for %s: %s", character_id, exc)
         return {}
 
 
@@ -326,7 +330,8 @@ async def update(character_id: str, character: dict, updated_by: str | None) -> 
         raise HTTPException(status_code=400, detail="Invalid character id")
 
     try:
-        character_data = await _normalize_character_payload(character, created_by=updated_by, strict_items=True)
+        # strict_items=False for updates: items are already persisted objects, no need to re-validate against catalog
+        character_data = await _normalize_character_payload(character, created_by=updated_by, strict_items=False)
         character_data["updated_at"] = datetime.now(timezone.utc).isoformat()
 
         meta = character_data.get("_meta")
@@ -347,3 +352,16 @@ async def update(character_id: str, character: dict, updated_by: str | None) -> 
 
 async def delete(character_id: str) -> bool:
     return await delete_local_character(character_id)
+
+
+async def update_image(character_id: str, image_path: str) -> None:
+    """Lightweight update that only sets the image field, bypassing full schema validation."""
+    try:
+        db = await get_db()
+        collection = db["characters"]
+        await collection.update_one(
+            _character_filter(character_id),
+            {"$set": {"image": image_path, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error updating character image: {exc}") from exc

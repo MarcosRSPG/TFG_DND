@@ -22,7 +22,7 @@
       @case (2) { <app-class-step      [draft]="draft()" (change)="patchDraft($event)" /> }
       @case (3) { <app-background-step [draft]="draft()" (change)="patchDraft($event)" /> }
       @case (4) { <app-stats-step      [draft]="draft()" (change)="patchDraft($event)" /> }
-      @case (5) { <app-summary-step    [draft]="draft()" (change)="patchDraft($event)" /> }
+      @case (5) { <app-summary-step    [draft]="draft()" (change)="patchDraft($event)" (fileSelected)="onFileSelected($event)" /> }
     }
   </div>
 

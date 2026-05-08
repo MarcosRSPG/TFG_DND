@@ -80,36 +80,16 @@
 
   <div class="create-section">
     <button class="create-btn" (click)="navigateToCreate()">+ Create Spell</button>
+    <button class="sel-toggle-btn" [class.active]="selectionMode()" (click)="toggleSelectionMode()">{{ selectionMode() ? '✕ Cancel' : '☑ Select' }}</button>
+    @if (selectionMode() && selectedIds().size > 0) { <button class="export-pdf-btn" (click)="exportSelection()">📄 PDF ({{ selectedIds().size }})</button> }
   </div>
-
-  <app-filter-modal
-    #schoolsModal
-    title="Select Schools"
-    [options]="Array.from(schools())"
-    [selectedOptions]="filters().schools"
-    (confirmed)="onSchoolsConfirmed($event)"
-  ></app-filter-modal>
-
-  <app-filter-modal
-    #rangesModal
-    title="Select Ranges"
-    [options]="Array.from(ranges())"
-    [selectedOptions]="filters().ranges"
-    (confirmed)="onRangesConfirmed($event)"
-  ></app-filter-modal>
-
-  <app-filter-modal
-    #classesModal
-    title="Select Classes"
-    [options]="Array.from(classes())"
-    [selectedOptions]="filters().classes"
-    (confirmed)="onClassesConfirmed($event)"
-  ></app-filter-modal>
 
   <ul class="entity-list" aria-label="List of spells">
     @for (spell of paginatedSpells(); track getIdentifier(spell)) {
-      <li class="entity-item">
-        <a [routerLink]="['/spells', spell.id || spell.index]" class="entity-link">
+      <li class="entity-item" [class.sel-active]="selectionMode()" [class.sel-checked]="isSelected(getIdentifier(spell))"
+          (click)="selectionMode() && toggleSelect(getIdentifier(spell), $event)">
+        @if (selectionMode()) { <button class="sel-check-btn" (click)="toggleSelect(getIdentifier(spell), $event)">{{ isSelected(getIdentifier(spell)) ? '✔' : '' }}</button> }
+        <a [routerLink]="selectionMode() ? null : ['/spells', spell.id || spell.index]" class="entity-link">
           <h3>{{ spell.name }}</h3>
           <div class="spell-chips">
             <span class="spell-chip spell-chip--level">Lvl {{ spell.level }}</span>

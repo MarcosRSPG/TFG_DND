@@ -30,12 +30,16 @@
 
   <div class="create-section">
     <button class="create-btn" (click)="navigateToCreate()">+ Create Background</button>
+    <button class="sel-toggle-btn" [class.active]="selectionMode()" (click)="toggleSelectionMode()">{{ selectionMode() ? '✕ Cancel' : '☑ Select' }}</button>
+    @if (selectionMode() && selectedIds().size > 0) { <button class="export-pdf-btn" (click)="exportSelection()">📄 PDF ({{ selectedIds().size }})</button> }
   </div>
 
   <ul class="entity-list" aria-label="Listado de backgrounds">
     @for (background of paginatedBackgrounds(); track getIdentifier(background)) {
-      <li class="entity-item">
-        <a [routerLink]="['/backgrounds', background.id || background.index]" class="entity-link">
+      <li class="entity-item" [class.sel-active]="selectionMode()" [class.sel-checked]="isSelected(getIdentifier(background))"
+          (click)="selectionMode() && toggleSelect(getIdentifier(background), $event)">
+        @if (selectionMode()) { <button class="sel-check-btn" (click)="toggleSelect(getIdentifier(background), $event)">{{ isSelected(getIdentifier(background)) ? '✔' : '' }}</button> }
+        <a [routerLink]="selectionMode() ? null : ['/backgrounds', background.id || background.index]" class="entity-link">
           <h3>{{ background.name }}</h3>
           <p>Proficiencias: {{ background.starting_proficiencies?.length ?? 0 }}</p>
           <p>Feature: {{ background.feature?.name || '-' }}</p>

@@ -1,0 +1,593 @@
+<!-- ─── Toolbar (no-print) ─────────────────────────────────────────── -->
+<div class="sheet-toolbar no-print">
+  <a [routerLink]="['/characters', character()?._id ?? character()?.id]" class="back-btn">← Back to Character</a>
+  <span class="sheet-toolbar-title">Character Sheet</span>
+  <button class="print-btn" (click)="print()">🖨️ Print / Save as PDF</button>
+</div>
+
+@if (loading()) {
+  <div class="sheet-loading no-print"><div class="spinner"></div><p>Loading character…</p></div>
+}
+
+@if (error()) {
+  <p class="sheet-error no-print">{{ error() }}</p>
+}
+
+@if (character()) {
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 1 — CORE STATS
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="sheet-page page-1">
+
+    <!-- ── Header ── -->
+    <header class="sheet-header">
+      <div class="header-name">
+        <span class="field-label">Character Name</span>
+        <span class="field-value name-large">{{ character()!.name }}</span>
+      </div>
+      <div class="header-meta">
+        <div class="meta-item">
+          <span class="field-label">Class &amp; Level</span>
+          <span class="field-value">{{ character()!.character_class.name }} {{ character()!.level }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="field-label">Background</span>
+          <span class="field-value">{{ character()!.background.name }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="field-label">Player</span>
+          <span class="field-value">{{ character()!.player ?? '—' }}</span>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="meta-item">
+          <span class="field-label">Race</span>
+          <span class="field-value">{{ character()!.race.name }}@if(character()!.subrace){ / {{ character()!.subrace!.name }}}</span>
+        </div>
+        <div class="meta-item">
+          <span class="field-label">Alignment</span>
+          <span class="field-value">{{ character()!.alignment }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="field-label">Experience Points</span>
+          <span class="field-value">{{ (character()!.experience_points ?? 0) | number }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Three‐column body ── -->
+    <div class="sheet-body">
+
+      <!-- ── COL 1: Abilities / Saves / Skills ── -->
+      <div class="col col-left">
+
+        <!-- Ability Scores -->
+        <section class="section abilities-section">
+          @for (stat of STATS; track stat) {
+            <div class="ability-box">
+              <span class="ability-name">{{ STAT_LABELS[stat] }}</span>
+              <span class="ability-mod">{{ signedMod(stat) }}</span>
+              <span class="ability-score">{{ statValue(stat) }}</span>
+            </div>
+          }
+        </section>
+
+        <!-- Inspiration + Proficiency -->
+        <section class="section insp-prof">
+          <div class="insp-prof-item">
+            <span class="check-box"></span>
+            <span class="label">Inspiration</span>
+          </div>
+          <div class="insp-prof-item">
+            <span class="prof-value">+{{ totalProfBonus() }}</span>
+            <span class="label">Proficiency Bonus</span>
+          </div>
+        </section>
+
+        <!-- Saving Throws -->
+        <section class="section saves-section">
+          <h3 class="section-title">Saving Throws</h3>
+          @for (stat of STATS; track stat) {
+            <div class="save-row" [class.prof]="isSaveProficient(stat)">
+              <span class="dot" [class.filled]="isSaveProficient(stat)"></span>
+              <span class="save-val">{{ signedSave(stat) }}</span>
+              <span class="save-name">{{ STAT_LABELS[stat] }}</span>
+            </div>
+          }
+        </section>
+
+        <!-- Passive Perception -->
+        <section class="section passive-section">
+          <div class="passive-row">
+            <span class="passive-val">{{ passivePerception() }}</span>
+            <span class="label">Passive Wisdom (Perception)</span>
+          </div>
+        </section>
+
+        <!-- Skills -->
+        <section class="section skills-section">
+          <h3 class="section-title">Skills</h3>
+          @for (skill of SKILLS; track skill.index) {
+            <div class="skill-row" [class.prof]="isSkillProficient(skill)" [class.expert]="isSkillExpert(skill)">
+              <span class="dot"
+                [class.filled]="isSkillProficient(skill)"
+                [class.expert-dot]="isSkillExpert(skill)"></span>
+              <span class="skill-val">{{ signedSkill(skill) }}</span>
+              <span class="skill-name">
+                {{ skill.name }}
+                <em class="skill-ability">({{ STAT_ABBREVIATIONS[skill.ability] }})</em>
+                @if (isSkillExpert(skill)) { <sup class="expert-mark">E</sup> }
+              </span>
+            </div>
+          }
+        </section>
+      </div>
+
+      <!-- ── COL 2: Combat ── -->
+      <div class="col col-center">
+
+        <!-- Combat row 1 -->
+        <section class="section combat-top">
+          <div class="combat-box">
+            <span class="combat-val">{{ totalAC() }}</span>
+            <span class="combat-label">Armor Class</span>
+          </div>
+          <div class="combat-box">
+            <span class="combat-val">{{ initiative() >= 0 ? '+' + initiative() : initiative() }}</span>
+            <span class="combat-label">Initiative</span>
+          </div>
+          <div class="combat-box">
+            <span class="combat-val">{{ totalSpeed() }} ft.</span>
+            <span class="combat-label">Speed</span>
+          </div>
+        </section>
+
+        <!-- HP -->
+        <section class="section hp-section">
+          <div class="hp-max-row">
+            <span class="field-label">Hit Point Maximum</span>
+            <span class="hp-max">{{ character()!.hit_points }}</span>
+          </div>
+          <div class="hp-current-box">
+            <span class="field-label">Current Hit Points</span>
+            <span class="hp-current">{{ character()!.hit_points_current ?? character()!.hit_points }}</span>
+          </div>
+          <div class="hp-temp-box">
+            <span class="field-label">Temporary Hit Points</span>
+            <span class="hp-temp">{{ character()!.temp_hp ?? 0 }}</span>
+          </div>
+        </section>
+
+        <!-- Hit dice + Death saves -->
+        <section class="section hd-death">
+          <div class="hd-box">
+            <span class="field-label">Hit Dice</span>
+            <span class="field-value">{{ character()!.hit_dice }}</span>
+          </div>
+          <div class="death-box">
+            <span class="field-label">Death Saves</span>
+            <div class="death-row">
+              <span>Successes</span>
+              <span class="check-box"></span><span class="check-box"></span><span class="check-box"></span>
+            </div>
+            <div class="death-row">
+              <span>Failures</span>
+              <span class="check-box"></span><span class="check-box"></span><span class="check-box"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Attacks & Spellcasting -->
+        <section class="section attacks-section">
+          <h3 class="section-title">Attacks &amp; Spellcasting</h3>
+          <table class="attacks-table">
+            <thead>
+              <tr><th>Name</th><th>Atk Bonus</th><th>Damage / Type</th></tr>
+            </thead>
+            <tbody>
+              @for (w of weapons(); track w.id) {
+                <tr>
+                  <td>{{ w.name }}</td>
+                  <td>{{ attackBonus(w) }}</td>
+                  <td>{{ damageLabel(w) }} {{ w.weapon_data?.damage_type }}</td>
+                </tr>
+              }
+              @for (s of (character()!.spellcasting?.known_spells ?? []).filter(sp => sp.damage_dice || sp.attack_type); track s.index) {
+                <tr>
+                  <td>{{ s.name }} <em style="font-size:0.75em">(spell)</em></td>
+                  <td>{{ s.attack_type === 'save' ? 'DC ' + spellSaveDC() : (spellAttackBonus() >= 0 ? '+' + spellAttackBonus() : spellAttackBonus()) }}</td>
+                  <td>{{ s.damage_dice ?? '—' }} {{ s.damage_type ?? '' }}</td>
+                </tr>
+              }
+              @if (!weapons().length) {
+                <tr><td colspan="3" class="empty-row">—</td></tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Equipment -->
+        <section class="section equipment-section">
+          <h3 class="section-title">Equipment</h3>
+
+          @if (equippedItems().length) {
+            <p class="equip-group-label">Equipped</p>
+            @for (item of equippedItems(); track item.id) {
+              <div class="equip-row">
+                <span class="equip-name">{{ item.name }}</span>
+                @if (item.type === 'weapon' && item.weapon_data) {
+                  <span class="equip-meta">{{ item.weapon_data.damage_dice }} {{ item.weapon_data.damage_type }}</span>
+                }
+                @if (item.type === 'armor' && item.armor_data) {
+                  <span class="equip-meta">AC {{ item.armor_data.base_ac }} ({{ item.armor_data.armor_type }})</span>
+                }
+                @if (item.properties?.length) {
+                  <span class="equip-props">{{ item.properties!.join(', ') }}</span>
+                }
+              </div>
+            }
+          }
+
+          @if (carriedItems().length) {
+            <p class="equip-group-label" style="margin-top: 0.4rem;">Carried / Stored</p>
+            @for (item of carriedItems(); track item.id) {
+              <div class="equip-row">
+                <span class="equip-name">{{ item.name }}</span>
+                <span class="equip-qty">x{{ item.quantity }}</span>
+                @if (item.description) {
+                  <span class="equip-meta equip-desc">{{ item.description | slice:0:60 }}{{ item.description!.length > 60 ? '…' : '' }}</span>
+                }
+              </div>
+            }
+          }
+
+          <!-- Currency -->
+          <div class="currency-row">
+            @for (coin of [['cp','CP'],['sp','SP'],['ep','EP'],['gp','GP'],['pp','PP']]; track coin[0]) {
+              <div class="coin">
+                <span class="coin-val">{{ getCoinVal(coin[0]) }}</span>
+                <span class="coin-label">{{ coin[1] }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      <!-- ── COL 3: Personality / Features ── -->
+      <div class="col col-right">
+
+        <!-- Portrait -->
+        @if (portraitUrl()) {
+          <div class="portrait-box">
+            <img [src]="portraitUrl()!" alt="Portrait" class="portrait-img" />
+          </div>
+        }
+
+        <!-- Personality -->
+        <section class="section personality-section">
+          <h3 class="section-title">Personality Traits</h3>
+          <div class="bio-text">
+            @for (t of (character()!.personality_traits ?? []); track $index) { <p>{{ t }}</p> }
+            @if (!(character()!.personality_traits?.length)) { <p class="empty-text">—</p> }
+          </div>
+        </section>
+
+        <section class="section personality-section">
+          <h3 class="section-title">Ideals</h3>
+          <div class="bio-text">
+            @for (t of (character()!.ideals ?? []); track $index) { <p>{{ t }}</p> }
+            @if (!(character()!.ideals?.length)) { <p class="empty-text">—</p> }
+          </div>
+        </section>
+
+        <section class="section personality-section">
+          <h3 class="section-title">Bonds</h3>
+          <div class="bio-text">
+            @for (t of (character()!.bonds ?? []); track $index) { <p>{{ t }}</p> }
+            @if (!(character()!.bonds?.length)) { <p class="empty-text">—</p> }
+          </div>
+        </section>
+
+        <section class="section personality-section">
+          <h3 class="section-title">Flaws</h3>
+          <div class="bio-text">
+            @for (t of (character()!.flaws ?? []); track $index) { <p>{{ t }}</p> }
+            @if (!(character()!.flaws?.length)) { <p class="empty-text">—</p> }
+          </div>
+        </section>
+
+        <!-- Features & Traits (summary) -->
+        <section class="section traits-summary-section">
+          <h3 class="section-title">Features &amp; Traits</h3>
+          @for (trait of allTraits().slice(0, 8); track trait.id) {
+            <div class="trait-item">
+              <strong>{{ trait.name }}</strong>
+              @if (trait.level) { <span class="trait-lvl">Lv.{{ trait.level }}</span> }
+              @if (trait.description) {
+                <p class="trait-desc">{{ trait.description | slice:0:120 }}{{ trait.description.length > 120 ? '…' : '' }}</p>
+              }
+            </div>
+          }
+        </section>
+
+        <!-- Languages & Proficiencies -->
+        <section class="section prof-section">
+          <h3 class="section-title">Other Proficiencies &amp; Languages</h3>
+          <div class="prof-list">
+            @for (p of character()!.proficiencies; track p.proficiency.index) {
+              <span class="prof-tag">{{ p.proficiency.name }}</span>
+            }
+          </div>
+        </section>
+
+        <!-- Notes -->
+        @if (character()!.notes) {
+          <section class="section notes-section">
+            <h3 class="section-title">Notes</h3>
+            <p class="bio-text">{{ character()!.notes }}</p>
+          </section>
+        }
+      </div>
+    </div>
+
+    <!-- ── Extra row: Class Progression + Resource Trackers ── -->
+    @if (classLevelData() || otherItems().length) {
+      <div class="extra-row">
+
+        <!-- Class Progression -->
+        @if (classLevelData()) {
+          <div class="extra-box class-prog-box">
+            <h3 class="extra-box-title">
+              Class Features — {{ character()!.character_class.name }} Lv.{{ character()!.level }}
+            </h3>
+            <div class="class-prog-grid-print">
+              <div class="cpg-item">
+                <span class="cpg-label">Prof. Bonus</span>
+                <span class="cpg-val">+{{ totalProfBonus() }}</span>
+              </div>
+              @if (classLevelData()!.ability_score_bonuses > 0) {
+                <div class="cpg-item">
+                  <span class="cpg-label">ASI Used</span>
+                  <span class="cpg-val">{{ classLevelData()!.ability_score_bonuses }}</span>
+                </div>
+              }
+              @for (entry of classSpecificEntries(); track entry.key) {
+                <div class="cpg-item">
+                  <span class="cpg-label">{{ entry.label }}</span>
+                  <span class="cpg-val">{{ entry.value }}</span>
+                </div>
+              }
+            </div>
+            @if (classLevelData()!.spellcasting) {
+              <div class="cpg-slots">
+                <span class="cpg-label">Spell Slots</span>
+                <div class="cpg-slots-row">
+                  @for (lvl of [1,2,3,4,5,6,7,8,9]; track lvl) {
+                    @let slotKey = 'spell_slots_level_' + lvl;
+                    @let slots = classLevelData()!.spellcasting![slotKey];
+                    @if (slots && slots > 0) {
+                      <span class="cpg-slot-pill">Lv.{{ lvl }}: {{ slots }}</span>
+                    }
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Resource Trackers -->
+        @if (otherItems().length) {
+          <div class="extra-box trackers-box">
+            <h3 class="extra-box-title">Resources &amp; Consumables</h3>
+            <div class="tracker-grid-print">
+              @for (item of otherItems(); track item.id) {
+                <div class="tracker-item-print">
+                  <span class="tracker-name-print">{{ item.name }}</span>
+                  <div class="tracker-pips">
+                    @for (pip of [].constructor(item.quantity > 20 ? 20 : item.quantity); track $index) {
+                      <span class="tracker-pip"></span>
+                    }
+                    @if (item.quantity > 20) {
+                      <span class="tracker-overflow">+{{ item.quantity - 20 }}</span>
+                    }
+                  </div>
+                  <span class="tracker-qty-print">{{ item.quantity }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    }
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 2 — FEATURES & BIO
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="sheet-page page-2">
+    <div class="page-header-bar">
+      <span>{{ character()!.name }}</span>
+      <span>{{ character()!.character_class.name }} {{ character()!.level }} · {{ character()!.race.name }}</span>
+    </div>
+
+    <div class="two-col-layout">
+      <!-- All traits -->
+      <section class="section full-traits-section">
+        <h3 class="section-title">All Features &amp; Traits</h3>
+        @for (trait of allTraits(); track trait.id) {
+          <div class="full-trait">
+            <div class="full-trait-header">
+              <strong>{{ trait.name }}</strong>
+              <span class="trait-source-badge">{{ trait.source }}</span>
+              @if (trait.level) { <span class="trait-lvl">Lv.{{ trait.level }}</span> }
+            </div>
+            @if (trait.description) {
+              <p class="full-trait-desc">{{ trait.description }}</p>
+            }
+          </div>
+        }
+        @if (!allTraits().length) { <p class="empty-text">No traits recorded.</p> }
+      </section>
+
+      <!-- Bio -->
+      <div class="bio-col">
+        <section class="section bio-section">
+          <h3 class="section-title">Identity</h3>
+          <div class="bio-grid">
+            <div><span class="field-label">Alignment</span><span class="field-value">{{ character()!.alignment }}</span></div>
+            @if (character()!.age) {
+              <div><span class="field-label">Age</span><span class="field-value">{{ character()!.age }}</span></div>
+            }
+          </div>
+        </section>
+
+        @if (character()!.appearance) {
+          <section class="section bio-section">
+            <h3 class="section-title">Appearance</h3>
+            <p class="bio-text">{{ character()!.appearance }}</p>
+          </section>
+        }
+
+        @if (character()!.history) {
+          <section class="section bio-section">
+            <h3 class="section-title">History &amp; Backstory</h3>
+            <p class="bio-text">{{ character()!.history }}</p>
+          </section>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 3 — SPELLS (only if spellcaster)
+       ═══════════════════════════════════════════════════════════════ -->
+  @if (isSpellcaster()) {
+    <div class="sheet-page page-3">
+      <div class="page-header-bar">
+        <span>{{ character()!.name }} — Spell Sheet</span>
+        <span>{{ character()!.character_class.name }} {{ character()!.level }}</span>
+      </div>
+
+      <!-- Spellcasting header -->
+      <div class="spell-header-row">
+        <div class="spell-stat-box">
+          <span class="field-label">Spellcasting Class</span>
+          <span class="field-value">{{ character()!.character_class.name }}</span>
+        </div>
+        <div class="spell-stat-box">
+          <span class="field-label">Spellcasting Ability</span>
+          <span class="field-value">{{ character()!.spellcasting?.spellcasting_ability ?? '—' }}</span>
+        </div>
+        <div class="spell-stat-box">
+          <span class="field-label">Spell Save DC</span>
+          <span class="spell-big-val">{{ spellSaveDC() }}</span>
+        </div>
+        <div class="spell-stat-box">
+          <span class="field-label">Spell Attack Bonus</span>
+          <span class="spell-big-val">{{ spellAttackBonus() >= 0 ? '+' + spellAttackBonus() : spellAttackBonus() }}</span>
+        </div>
+      </div>
+
+      <!-- Spell slots -->
+      @if (slotLevels().length) {
+        <div class="section spell-slots-section">
+          <h3 class="section-title">Spell Slots</h3>
+          <div class="slots-grid">
+            @for (lvl of slotLevels(); track lvl) {
+              <div class="slot-box">
+                <span class="slot-level">Level {{ lvl }}</span>
+                <span class="slot-total">{{ slotTotal(lvl) }} slots</span>
+                <div class="slot-pips">
+                  @for (pip of [].constructor(slotTotal(lvl)); track $index) {
+                    <span class="slot-pip"></span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Spells by level — full descriptions -->
+      <div class="spells-by-level">
+        @for (group of enrichedSpellsByLevel(); track group.level) {
+          <div class="spell-level-block">
+            <h4 class="spell-level-title">
+              {{ group.level === 0 ? 'Cantrips' : 'Level ' + group.level + ' Spells' }}
+            </h4>
+            @for (spell of group.spells; track spell.index) {
+              <div class="spell-full-entry">
+
+                <!-- Header row: name + quick stats -->
+                <div class="spell-entry-header">
+                  <strong class="spell-entry-name">{{ spell.name }}</strong>
+                  @if (spell.full?.school?.name ?? spell.school) {
+                    <span class="spell-tag">{{ spell.full?.school?.name ?? spell.school }}</span>
+                  }
+                  @if (spell.full?.ritual) { <span class="spell-tag">Ritual</span> }
+                  @if (spell.full?.concentration) { <span class="spell-tag">Concentration</span> }
+                </div>
+
+                <!-- Casting stats row -->
+                <div class="spell-stats-row">
+                  @if (spell.full?.casting_time) {
+                    <span><em>Cast:</em> {{ spell.full!.casting_time }}</span>
+                  }
+                  @if (spell.full?.range) {
+                    <span><em>Range:</em> {{ spell.full!.range }}</span>
+                  }
+                  @if (spell.full?.duration) {
+                    <span><em>Duration:</em> {{ spell.full!.duration }}</span>
+                  }
+                  @if (spell.full?.components?.length) {
+                    <span><em>Components:</em> {{ spell.full!.components.join(', ') }}@if(spell.full!.material){ ({{ spell.full!.material }})}</span>
+                  }
+                  @if (spell.damage_dice) {
+                    <span><em>Damage:</em> {{ spell.damage_dice }} {{ spell.damage_type ?? '' }}</span>
+                  }
+                  @if (spell.attack_type === 'save' && spell.save_type) {
+                    <span><em>Save:</em> DC {{ spellSaveDC() }} {{ spell.save_type }}</span>
+                  } @else if (spell.attack_type && spell.attack_type !== 'save') {
+                    <span><em>Attack:</em> {{ spellAttackBonus() >= 0 ? '+' + spellAttackBonus() : spellAttackBonus() }}</span>
+                  }
+                </div>
+
+                <!-- Description -->
+                @if (spell.full?.desc?.length) {
+                  <div class="spell-entry-desc">
+                    @for (p of spell.full!.desc; track $index) { <p>{{ p }}</p> }
+                  </div>
+                }
+
+                <!-- At Higher Levels -->
+                @if (spell.full?.higher_level?.length) {
+                  <div class="spell-entry-higher">
+                    <strong>At Higher Levels.</strong>
+                    @for (p of spell.full!.higher_level; track $index) { <p>{{ p }}</p> }
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+        }
+        @if (!enrichedSpellsByLevel().length) {
+          <p class="empty-text">No spells recorded. Add spells in the character's Spells tab.</p>
+        }
+      </div>
+
+      <!-- Prepared spells -->
+      @if ((character()!.spellcasting?.prepared_spells?.length ?? 0) > 0) {
+        <div class="section">
+          <h3 class="section-title">Prepared Spells</h3>
+          <div class="prepared-list">
+            @for (s of character()!.spellcasting!.prepared_spells; track s.index) {
+              <span class="prepared-pill">{{ s.name }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+}

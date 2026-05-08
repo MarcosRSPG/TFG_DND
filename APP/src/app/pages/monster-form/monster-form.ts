@@ -126,7 +126,7 @@ export class MonsterForm implements OnInit {
   });
 
   // Image upload
-  imagePreview: string | null = null;
+  imagePreview = signal<string | null>(null);
   originalImageUrl: string | null = null;
   selectedFile: File | null = null;
 
@@ -382,10 +382,11 @@ export class MonsterForm implements OnInit {
 
       // Load existing image preview in edit mode
       if (monster.image) {
-        this.imagePreview = monster.image.startsWith('http')
+        const url = monster.image.startsWith('http')
           ? monster.image
           : `${environment.API_URL}${monster.image}`;
-        this.originalImageUrl = this.imagePreview;
+        this.imagePreview.set(url);
+        this.originalImageUrl = url;
       }
 
       // Update separate action signals (these are what the template renders)
@@ -956,7 +957,7 @@ export class MonsterForm implements OnInit {
       this.selectedFile = input.files[0];
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.imagePreview = e.target?.result as string;
+        this.imagePreview.set(e.target?.result as string);
       };
       reader.readAsDataURL(this.selectedFile);
     }
@@ -964,8 +965,7 @@ export class MonsterForm implements OnInit {
 
   revertImage(): void {
     this.selectedFile = null;
-    this.imagePreview = this.originalImageUrl;
-    // Reset the file input so the user can pick the same file again if needed
+    this.imagePreview.set(this.originalImageUrl);
     const input = document.getElementById('image') as HTMLInputElement | null;
     if (input) input.value = '';
   }

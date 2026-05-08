@@ -349,6 +349,14 @@ export class Spells implements OnInit {
     return item.index || (item as any).id || (item as any)['_id'] || item.name?.toLowerCase().replace(/ /g, '-') || '';
   }
 
+  // ── Selection mode ──────────────────────────────────────────────
+  selectionMode = signal(false);
+  selectedIds   = signal<Set<string>>(new Set());
+  toggleSelectionMode(): void { this.selectionMode.update(v => !v); if (!this.selectionMode()) this.selectedIds.set(new Set()); }
+  toggleSelect(id: string, event: Event): void { event.stopPropagation(); event.preventDefault(); this.selectedIds.update(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; }); }
+  isSelected(id: string): boolean { return this.selectedIds().has(id); }
+  exportSelection(): void { const ids = Array.from(this.selectedIds()).join(','); if (!ids) return; this.router.navigate(['/manual/print'], { queryParams: { type: 'spells', ids } }); }
+
   navigateToCreate(): void {
     this.router.navigate(['/spells/new']);
   }

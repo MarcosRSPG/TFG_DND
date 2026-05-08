@@ -10,6 +10,7 @@ import {
 } from '../../../../interfaces/Character';
 import { DndOptionsService } from '../../../../services/dnd-options-service';
 
+
 const STATS: StatKey[] = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
 
 @Component({
@@ -22,6 +23,7 @@ const STATS: StatKey[] = ['strength', 'dexterity', 'constitution', 'intelligence
 export class SummaryStepComponent implements OnChanges, OnInit {
   @Input() draft: CharacterDraft = {};
   @Output() change = new EventEmitter<Partial<CharacterDraft>>();
+  @Output() fileSelected = new EventEmitter<File | null>();
 
   private readonly dndOptions = inject(DndOptionsService);
 
@@ -31,6 +33,10 @@ export class SummaryStepComponent implements OnChanges, OnInit {
   name = signal('');
   alignment = signal('True Neutral');
   customMaxHp = signal<number | null>(null);
+  notes = signal('');
+  history = signal('');
+  imagePreview = signal<string | null>(null);
+  selectedFile: File | null = null;
 
   alignments = computed(() => this.dndOptions.alignments());
 
@@ -75,10 +81,14 @@ export class SummaryStepComponent implements OnChanges, OnInit {
     if (this.draft.name) this.name.set(this.draft.name);
     if (this.draft.alignment) this.alignment.set(this.draft.alignment);
     if (this.draft.custom_max_hp != null) this.customMaxHp.set(this.draft.custom_max_hp);
+    if (this.draft.notes) this.notes.set(this.draft.notes);
+    if (this.draft.history) this.history.set(this.draft.history);
   }
 
   onNameChange(value: string): void { this.name.set(value); this.emit(); }
   onAlignmentChange(value: string): void { this.alignment.set(value); this.emit(); }
+  onNotesChange(value: string): void { this.notes.set(value); this.emit(); }
+  onHistoryChange(value: string): void { this.history.set(value); this.emit(); }
 
   onHpChange(value: string): void {
     const n = parseInt(value, 10);
@@ -88,11 +98,34 @@ export class SummaryStepComponent implements OnChanges, OnInit {
 
   resetHp(): void { this.customMaxHp.set(null); this.emit(); }
 
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.selectedFile = input.files[0];
+      this.fileSelected.emit(this.selectedFile);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview.set(e.target?.result as string);
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  clearImage(): void {
+    this.selectedFile = null;
+    this.imagePreview.set(null);
+    this.fileSelected.emit(null);
+    const input = document.getElementById('portrait') as HTMLInputElement | null;
+    if (input) input.value = '';
+  }
+
   private emit(): void {
     this.change.emit({
       name: this.name(),
       alignment: this.alignment(),
       custom_max_hp: this.customMaxHp() ?? undefined,
+      notes: this.notes() || undefined,
+      history: this.history() || undefined,
     });
   }
 }

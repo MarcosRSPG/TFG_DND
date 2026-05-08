@@ -67,6 +67,53 @@
     </div>
   </div>
 
+  <!-- Portrait upload -->
+  <div class="notes-section">
+    <h3>Character Portrait</h3>
+    <div class="form-group">
+      <label for="portrait">Upload portrait (PNG / JPG)</label>
+      <input
+        id="portrait"
+        type="file"
+        accept=".png,.jpg,.jpeg,.webp"
+        (change)="onImageSelected($event)"
+        class="file-input"
+      />
+      @if (imagePreview()) {
+        <figure class="image-preview-figure">
+          <img [src]="imagePreview()" alt="Portrait preview" class="preview-img" />
+          <figcaption>Pending save — will be stored after character creation</figcaption>
+        </figure>
+        <button type="button" class="revert-image-btn" (click)="clearImage()">✕ Remove image</button>
+      }
+    </div>
+  </div>
+
+  <!-- Notes & History -->
+  <div class="notes-section">
+    <h3>Notes &amp; History</h3>
+    <label class="notes-label">
+      Notes
+      <textarea
+        class="notes-textarea"
+        placeholder="Personality, appearance, secrets…"
+        rows="4"
+        [ngModel]="notes()"
+        (ngModelChange)="onNotesChange($event)"
+      ></textarea>
+    </label>
+    <label class="notes-label" style="margin-top: 0.75rem;">
+      Backstory
+      <textarea
+        class="notes-textarea"
+        placeholder="Where does your character come from? What drives them?"
+        rows="5"
+        [ngModel]="history()"
+        (ngModelChange)="onHistoryChange($event)"
+      ></textarea>
+    </label>
+  </div>
+
   @if (!name().trim()) {
     <p class="warning">⚠️ Character name is required to continue.</p>
   }

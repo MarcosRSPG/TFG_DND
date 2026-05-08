@@ -34,6 +34,17 @@ export const routes: Routes = [
     title: 'Nuevo Personaje',
   },
   {
+    path: 'manual/print',
+    loadComponent: () => import('./pages/manual-print/manual-print').then(m => m.ManualPrint),
+    title: 'Print Selection',
+  },
+  // Sheet route MUST be before :id to avoid capture
+  {
+    path: 'characters/:id/sheet',
+    loadComponent: () => import('./pages/character-sheet/character-sheet').then(m => m.CharacterSheet),
+    title: 'Character Sheet',
+  },
+  {
     path: 'characters/:id',
     loadComponent: () => import('./pages/character-detail/character-detail').then(m => m.CharacterDetail),
     title: 'Personaje',

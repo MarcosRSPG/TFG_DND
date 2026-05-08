@@ -92,12 +92,26 @@
 
   <div class="create-section">
     <button class="create-btn" (click)="navigateToCreate()">+ Create Monster</button>
+    <button class="sel-toggle-btn" [class.active]="selectionMode()" (click)="toggleSelectionMode()">
+      {{ selectionMode() ? '✕ Cancel' : '☑ Select' }}
+    </button>
+    @if (selectionMode() && selectedIds().size > 0) {
+      <button class="export-pdf-btn" (click)="exportSelection()">
+        📄 PDF ({{ selectedIds().size }})
+      </button>
+    }
   </div>
 
   <ul class="entity-list" aria-label="List of monsters">
     @for (monster of paginatedMonsters(); track getIdentifier(monster)) {
-      <li class="entity-item">
-        <a [routerLink]="['/monsters', getIdentifier(monster)]" class="entity-link">
+      <li class="entity-item" [class.sel-active]="selectionMode()" [class.sel-checked]="isSelected(getIdentifier(monster))"
+          (click)="selectionMode() && toggleSelect(getIdentifier(monster), $event)">
+        @if (selectionMode()) {
+          <button class="sel-check-btn" (click)="toggleSelect(getIdentifier(monster), $event)">
+            {{ isSelected(getIdentifier(monster)) ? '✔' : '' }}
+          </button>
+        }
+        <a [routerLink]="selectionMode() ? null : ['/monsters', getIdentifier(monster)]" class="entity-link">
           <h3>{{ monster.name }}</h3>
           <p>{{ monster.size }} {{ monster.type }}</p>
           <p>CR: {{ monster.challenge_rating }} | HP: {{ monster.hit_points }}</p>

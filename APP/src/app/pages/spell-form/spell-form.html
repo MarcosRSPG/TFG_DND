@@ -65,9 +65,9 @@
           (change)="onImageSelected($event)"
           class="file-input"
         />
-            @if (imagePreview) {
+            @if (imagePreview()) {
               <figure class="image-preview-figure">
-                <img [src]="imagePreview" alt="Image preview" class="preview-img" />
+                <img [src]="imagePreview()!" alt="Image preview" class="preview-img" />
                 <figcaption>
                   @if (selectedFile) {
                     Nueva imagen (pendiente de guardar)

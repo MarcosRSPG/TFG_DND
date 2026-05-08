@@ -1,0 +1,979 @@
+/* ══════════════════════════════════════════════════════════════════
+   CHARACTER SHEET — Screen + Print
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ─── CSS Variables ─────────────────────────────────────────────── */
+:host {
+  --sheet-bg:     #fdf6e3;
+  --sheet-ink:    #1a0f00;
+  --sheet-soft:   #4a3520;
+  --sheet-gold:   #8b6914;
+  --sheet-red:    #7a1a1a;
+  --sheet-border: #c9a95a;
+  --sheet-line:   rgba(139, 105, 20, 0.3);
+  --prof-color:   #7a1a1a;
+  --expert-color: #1a3a7a;
+  display: block;
+  background: #2a1a0a;
+  min-height: 100vh;
+  padding-top: 4rem;
+}
+
+/* ─── Toolbar (screen only) ─────────────────────────────────────── */
+.sheet-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.5rem;
+  background: rgba(15, 8, 2, 0.95);
+  border-bottom: 1px solid rgba(201, 162, 90, 0.3);
+  backdrop-filter: blur(6px);
+}
+
+.back-btn {
+  color: rgba(201, 162, 90, 0.8);
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color 0.15s;
+}
+.back-btn:hover { color: #d8b470; }
+
+.sheet-toolbar-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: rgba(201, 162, 90, 0.9);
+  letter-spacing: 0.06em;
+}
+
+.print-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 7px;
+  border: 1px solid rgba(120, 200, 120, 0.5);
+  background: rgba(40, 100, 40, 0.3);
+  color: #90e090;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.print-btn:hover { background: rgba(40, 120, 40, 0.5); border-color: #90e090; }
+
+.sheet-loading, .sheet-error {
+  text-align: center;
+  padding: 4rem;
+  color: rgba(201, 162, 90, 0.7);
+}
+
+/* ─── Sheet Page (both screen & print) ─────────────────────────── */
+.sheet-page {
+  width: 210mm;       /* A4 width */
+  min-height: 297mm;  /* A4 height */
+  margin: 1rem auto;
+  background: var(--sheet-bg);
+  color: var(--sheet-ink);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 8.5pt;
+  line-height: 1.3;
+  padding: 8mm;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+}
+
+/* ─── Header ────────────────────────────────────────────────────── */
+.sheet-header {
+  border: 2px solid var(--sheet-red);
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.header-name {
+  display: flex;
+  flex-direction: column;
+}
+
+.name-large {
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: 16pt;
+  font-weight: bold;
+  color: var(--sheet-red);
+  line-height: 1.1;
+}
+
+.header-meta {
+  display: flex;
+  gap: 8px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-bottom: 1px solid var(--sheet-line);
+  padding-bottom: 1px;
+}
+
+/* ─── Labels / Values ───────────────────────────────────────────── */
+.field-label {
+  font-size: 5.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sheet-soft);
+  font-family: Arial, sans-serif;
+}
+
+.field-value {
+  font-size: 8.5pt;
+  color: var(--sheet-ink);
+  font-weight: 600;
+}
+
+/* ─── Three-column body ─────────────────────────────────────────── */
+.sheet-body {
+  display: grid;
+  grid-template-columns: 36mm 1fr 58mm;
+  gap: 4px;
+}
+
+.col { display: flex; flex-direction: column; gap: 3px; }
+
+/* ─── Sections ──────────────────────────────────────────────────── */
+.section {
+  border: 1px solid var(--sheet-border);
+  border-radius: 3px;
+  padding: 3px 4px;
+  background: rgba(255, 252, 240, 0.7);
+}
+
+.section-title {
+  font-family: Arial, sans-serif;
+  font-size: 5.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sheet-red);
+  border-bottom: 1px solid var(--sheet-line);
+  padding-bottom: 1px;
+  margin: 0 0 2px;
+  font-weight: 700;
+}
+
+/* ─── Ability Scores ────────────────────────────────────────────── */
+.abilities-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ability-box {
+  border: 1px solid var(--sheet-border);
+  border-radius: 3px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: center;
+  text-align: center;
+  padding: 2px;
+  background: white;
+}
+
+.ability-name {
+  font-size: 5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sheet-red);
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+}
+
+.ability-mod {
+  font-family: 'Cinzel', serif;
+  font-size: 14pt;
+  font-weight: bold;
+  color: var(--sheet-ink);
+  line-height: 1;
+}
+
+.ability-score {
+  font-size: 8pt;
+  color: var(--sheet-soft);
+  border: 1px solid var(--sheet-line);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  background: var(--sheet-bg);
+}
+
+/* ─── Inspiration + Prof ────────────────────────────────────────── */
+.insp-prof {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.insp-prof-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.check-box {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--sheet-ink);
+  display: inline-block;
+  flex-shrink: 0;
+  background: white;
+}
+
+.prof-value {
+  font-family: 'Cinzel', serif;
+  font-size: 10pt;
+  font-weight: bold;
+  color: var(--sheet-ink);
+  min-width: 18px;
+  text-align: center;
+}
+
+.label {
+  font-size: 6pt;
+  color: var(--sheet-soft);
+  font-family: Arial, sans-serif;
+}
+
+/* ─── Saving Throws ─────────────────────────────────────────────── */
+.saves-section { }
+
+.save-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0.5px 0;
+}
+.save-row.prof { font-weight: bold; }
+
+.save-val {
+  min-width: 18px;
+  font-size: 7pt;
+  text-align: right;
+  color: var(--sheet-ink);
+  font-weight: 600;
+}
+
+.save-name {
+  font-size: 7pt;
+  color: var(--sheet-ink);
+}
+
+/* ─── Dots ──────────────────────────────────────────────────────── */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--sheet-ink);
+  display: inline-block;
+  flex-shrink: 0;
+  background: white;
+}
+.dot.filled { background: var(--prof-color); border-color: var(--prof-color); }
+.dot.expert-dot { background: var(--expert-color); border-color: var(--expert-color); }
+
+/* ─── Passive Perception ────────────────────────────────────────── */
+.passive-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.passive-val {
+  font-family: 'Cinzel', serif;
+  font-size: 11pt;
+  font-weight: bold;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ─── Skills ────────────────────────────────────────────────────── */
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0.5px 0;
+}
+.skill-row.prof .skill-name { font-weight: 600; }
+.skill-row.expert .skill-name { font-weight: 700; color: var(--expert-color); }
+
+.skill-val {
+  min-width: 18px;
+  font-size: 7pt;
+  text-align: right;
+  font-weight: 600;
+}
+
+.skill-name {
+  font-size: 7pt;
+  flex: 1;
+}
+
+.skill-ability { font-size: 5.5pt; color: var(--sheet-soft); }
+.expert-mark { font-size: 5pt; color: var(--expert-color); vertical-align: super; }
+
+/* ─── Combat top row ────────────────────────────────────────────── */
+.combat-top {
+  display: flex;
+  gap: 4px;
+  justify-content: space-around;
+}
+
+.combat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--sheet-border);
+  border-radius: 3px;
+  padding: 3px 5px;
+  flex: 1;
+  background: white;
+}
+
+.combat-val {
+  font-family: 'Cinzel', serif;
+  font-size: 13pt;
+  font-weight: bold;
+  color: var(--sheet-ink);
+  line-height: 1;
+}
+
+.combat-label {
+  font-size: 5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sheet-red);
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+/* ─── HP ────────────────────────────────────────────────────────── */
+.hp-section { display: flex; flex-direction: column; gap: 2px; }
+
+.hp-max-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--sheet-line);
+  padding-bottom: 1px;
+}
+
+.hp-max {
+  font-size: 9pt;
+  font-weight: bold;
+}
+
+.hp-current-box, .hp-temp-box {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--sheet-line);
+  border-radius: 2px;
+  padding: 1px 3px;
+  background: white;
+}
+
+.hp-current {
+  font-family: 'Cinzel', serif;
+  font-size: 14pt;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1;
+}
+
+.hp-temp { font-size: 10pt; text-align: center; color: var(--sheet-soft); }
+
+/* ─── Hit dice + Death saves ────────────────────────────────────── */
+.hd-death { display: flex; gap: 3px; }
+.hd-box, .death-box { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+
+.death-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 6pt;
+}
+.death-row span:first-child { flex: 1; color: var(--sheet-soft); }
+
+/* ─── Attacks table ─────────────────────────────────────────────── */
+.attacks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7pt;
+}
+
+.attacks-table th {
+  border-bottom: 1px solid var(--sheet-border);
+  font-family: Arial, sans-serif;
+  font-size: 5.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sheet-red);
+  text-align: left;
+  padding: 1px 2px;
+}
+
+.attacks-table td {
+  padding: 1.5px 2px;
+  border-bottom: 1px solid rgba(201, 169, 90, 0.2);
+  color: var(--sheet-ink);
+}
+
+.empty-row { color: var(--sheet-soft); font-style: italic; }
+
+/* ─── Equipment ─────────────────────────────────────────────────── */
+.equip-group-label {
+  font-family: Arial, sans-serif;
+  font-size: 5.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sheet-soft);
+  margin: 2px 0 1px;
+}
+
+.equip-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 1px 0;
+  border-bottom: 1px dotted rgba(201, 169, 90, 0.3);
+  flex-wrap: wrap;
+}
+
+.equip-name { font-weight: 600; font-size: 7.5pt; }
+.equip-qty  { font-size: 6.5pt; color: var(--sheet-soft); }
+.equip-meta { font-size: 6.5pt; color: var(--sheet-soft); }
+.equip-props { font-size: 5.5pt; color: var(--sheet-gold); font-style: italic; }
+.equip-desc { font-style: italic; flex-basis: 100%; margin-top: 0; }
+
+.currency-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+  border-top: 1px solid var(--sheet-line);
+  padding-top: 2px;
+}
+
+.coin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  border: 1px solid var(--sheet-line);
+  border-radius: 2px;
+  padding: 1px;
+  background: white;
+}
+
+.coin-val { font-size: 8pt; font-weight: bold; }
+.coin-label { font-size: 5pt; color: var(--sheet-gold); font-family: Arial, sans-serif; text-transform: uppercase; }
+
+/* ─── Portrait ──────────────────────────────────────────────────── */
+.portrait-box {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3px;
+}
+
+.portrait-img {
+  max-width: 100%;
+  max-height: 55mm;
+  object-fit: contain;
+  border: 1px solid var(--sheet-border);
+  border-radius: 3px;
+}
+
+/* ─── Personality / Bio ─────────────────────────────────────────── */
+.personality-section .bio-text {
+  font-size: 7pt;
+  line-height: 1.4;
+  color: var(--sheet-ink);
+  min-height: 12mm;
+  border: 1px dotted var(--sheet-line);
+  padding: 2px;
+  background: white;
+  border-radius: 2px;
+}
+
+.bio-text { white-space: pre-wrap; }
+.bio-text p { margin: 0 0 2px; }
+
+.empty-text { color: var(--sheet-soft); font-style: italic; }
+
+/* ─── Traits (summary) ──────────────────────────────────────────── */
+.trait-item {
+  border-bottom: 1px solid rgba(201, 169, 90, 0.2);
+  padding: 2px 0;
+}
+
+.trait-item strong { font-size: 7.5pt; color: var(--sheet-red); }
+
+.trait-lvl {
+  display: inline-block;
+  margin-left: 3px;
+  font-size: 5.5pt;
+  color: var(--sheet-soft);
+  border: 1px solid var(--sheet-line);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.trait-desc {
+  font-size: 6.5pt;
+  color: var(--sheet-soft);
+  margin: 1px 0 0;
+}
+
+/* ─── Proficiencies ─────────────────────────────────────────────── */
+.prof-list { display: flex; flex-wrap: wrap; gap: 2px; }
+
+.prof-tag {
+  font-size: 6pt;
+  padding: 1px 4px;
+  border: 1px solid var(--sheet-line);
+  border-radius: 10px;
+  background: white;
+  color: var(--sheet-soft);
+}
+
+/* ─── Notes ─────────────────────────────────────────────────────── */
+.notes-section .bio-text {
+  font-size: 7pt;
+  color: var(--sheet-ink);
+}
+
+/* ─── Extra row: Class Progression + Trackers ──────────────────── */
+.extra-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.extra-box {
+  border: 1.5px solid var(--sheet-red);
+  border-radius: 4px;
+  padding: 4px 6px;
+  background: rgba(255, 252, 240, 0.8);
+}
+
+.extra-box-title {
+  font-family: 'Cinzel', serif;
+  font-size: 7pt;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--sheet-red);
+  border-bottom: 1px solid var(--sheet-line);
+  padding-bottom: 2px;
+  margin: 0 0 4px;
+}
+
+/* Class progression grid */
+.class-prog-grid-print {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.cpg-item {
+  border: 1px solid var(--sheet-border);
+  border-radius: 3px;
+  padding: 2px 5px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 36px;
+}
+
+.cpg-label {
+  font-size: 5pt;
+  text-transform: uppercase;
+  color: var(--sheet-soft);
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.cpg-val {
+  font-family: 'Cinzel', serif;
+  font-size: 9pt;
+  font-weight: bold;
+  color: var(--sheet-red);
+  line-height: 1.1;
+}
+
+.cpg-slots { margin-top: 2px; }
+
+.cpg-slots-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 1px;
+}
+
+.cpg-slot-pill {
+  font-size: 6pt;
+  padding: 1px 4px;
+  border: 1px solid rgba(100, 50, 160, 0.4);
+  border-radius: 6px;
+  background: rgba(100, 50, 160, 0.08);
+  color: var(--sheet-soft);
+}
+
+/* Resource trackers grid */
+.tracker-grid-print {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tracker-item-print {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 0;
+  border-bottom: 1px dotted rgba(139, 105, 20, 0.2);
+}
+
+.tracker-name-print {
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: var(--sheet-ink);
+  min-width: 55px;
+  flex-shrink: 0;
+}
+
+.tracker-pips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5px;
+  flex: 1;
+  align-items: center;
+}
+
+.tracker-pip {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--sheet-ink);
+  border-radius: 50%;
+  background: white;
+  display: inline-block;
+}
+
+.tracker-overflow {
+  font-size: 6pt;
+  color: var(--sheet-soft);
+  font-style: italic;
+}
+
+.tracker-qty-print {
+  font-family: 'Cinzel', serif;
+  font-size: 9pt;
+  font-weight: bold;
+  color: var(--sheet-red);
+  min-width: 18px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ─── Page 2: Features & Bio ────────────────────────────────────── */
+.page-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--sheet-red);
+  padding-bottom: 3px;
+  margin-bottom: 5px;
+  font-family: 'Cinzel', serif;
+  font-size: 10pt;
+  color: var(--sheet-red);
+}
+
+.two-col-layout {
+  display: grid;
+  grid-template-columns: 1fr 80mm;
+  gap: 5px;
+}
+
+.full-traits-section { }
+
+.full-trait {
+  border-bottom: 1px solid rgba(201, 169, 90, 0.2);
+  padding: 3px 0;
+}
+
+.full-trait-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 1px;
+}
+
+.full-trait-header strong { font-size: 8pt; color: var(--sheet-red); }
+
+.trait-source-badge {
+  font-size: 5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sheet-soft);
+  border: 1px solid var(--sheet-line);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.full-trait-desc {
+  font-size: 7pt;
+  color: var(--sheet-ink);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.bio-col { display: flex; flex-direction: column; gap: 4px; }
+
+.bio-grid { display: flex; flex-direction: column; gap: 2px; }
+.bio-grid div { display: flex; flex-direction: column; }
+
+.bio-section .bio-text {
+  font-size: 7pt;
+  line-height: 1.6;
+  color: var(--sheet-ink);
+  white-space: pre-wrap;
+}
+
+/* ─── Page 3: Spells ────────────────────────────────────────────── */
+.spell-header-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+
+.spell-stat-box {
+  flex: 1;
+  border: 1px solid var(--sheet-border);
+  border-radius: 3px;
+  padding: 3px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+}
+
+.spell-big-val {
+  font-family: 'Cinzel', serif;
+  font-size: 14pt;
+  font-weight: bold;
+  color: var(--sheet-ink);
+  line-height: 1;
+}
+
+.spell-slots-section { margin-bottom: 5px; }
+
+.slots-grid {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.slot-box {
+  border: 1px solid var(--sheet-border);
+  border-radius: 3px;
+  padding: 3px 5px;
+  min-width: 20mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: white;
+}
+
+.slot-level { font-size: 5.5pt; text-transform: uppercase; color: var(--sheet-red); font-family: Arial, sans-serif; }
+.slot-total { font-size: 8pt; font-weight: bold; }
+
+.slot-pips { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; }
+
+.slot-pip {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--sheet-ink);
+  border-radius: 50%;
+  background: white;
+}
+
+.spells-by-level { display: flex; flex-direction: column; gap: 5px; }
+
+.spell-level-block { }
+
+.spell-level-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9pt;
+  color: var(--sheet-red);
+  margin: 0 0 2px;
+  border-bottom: 1px solid var(--sheet-line);
+}
+
+.spells-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+}
+
+.spells-table th {
+  border-bottom: 1px solid var(--sheet-border);
+  font-family: Arial, sans-serif;
+  font-size: 5.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sheet-red);
+  text-align: left;
+  padding: 1px 3px;
+}
+
+.spells-table td {
+  padding: 2px 3px;
+  border-bottom: 1px dotted rgba(201, 169, 90, 0.25);
+  vertical-align: top;
+}
+
+.spell-name-cell { font-weight: 600; }
+
+/* ─── Full spell entries ────────────────────────────────────────── */
+.spell-full-entry {
+  border-bottom: 1px solid rgba(139, 105, 20, 0.25);
+  padding: 4px 0;
+  page-break-inside: avoid;
+}
+
+.spell-entry-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 1px;
+}
+
+.spell-entry-name {
+  font-size: 8.5pt;
+  color: var(--sheet-red);
+}
+
+.spell-tag {
+  font-size: 5.5pt;
+  padding: 1px 4px;
+  border: 1px solid var(--sheet-line);
+  border-radius: 8px;
+  background: rgba(122, 26, 26, 0.08);
+  color: var(--sheet-soft);
+  font-family: Arial, sans-serif;
+}
+
+.spell-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 7pt;
+  color: var(--sheet-ink);
+  margin-bottom: 2px;
+}
+
+.spell-stats-row span { white-space: nowrap; }
+.spell-stats-row em { color: var(--sheet-soft); font-style: normal; font-weight: 600; }
+
+.spell-entry-desc {
+  font-size: 7pt;
+  color: var(--sheet-ink);
+  line-height: 1.45;
+}
+.spell-entry-desc p { margin: 0 0 1.5px; }
+
+.spell-entry-higher {
+  font-size: 6.5pt;
+  color: var(--sheet-soft);
+  line-height: 1.4;
+  margin-top: 1px;
+}
+.spell-entry-higher strong { color: var(--sheet-ink); }
+.spell-entry-higher p { margin: 0; display: inline; }
+.spell-entry-higher p::before { content: ' '; }
+
+.prepared-list { display: flex; flex-wrap: wrap; gap: 3px; }
+
+.prepared-pill {
+  font-size: 7pt;
+  padding: 1px 5px;
+  border: 1px solid var(--sheet-gold);
+  border-radius: 10px;
+  background: rgba(139, 105, 20, 0.1);
+  color: var(--sheet-gold);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PRINT STYLES
+   ══════════════════════════════════════════════════════════════════ */
+@media print {
+  :host {
+    background: white;
+    padding-top: 0;
+  }
+
+  .no-print { display: none !important; }
+
+  .sheet-page {
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 8mm;
+    box-shadow: none;
+    page-break-after: always;
+  }
+
+  .sheet-page:last-child { page-break-after: avoid; }
+
+  /* Force colors to print */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .ability-mod, .combat-val, .hp-current, .spell-big-val {
+    font-size: 13pt;
+  }
+
+  .attacks-table, .spells-table {
+    page-break-inside: avoid;
+  }
+
+  .spell-level-block { page-break-inside: avoid; }
+}
+
+@page {
+  size: A4;
+  margin: 8mm;
+}
+
+/* ─── Responsive screen (small viewport) ───────────────────────── */
+@media screen and (max-width: 230mm) {
+  :host { padding-top: 3.5rem; }
+  .sheet-page {
+    width: 100%;
+    min-height: auto;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

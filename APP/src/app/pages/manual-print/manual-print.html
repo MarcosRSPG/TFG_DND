@@ -1,0 +1,375 @@
+<!-- Toolbar (no-print) -->
+<div class="print-toolbar no-print">
+  <a routerLink="/manual" [queryParams]="{section: type()}" class="back-btn">← Back to Manual</a>
+  <span class="print-toolbar-title">{{ items().length }} · {{ type() }}</span>
+  <button class="print-btn" (click)="print()">🖨️ Print / Save as PDF</button>
+</div>
+
+@if (loading()) {
+  <div class="print-loading no-print"><div class="spinner"></div><p>Loading full details…</p></div>
+}
+@if (error()) {
+  <p class="print-error no-print">{{ error() }}</p>
+}
+
+<!-- ═══════════════════════════════ MONSTERS ═══════════════════════════ -->
+@if (type() === 'monsters') {
+  <div class="print-flow single-col">
+    @for (raw of items(); track $index) {
+      @let mon = asMonster(raw);
+      <div class="print-card card-full">
+        @if (mon.image) {
+          <img class="monster-img" [src]="mon.image.startsWith('http') ? mon.image : ('http://localhost:8000' + mon.image)" alt="" />
+        }
+
+        <div class="card-head monster-head">
+          <h1 class="card-name">{{ mon.name }}</h1>
+          <p class="card-sub">{{ mon.size }} {{ mon.type }}@if(mon.subtype){ ({{ mon.subtype }})}, {{ mon.alignment }}</p>
+        </div>
+        <div class="div-red"></div>
+
+        <div class="row3">
+          <div><b class="lbl">Armor Class</b><span class="val">{{ acValue(mon.armor_class) }}</span></div>
+          <div><b class="lbl">Hit Points</b><span class="val">{{ mon.hit_points }} ({{ mon.hit_dice }})</span></div>
+          <div><b class="lbl">Speed</b><span class="val">{{ speedStr(mon.speed) }}</span></div>
+        </div>
+        <div class="div-red"></div>
+
+        <div class="abilities">
+          @for (ab of [['STR',mon.strength],['DEX',mon.dexterity],['CON',mon.constitution],['INT',mon.intelligence],['WIS',mon.wisdom],['CHA',mon.charisma]]; track ab[0]) {
+            <div class="ab-cell">
+              <span class="ab-n">{{ ab[0] }}</span>
+              <span class="ab-s">{{ ab[1] }}</span>
+              <span class="ab-m">{{ abilityMod(+ab[1]) }}</span>
+            </div>
+          }
+        </div>
+        <div class="div-red"></div>
+
+        <div class="misc">
+          @if (mon.proficiencies?.length) {
+            <p><b>Saving Throws / Skills:</b>
+              @for (pr of mon.proficiencies!; track $index) {
+                {{ pr.proficiency?.name }} +{{ pr.value }}@if(!$last){, }
+              }
+            </p>
+          }
+          @if (mon.damage_vulnerabilities?.length) { <p><b>Damage Vulnerabilities:</b> {{ mon.damage_vulnerabilities!.join(', ') }}</p> }
+          @if (mon.damage_resistances?.length)     { <p><b>Damage Resistances:</b> {{ mon.damage_resistances!.join(', ') }}</p> }
+          @if (mon.damage_immunities?.length)       { <p><b>Damage Immunities:</b> {{ mon.damage_immunities!.join(', ') }}</p> }
+          @if (mon.condition_immunities?.length)    { <p><b>Condition Immunities:</b> {{ conditionNames(mon.condition_immunities!) }}</p> }
+          @if (mon.senses)    { <p><b>Senses:</b> {{ senses(mon.senses) }}</p> }
+          @if (mon.languages) { <p><b>Languages:</b> {{ mon.languages }}</p> }
+          <p><b>Challenge:</b> {{ mon.challenge_rating }}@if(mon.xp){ ({{ mon.xp }} XP)}</p>
+        </div>
+        <div class="div-red"></div>
+
+        @if (mon.special_abilities?.length) {
+          <div class="actions-block">
+            @for (ab of mon.special_abilities!; track $index) {
+              <p><b>{{ ab.name }}.</b> {{ ab.desc }}</p>
+            }
+          </div>
+          <div class="div-red"></div>
+        }
+        @if (mon.actions?.length) {
+          <div class="actions-block">
+            <h4 class="act-title">Actions</h4>
+            @for (a of mon.actions!; track $index) { <p><b>{{ a.name }}.</b> {{ a.desc }}</p> }
+          </div>
+        }
+        @if (mon.reactions?.length) {
+          <div class="actions-block">
+            <h4 class="act-title">Reactions</h4>
+            @for (a of mon.reactions!; track $index) { <p><b>{{ a.name }}.</b> {{ a.desc }}</p> }
+          </div>
+        }
+        @if (mon.legendary_actions?.length) {
+          <div class="actions-block">
+            <h4 class="act-title">Legendary Actions</h4>
+            @for (a of mon.legendary_actions!; track $index) { <p><b>{{ a.name }}.</b> {{ a.desc }}</p> }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
+
+<!-- ═══════════════════════════════ SPELLS ═══════════════════════════════ -->
+@if (type() === 'spells') {
+  <div class="print-flow two-col">
+    @for (raw of items(); track $index) {
+      @let spell = asSpell(raw);
+      <div class="print-card">
+        <div class="card-head spell-head">
+          <h1 class="card-name spell-name">{{ spell.name }}</h1>
+          <p class="card-sub">
+            {{ spell.level === 0 ? 'Cantrip' : spell.level + (spell.level===1?'st':spell.level===2?'nd':spell.level===3?'rd':'th') + '-level' }}
+            @if(spell.school?.name){ · {{ spell.school!.name }} }
+            @if(spell.ritual){ · Ritual }
+            @if(spell.concentration){ · Concentration }
+          </p>
+        </div>
+        <div class="div-blue"></div>
+        <div class="misc">
+          <p><b>Casting Time:</b> {{ spell.casting_time }}</p>
+          <p><b>Range:</b> {{ spell.range }}</p>
+          <p><b>Duration:</b> {{ spell.duration }}</p>
+          <p><b>Components:</b> {{ spell.components?.join(', ') }}@if(spell.material){ ({{ spell.material }})}</p>
+          @if(spell.classes?.length){ <p><b>Classes:</b> {{ spell.classes!.map(c=>c.name).join(', ') }}</p> }
+        </div>
+        @if (spell.desc?.length) {
+          <div class="div-blue"></div>
+          <div class="desc">
+            @for (para of spell.desc; track $index) { <p>{{ para }}</p> }
+          </div>
+        }
+        @if (spell.higher_level?.length) {
+          <p class="higher"><b>At Higher Levels.</b> {{ spell.higher_level!.join(' ') }}</p>
+        }
+      </div>
+    }
+  </div>
+}
+
+<!-- ═══════════════════════════════ BACKGROUNDS ════════════════════════════ -->
+@if (type() === 'backgrounds') {
+  <div class="print-flow two-col">
+    @for (raw of items(); track $index) {
+      @let bg = $any(asBackground(raw));
+      <div class="print-card">
+        <div class="card-head">
+          <h1 class="card-name">{{ bg.name }}</h1>
+        </div>
+        <div class="div-red"></div>
+        @if (bg.desc?.length) {
+          <div class="desc">
+            @for (para of bg.desc; track $index) { <p>{{ para }}</p> }
+          </div>
+        }
+        @if (bg.feature) {
+          <div class="feature-box">
+            <h4>Feature: {{ bg.feature.name }}</h4>
+            @if (bg.feature.desc?.length) {
+              @for (para of bg.feature.desc; track $index) { <p>{{ para }}</p> }
+            }
+          </div>
+        }
+        <div class="misc">
+          @if (bg.starting_proficiencies?.length) {
+            <p><b>Proficiencies:</b> {{ bg.starting_proficiencies.map(x => x.name).join(', ') }}</p>
+          }
+          @if (bg.personality_traits?.length) {
+            <p><b>Personality Traits:</b> {{ bg.personality_traits.map(x => x.string ?? x).join(' / ') }}</p>
+          }
+          @if (bg.ideals?.length) {
+            <p><b>Ideals:</b> {{ bg.ideals.map(x => x.string ?? x.desc ?? x).join(' / ') }}</p>
+          }
+          @if (bg.bonds?.length) { <p><b>Bonds:</b> {{ bg.bonds.map(x => x.string ?? x).join(' / ') }}</p> }
+          @if (bg.flaws?.length) { <p><b>Flaws:</b> {{ bg.flaws.map(x => x.string ?? x).join(' / ') }}</p> }
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- ═══════════════════════════════ ITEMS ════════════════════════════════ -->
+@if (type() === 'items') {
+  <div class="print-flow two-col">
+    @for (raw of items(); track $index) {
+      @let item = asItem(raw);
+      <div class="print-card">
+        <div class="card-head">
+          <h1 class="card-name">{{ item.name }}</h1>
+          <p class="card-sub">{{ item.equipment_category?.name }}</p>
+        </div>
+        <div class="div-red"></div>
+        <div class="misc">
+          @if (item.cost)   { <p><b>Cost:</b> {{ item.cost.quantity }} {{ item.cost.unit }}</p> }
+          @if (item.weight) { <p><b>Weight:</b> {{ item.weight }} lb</p> }
+          @if (item.damage) { <p><b>Damage:</b> {{ item.damage.damage_dice }} {{ item.damage.damage_type?.name }}</p> }
+          @if (item.two_handed_damage) { <p><b>Two-Handed:</b> {{ item.two_handed_damage.damage_dice }} {{ item.two_handed_damage.damage_type?.name }}</p> }
+          @if (item.armor_class) { <p><b>Armor Class:</b> {{ item.armor_class.base }}{{ item.armor_class.dex_bonus ? ' + DEX mod' : '' }}</p> }
+          @if (item.properties?.length) { <p><b>Properties:</b> {{ item.properties!.map(prop => prop.name).join(', ') }}</p> }
+          @if (item.range)  { <p><b>Range:</b> {{ item.range.normal }}/{{ item.range.long }}</p> }
+          @if (item.rarity) { <p><b>Rarity:</b> {{ item.rarity.name }}</p> }
+        </div>
+        @if (item.desc?.length) {
+          <div class="div-red"></div>
+          <div class="desc">
+            @for (para of item.desc; track $index) { <p>{{ para }}</p> }
+          </div>
+        }
+        @if (item.special?.length) {
+          <div class="desc">
+            @for (spec of item.special; track $index) { <p>{{ spec }}</p> }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
+
+<!-- ═══════════════════════════════ RACES ════════════════════════════════ -->
+@if (type() === 'races') {
+  <div class="print-flow single-col">
+    @for (raw of items(); track $index) {
+      @let er = asEnrichedRace(raw);
+      @let race = er.race;
+      <div class="print-card card-full">
+        <div class="card-head">
+          <h1 class="card-name">{{ race.name }}</h1>
+          <p class="card-sub">{{ race.size }} · {{ race.speed }} ft.</p>
+        </div>
+        <div class="div-red"></div>
+
+        <div class="misc">
+          @if (race.ability_bonuses?.length) {
+            <p><b>Ability Bonuses:</b>
+              @for (bonus of race.ability_bonuses; track $index) {
+                {{ bonus.ability_score?.name }} +{{ bonus.bonus }}@if(!$last){, }
+              }
+            </p>
+          }
+          @if (race.age)              { <p><b>Age:</b> {{ race.age }}</p> }
+          @if (race.alignment)        { <p><b>Alignment:</b> {{ race.alignment }}</p> }
+          @if (race.size_description) { <p><b>Size:</b> {{ race.size_description }}</p> }
+          @if (race.language_desc)    { <p><b>Languages:</b> {{ race.language_desc }}</p> }
+        </div>
+
+        <!-- Traits with full descriptions -->
+        @if (race.traits?.length) {
+          <div class="div-red"></div>
+          <div class="section-header-row">Racial Traits</div>
+          @for (trait of race.traits; track $index) {
+            <div class="trait-entry">
+              <h4 class="trait-name">{{ trait.name }}</h4>
+              @let descLines = er.traitMap.get(trait.index) ?? [];
+              @if (descLines.length) {
+                @for (line of descLines; track $index) { <p class="trait-desc">{{ line }}</p> }
+              } @else {
+                <p class="trait-desc muted">No description available.</p>
+              }
+            </div>
+          }
+        }
+
+        <!-- Subraces with full data -->
+        @if (er.subraces.length) {
+          <div class="div-red"></div>
+          <div class="section-header-row">Subraces</div>
+          @for (sub of er.subraces; track $index) {
+            <div class="subrace-entry">
+              <h4 class="subrace-name">{{ sub.name }}</h4>
+              @if (sub.desc) {
+                <p class="trait-desc">{{ sub.desc }}</p>
+              }
+              @if ($any(sub).racial_traits?.length) {
+                <p class="sub-traits"><b>Additional Traits:</b>
+                  @for (t of $any(sub).racial_traits; track $index) {
+                    {{ t.name }}@if(!$last){, }
+                  }
+                </p>
+              }
+              @if ($any(sub).ability_bonuses?.length) {
+                <p class="sub-traits"><b>Ability Bonuses:</b>
+                  @for (bonus of $any(sub).ability_bonuses; track $index) {
+                    {{ bonus.ability_score?.name }} +{{ bonus.bonus }}@if(!$last){, }
+                  }
+                </p>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+}
+
+<!-- ═══════════════════════════════ CLASSES ════════════════════════════════ -->
+@if (type() === 'classes') {
+  <div class="print-flow single-col">
+    @for (raw of items(); track $index) {
+      @let ec = asEnrichedClass(raw);
+      @let cls = ec.cls;
+      @let levels = ec.levels;
+      @let features = ec.features;
+      @let slotCols = slotColumns(levels);
+      @let specCols = specificColumns(levels);
+
+      <div class="print-card card-full">
+        <!-- Header -->
+        <div class="card-head">
+          <h1 class="card-name">{{ cls.name }}</h1>
+          <p class="card-sub">Hit Die: d{{ cls.hit_die }}</p>
+        </div>
+        <div class="div-red"></div>
+
+        <!-- Basic info -->
+        <div class="misc">
+          @if (cls.saving_throws?.length) {
+            <p><b>Saving Throws:</b> {{ cls.saving_throws.map(st => st.name).join(', ') }}</p>
+          }
+          @if (cls.proficiencies?.length) {
+            <p><b>Proficiencies:</b> {{ cls.proficiencies.map(prof => prof.name).join(', ') }}</p>
+          }
+          @if (cls.spellcasting) {
+            <p><b>Spellcasting Ability:</b> {{ cls.spellcasting.spellcasting_ability?.name }}</p>
+          }
+          @if (cls.subclasses?.length) {
+            <p><b>Subclasses:</b> {{ cls.subclasses.map(subclass => subclass.name).join(', ') }}</p>
+          }
+        </div>
+
+        <!-- Level progression table -->
+        @if (levels.length) {
+          <div class="div-red"></div>
+          <div class="section-header-row">Class Progression</div>
+          <div class="table-scroll">
+            <table class="prog-table">
+              <thead>
+                <tr>
+                  <th>Lv.</th>
+                  <th>Prof.</th>
+                  <th class="feat-col">Features</th>
+                  @for (col of slotCols; track col) { <th>{{ col }}°</th> }
+                  @for (col of specCols; track col) { <th>{{ formatSpecificKey(col) }}</th> }
+                </tr>
+              </thead>
+              <tbody>
+                @for (lvl of levels; track lvl.level) {
+                  <tr>
+                    <td class="lv-num">{{ lvl.level }}</td>
+                    <td>+{{ lvl.prof_bonus }}</td>
+                    <td class="feat-col">{{ featuresAt(features, lvl.level) }}</td>
+                    @for (col of slotCols; track col) { <td>{{ slotAt(lvl, col) }}</td> }
+                    @for (col of specCols; track col)  { <td>{{ specificAt(lvl, col) }}</td> }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- All features with full descriptions -->
+        @if (features.length) {
+          <div class="div-red"></div>
+          <div class="section-header-row">Class Features</div>
+          @for (feat of features; track $index) {
+            <div class="trait-entry">
+              <h4 class="trait-name">
+                {{ feat.feature.name }}
+                <span class="feat-lvl-badge">Lv.{{ feat.level }}</span>
+              </h4>
+              @if (feat.feature.desc?.length) {
+                @for (line of (feat.feature.desc ?? []); track $index) { <p class="trait-desc">{{ line }}</p> }
+              } @else {
+                <p class="trait-desc muted">No description available.</p>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+}

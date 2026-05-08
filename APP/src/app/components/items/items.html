@@ -80,9 +80,16 @@
     (confirmed)="onTypesConfirmed($event)"
   ></app-filter-modal>
 
+  <div style="display:flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap:wrap;">
+    <button class="sel-toggle-btn" [class.active]="selectionMode()" (click)="toggleSelectionMode()">{{ selectionMode() ? '✕ Cancel' : '☑ Select' }}</button>
+    @if (selectionMode() && selectedIds().size > 0) { <button class="export-pdf-btn" (click)="exportSelection()">📄 PDF ({{ selectedIds().size }})</button> }
+  </div>
+
   <ul class="entity-list" aria-label="List of items">
     @for (item of paginatedItems(); track getIdentifier(item)) {
-      <li class="entity-item" (click)="onSelectItem(item)" style="cursor: pointer;">
+      <li class="entity-item" [class.sel-active]="selectionMode()" [class.sel-checked]="isSelected(getIdentifier(item))"
+          (click)="selectionMode() ? toggleSelect(getIdentifier(item), $event) : onSelectItem(item)" style="cursor: pointer;">
+        @if (selectionMode()) { <button class="sel-check-btn" (click)="toggleSelect(getIdentifier(item), $event)">{{ isSelected(getIdentifier(item)) ? '✔' : '' }}</button> }
         <div class="entity-link">
           <h3>{{ item.name }}</h3>
           <p>Category: {{ item.equipment_category?.name || 'Unknown' }}</p>

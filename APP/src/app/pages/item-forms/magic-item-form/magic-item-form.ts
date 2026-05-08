@@ -44,7 +44,7 @@ export class MagicItemForm implements OnInit {
   costUnits = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
   // Image upload
-  imagePreview: string | null = null;
+  imagePreview = signal<string | null>(null);
   originalImageUrl: string | null = null;
   selectedFile: File | null = null;
 
@@ -81,10 +81,11 @@ export class MagicItemForm implements OnInit {
 
         // Load existing image preview
         if (item.image) {
-          this.imagePreview = item.image.startsWith('http')
+          const url = item.image.startsWith('http')
             ? item.image
             : `${environment.API_URL}${item.image}`;
-          this.originalImageUrl = this.imagePreview;
+          this.imagePreview.set(url);
+          this.originalImageUrl = url;
         }
       } catch (error) {
       console.error('Error loading magic item data:', error);
@@ -152,7 +153,7 @@ export class MagicItemForm implements OnInit {
       this.selectedFile = input.files[0];
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.imagePreview = e.target?.result as string;
+        this.imagePreview.set(e.target?.result as string);
       };
       reader.readAsDataURL(this.selectedFile);
     }
@@ -160,7 +161,7 @@ export class MagicItemForm implements OnInit {
 
   revertImage(): void {
     this.selectedFile = null;
-    this.imagePreview = this.originalImageUrl;
+    this.imagePreview.set(this.originalImageUrl);
     const input = document.getElementById('image') as HTMLInputElement | null;
     if (input) input.value = '';
   }

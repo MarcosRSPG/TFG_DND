@@ -15,7 +15,20 @@
           @if (character()!.alignment) { <span class="tag">{{ character()!.alignment }}</span> }
         </div>
       </div>
-      @if (saving()) { <span class="saving-indicator">Saving...</span> }
+      <div class="header-actions">
+        @if (saving()) { <span class="saving-indicator">Saving…</span> }
+        @if (saveError()) { <span class="save-error-indicator">{{ saveError() }}</span> }
+        <button class="btn-sheet" (click)="goToSheet()" title="Save &amp; open printable sheet">
+          📄 Sheet
+        </button>
+        @if ((character()!.level ?? 1) < 20) {
+          <button class="btn-level-up" (click)="openLevelUpModal()"
+            title="Level up your character">
+            ⬆ Level Up
+            <span class="levelup-badge">{{ character()!.level }} → {{ character()!.level + 1 }}</span>
+          </button>
+        }
+      </div>
     </header>
 
     <nav class="tab-nav">
@@ -56,15 +69,58 @@
               </div>
               <div class="combat-card">
                 <label>AC</label>
-                <span class="big-number">{{ calculatedAC() }}</span>
+                <span class="big-number">{{ totalAC() }}</span>
+                <div class="combat-sub-row">
+                  <span class="combat-sub-label">bonus</span>
+                  <input class="combat-mini-input" type="number" min="-10" max="20"
+                    [value]="character()!.ac_bonus ?? 0"
+                    (change)="setAcBonus($any($event.target).value)"
+                    title="Extra AC (Shield of Faith, magic items…)" />
+                </div>
+              </div>
+              <div class="combat-card">
+                <label>Initiative</label>
+                <span class="big-number">{{ initiative() >= 0 ? '+' + initiative() : initiative() }}</span>
+                <div class="combat-sub-row">
+                  <span class="combat-sub-label">bonus</span>
+                  <input class="combat-mini-input" type="number" min="-10" max="20"
+                    [value]="character()!.initiative_bonus ?? 0"
+                    (change)="setInitiativeBonus($any($event.target).value)"
+                    title="Extra initiative modifier" />
+                </div>
               </div>
               <div class="combat-card">
                 <label>Speed</label>
-                <span class="big-number">{{ character()!.speed.walk || '30 ft.' }}</span>
+                <span class="big-number">{{ totalSpeed() }} ft.</span>
+                <div class="combat-sub-row">
+                  <span class="combat-sub-label">bonus</span>
+                  <input class="combat-mini-input" type="number" min="-60" max="120"
+                    [value]="character()!.speed_bonus ?? 0"
+                    (change)="setSpeedBonus($any($event.target).value)"
+                    title="Extra speed (Longstrider, boots…)" />
+                </div>
               </div>
               <div class="combat-card">
                 <label>Prof.</label>
-                <span class="big-number">+{{ character()!.proficiency_bonus }}</span>
+                <span class="big-number">+{{ totalProfBonus() }}</span>
+                <div class="combat-sub-row">
+                  <span class="combat-sub-label">bonus</span>
+                  <input class="combat-mini-input" type="number" min="-2" max="6"
+                    [value]="character()!.prof_bonus_extra ?? 0"
+                    (change)="setProfBonusExtra($any($event.target).value)"
+                    title="Extra proficiency bonus" />
+                </div>
+              </div>
+              <div class="combat-card xp-card">
+                <label>Experience</label>
+                <input class="xp-input" type="number" min="0"
+                  [value]="character()!.experience_points ?? 0"
+                  (change)="setExperiencePoints($any($event.target).value)" />
+                @if (xpToNextLevel() !== null) {
+                  <span class="xp-next">/ {{ xpToNextLevel() | number }} to Lv.{{ character()!.level + 1 }}</span>
+                } @else {
+                  <span class="xp-next">Max level</span>
+                }
               </div>
             </div>
 
@@ -79,20 +135,80 @@
               }
             </div>
 
+            <!-- Saving Throws -->
+            <div class="section">
+              <h3>Saving Throws <span class="section-hint">click to toggle proficiency</span></h3>
+              <div class="saves-grid">
+                @for (stat of STATS; track stat) {
+                  <div class="save-row" [class.prof]="isSaveProficient(stat)" (click)="toggleSave(stat)">
+                    <span class="save-dot" [class.filled]="isSaveProficient(stat)"></span>
+                    <span class="save-abbr">{{ STAT_ABBREVIATIONS[stat] }}</span>
+                    <span class="save-name">{{ STAT_LABELS[stat] }}</span>
+                    <span class="save-val" [class.positive]="saveValue(stat) > 0" [class.negative]="saveValue(stat) < 0">
+                      {{ signedSave(stat) }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+
             <!-- Skills -->
             <div class="section">
-              <h3>Skills</h3>
+              <h3>Skills <span class="section-hint">click dot to cycle: ○ → P → E → ○</span></h3>
               <div class="skills-grid">
                 @for (skill of SKILLS; track skill.index) {
-                  <div class="skill-row" [class.proficient]="isSkillProficient(skill)">
-                    <span class="skill-prof-dot" [class.filled]="isSkillProficient(skill)"></span>
+                  <div class="skill-row"
+                    [class.proficient]="isSkillProficient(skill)"
+                    [class.expert]="isSkillExpert(skill)">
+                    <button class="skill-state-btn" [attr.data-state]="getSkillState(skill)"
+                      (click)="cycleSkillProficiency(skill)"
+                      [title]="'Click: ' + getSkillState(skill) + ' → next'">
+                      @if (getSkillState(skill) === 'expert') { E }
+                      @else if (getSkillState(skill) === 'proficient') { P }
+                    </button>
                     <span class="skill-name">{{ skill.name }}</span>
                     <span class="skill-ability">{{ STAT_ABBREVIATIONS[skill.ability] }}</span>
+                    <input class="skill-bonus-input" type="number" min="-10" max="20"
+                      [value]="character()!.skill_bonuses?.[skill.index] ?? 0"
+                      (change)="setSkillBonus(skill, $any($event.target).value)"
+                      (click)="$event.stopPropagation()"
+                      title="Extra bonus" />
                     <span class="skill-value" [class.positive]="skillValue(skill) > 0" [class.negative]="skillValue(skill) < 0">
                       {{ signedSkill(skill) }}
                     </span>
                   </div>
                 }
+              </div>
+            </div>
+
+            <!-- ── Quick Resources ── -->
+            <div class="section resources-section">
+              <h3>Resources &amp; Consumables</h3>
+              @if (otherItems().length) {
+                <div class="resource-list">
+                  @for (item of otherItems(); track item.id) {
+                    <div class="resource-row">
+                      <span class="resource-name">{{ item.name }}</span>
+                      <div class="qty-controls">
+                        <button class="qty-btn" (click)="updateItemQty(item.id, -1)" [disabled]="item.quantity <= 0">−</button>
+                        <input class="qty-input" type="number" min="0"
+                          [value]="item.quantity"
+                          (change)="setItemQty(item.id, $any($event.target).value)" />
+                        <button class="qty-btn" (click)="updateItemQty(item.id, 1)">+</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="empty-text">No consumables yet — add one below.</p>
+              }
+              <div class="resource-add-row">
+                <input class="resource-name-input" type="text" placeholder="Name (e.g. Arrows)"
+                  [ngModel]="newTrackerName()" (ngModelChange)="newTrackerName.set($event)"
+                  (keydown.enter)="addTracker()" />
+                <input class="resource-qty-init" type="number" min="1"
+                  [ngModel]="newTrackerQty()" (ngModelChange)="newTrackerQty.set(+$event)" />
+                <button class="btn-primary" (click)="addTracker()" [disabled]="!newTrackerName().trim()">＋</button>
               </div>
             </div>
 
@@ -110,7 +226,7 @@
                   </thead>
                   <tbody>
                     @for (w of weapons(); track w.id) {
-                      <tr>
+                      <tr class="detail-row" (click)="openItemDetail(w)">
                         <td>{{ w.name }}<span class="combat-tag">weapon</span></td>
                         <td class="center accent">{{ attackBonus(w) }}</td>
                         <td class="center">{{ damageLabel(w) }}</td>
@@ -118,7 +234,7 @@
                       </tr>
                     }
                     @for (s of combatSpells(); track s.index) {
-                      <tr>
+                      <tr class="detail-row" (click)="openSpellDetail(s)">
                         <td>{{ s.name }}<span class="combat-tag spell">{{ spellLevelLabel(s.level) }}</span></td>
                         <td class="center accent">{{ spellAttackLabel(s) }}</td>
                         <td class="center">{{ spellDamageLabel(s) }}</td>
@@ -133,17 +249,6 @@
               </div>
             }
 
-            @if (character()!.saving_throws.length) {
-              <div class="section">
-                <h3>Saving Throws</h3>
-                <div class="tags-row">
-                  @for (st of character()!.saving_throws; track st) {
-                    <span class="tag">{{ st }}</span>
-                  }
-                </div>
-              </div>
-            }
-
             @if (character()!.proficiencies.length) {
               <div class="section">
                 <h3>Proficiencies</h3>
@@ -152,6 +257,54 @@
                     <span class="tag">{{ p.proficiency.name }}</span>
                   }
                 </div>
+              </div>
+            }
+
+            <!-- ── Class Progression ── -->
+            @if (classLevelData()) {
+              <div class="section class-progression-section">
+                <h3>
+                  Class Features
+                  <span class="section-hint">{{ character()!.character_class.name }} — Level {{ character()!.level }}</span>
+                </h3>
+
+                <!-- Prof bonus + ability score bonuses -->
+                <div class="class-prog-grid">
+                  <div class="class-prog-item">
+                    <span class="class-prog-label">Proficiency Bonus</span>
+                    <span class="class-prog-value">+{{ classLevelData()!.prof_bonus }}</span>
+                  </div>
+                  @if (classLevelData()!.ability_score_bonuses > 0) {
+                    <div class="class-prog-item">
+                      <span class="class-prog-label">ASI / Feats used</span>
+                      <span class="class-prog-value">{{ classLevelData()!.ability_score_bonuses }}</span>
+                    </div>
+                  }
+                  @for (entry of classSpecificEntries(); track entry.key) {
+                    <div class="class-prog-item">
+                      <span class="class-prog-label">{{ entry.label }}</span>
+                      <span class="class-prog-value">{{ entry.value }}</span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Spell slots from class progression (if any) -->
+                @if (classLevelData()!.spellcasting) {
+                  <div class="class-spell-slots">
+                    <span class="class-prog-label" style="margin-bottom: 0.35rem; display: block;">Spell Slots at this level</span>
+                    <div class="class-slots-row">
+                      @for (lvl of [1,2,3,4,5,6,7,8,9]; track lvl) {
+                        @let slots = classLevelData()!.spellcasting!['spell_slots_level_' + lvl];
+                        @if (slots && slots > 0) {
+                          <div class="class-slot-pill">
+                            <span class="slot-lv">Lv.{{ lvl }}</span>
+                            <span class="slot-n">{{ slots }}</span>
+                          </div>
+                        }
+                      }
+                    </div>
+                  </div>
+                }
               </div>
             }
           </div>
@@ -243,15 +396,23 @@
                   <thead><tr><th>Weapon</th><th>Attack</th><th>Damage</th><th>Type</th><th></th></tr></thead>
                   <tbody>
                     @for (w of weapons(); track w.id) {
-                      <tr>
+                      <tr class="detail-row" (click)="openItemDetail(w)">
                         <td>
                           {{ w.name }}
-                          <button class="state-badge" [attr.data-state]="w.state" (click)="cycleState(w.id)">{{ w.state }}</button>
+                          <button class="state-badge" [attr.data-state]="w.state"
+                            (click)="$event.stopPropagation(); cycleState(w.id)">{{ w.state }}</button>
+                          @if (w.properties?.length) {
+                            <div class="weapon-props-row">
+                              @for (prop of w.properties!; track prop) {
+                                <span class="prop-chip" [title]="getPropDesc(prop)">{{ prop }}</span>
+                              }
+                            </div>
+                          }
                         </td>
                         <td class="center">{{ attackBonus(w) }}</td>
                         <td class="center">{{ damageLabel(w) }}</td>
                         <td class="center">{{ w.weapon_data?.damage_type ?? '—' }}</td>
-                        <td><button class="btn-remove" (click)="removeItem(w.id)">✕</button></td>
+                        <td><button class="btn-remove" (click)="$event.stopPropagation(); removeItem(w.id)">✕</button></td>
                       </tr>
                     }
                   </tbody>
@@ -263,12 +424,13 @@
               <div class="section">
                 <h4>Armor</h4>
                 <div class="item-list">
-                  @for (a of armors(); track a.id) {
-                    <div class="item-row">
+                    @for (a of armors(); track a.id) {
+                    <div class="item-row detail-row" (click)="openItemDetail(a)">
                       <span class="item-name">{{ a.name }}</span>
                       <span class="item-meta">{{ a.armor_data?.armor_type }} · AC {{ a.armor_data?.base_ac }}</span>
-                      <button class="state-badge" [attr.data-state]="a.state" (click)="cycleState(a.id)">{{ a.state }}</button>
-                      <button class="btn-remove" (click)="removeItem(a.id)">✕</button>
+                      <button class="state-badge" [attr.data-state]="a.state"
+                        (click)="$event.stopPropagation(); cycleState(a.id)">{{ a.state }}</button>
+                      <button class="btn-remove" (click)="$event.stopPropagation(); removeItem(a.id)">✕</button>
                     </div>
                   }
                 </div>
@@ -279,12 +441,20 @@
               <div class="section">
                 <h4>Other</h4>
                 <div class="item-list">
-                  @for (item of otherItems(); track item.id) {
-                    <div class="item-row">
+                    @for (item of otherItems(); track item.id) {
+                    <div class="item-row detail-row" (click)="openItemDetail(item)">
                       <span class="item-name">{{ item.name }}</span>
-                      <span class="item-meta">x{{ item.quantity }}</span>
-                      <button class="state-badge" [attr.data-state]="item.state" (click)="cycleState(item.id)">{{ item.state }}</button>
-                      <button class="btn-remove" (click)="removeItem(item.id)">✕</button>
+                      <!-- Editable quantity -->
+                      <div class="qty-controls" (click)="$event.stopPropagation()">
+                        <button class="qty-btn" (click)="updateItemQty(item.id, -1)" [disabled]="item.quantity <= 0">−</button>
+                        <input class="qty-input" type="number" min="0"
+                          [value]="item.quantity"
+                          (change)="setItemQty(item.id, $any($event.target).value)" />
+                        <button class="qty-btn" (click)="updateItemQty(item.id, 1)">+</button>
+                      </div>
+                      <button class="state-badge" [attr.data-state]="item.state"
+                        (click)="$event.stopPropagation(); cycleState(item.id)">{{ item.state }}</button>
+                      <button class="btn-remove" (click)="$event.stopPropagation(); removeItem(item.id)">✕</button>
                     </div>
                   }
                 </div>
@@ -450,12 +620,12 @@
               } @else {
                 <div class="spell-list">
                   @for (spell of cantrips(); track spell.index) {
-                    <div class="spell-row">
+                    <div class="spell-row detail-row" (click)="openSpellDetail(spell)">
                       <span class="spell-level-badge cantrip">C</span>
                       <span class="spell-name">{{ spell.name }}</span>
                       @if (spell.damage_dice) { <span class="spell-damage">{{ spell.damage_dice }}</span> }
                       @if (spell.attack_type === 'save' && spell.save_type) { <span class="spell-save">DC {{ spell.save_type }}</span> }
-                      <button class="btn-remove" (click)="removeKnownSpell(spell.index)">✕</button>
+                      <button class="btn-remove" (click)="$event.stopPropagation(); removeKnownSpell(spell.index)">✕</button>
                     </div>
                   }
                 </div>
@@ -469,18 +639,19 @@
               } @else {
                 <div class="spell-list">
                   @for (spell of levelSpells(); track spell.index) {
-                    <div class="spell-row" [class.prepared]="isSpellPrepared(spell.index)">
+                    <div class="spell-row detail-row" [class.prepared]="isSpellPrepared(spell.index)"
+                      (click)="openSpellDetail(spell)">
                       <span class="spell-level-badge">{{ spell.level }}</span>
                       <span class="spell-name">{{ spell.name }}</span>
                       @if (spell.damage_dice) { <span class="spell-damage">{{ spell.damage_dice }}</span> }
                       @if (spell.attack_type === 'save' && spell.save_type) { <span class="spell-save">DC {{ spell.save_type }}</span> }
                       @if (spell.school) { <span class="spell-school">{{ spell.school }}</span> }
                       <button class="btn-prepare" [class.active]="isSpellPrepared(spell.index)"
-                        (click)="isSpellPrepared(spell.index) ? unprepareSpell(spell.index) : prepareSpell(spell)"
+                        (click)="$event.stopPropagation(); isSpellPrepared(spell.index) ? unprepareSpell(spell.index) : prepareSpell(spell)"
                         [title]="isSpellPrepared(spell.index) ? 'Unprepare' : 'Prepare'">
                         {{ isSpellPrepared(spell.index) ? '★' : '☆' }}
                       </button>
-                      <button class="btn-remove" (click)="removeKnownSpell(spell.index)">✕</button>
+                      <button class="btn-remove" (click)="$event.stopPropagation(); removeKnownSpell(spell.index)">✕</button>
                     </div>
                   }
                 </div>
@@ -531,6 +702,9 @@
                     <details class="trait-detail">
                       <summary>
                         {{ trait.name }}
+                        @if (trait.level && trait.source === 'class') {
+                          <span class="trait-level-badge">Lv.{{ trait.level }}</span>
+                        }
                         @if (trait.source === 'custom') {
                           <button class="btn-remove inline" (click)="$event.preventDefault(); removeCustomTrait(trait.id)">✕</button>
                         }
@@ -551,33 +725,78 @@
         @case ('bio') {
           <div class="bio-tab">
 
-            <!-- Image -->
+            <!-- Portrait -->
             <div class="section">
-              <h4>Character Image</h4>
-              <div class="bio-image-row">
-                @if (character()!.image) {
-                  <img class="char-portrait" [src]="character()!.image" alt="Character portrait" />
+              <h4>Character Portrait</h4>
+              <div class="bio-portrait-block">
+                @if (getPortraitUrl()) {
+                  <img class="char-portrait" [src]="getPortraitUrl()!" alt="Character portrait" />
+                } @else {
+                  <div class="portrait-placeholder">No portrait yet</div>
                 }
-                <input class="bio-input" type="url" placeholder="Image URL..."
-                  [value]="character()!.image ?? ''"
-                  (change)="updateField('image', $any($event.target).value)" />
+                <div class="portrait-upload-area">
+                  <label for="portrait-file" class="portrait-upload-btn"
+                    [class.uploading]="portraitUploading()">
+                    {{ portraitUploading() ? 'Uploading…' : '📷 Change portrait' }}
+                  </label>
+                  <input
+                    id="portrait-file"
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.webp"
+                    [disabled]="portraitUploading()"
+                    (change)="onPortraitSelected($event)"
+                    class="file-input-hidden"
+                  />
+                  <span class="portrait-hint">Saved as <em>{{ character()!._id ?? character()!.id }}.png</em></span>
+                </div>
               </div>
             </div>
 
-            <!-- History -->
+            <!-- Identity -->
             <div class="section">
-              <h4>History & Backstory</h4>
-              <textarea class="bio-textarea" rows="6" placeholder="Write your character's history..."
-                [value]="character()!.history ?? ''"
-                (change)="updateField('history', $any($event.target).value)"></textarea>
+              <h4>Identity</h4>
+              <div class="identity-grid">
+                <div class="identity-item">
+                  <span class="identity-label">Alignment</span>
+                  <span class="identity-value">{{ character()!.alignment || '—' }}</span>
+                </div>
+                <div class="identity-item">
+                  <span class="identity-label">Age</span>
+                  <input class="bio-input identity-input" type="text" placeholder="Age…"
+                    [value]="character()!.age ?? ''"
+                    (change)="updateField('age', $any($event.target).value)" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Appearance -->
+            <div class="section">
+              <h4>Appearance</h4>
+              <textarea class="bio-textarea" rows="3"
+                placeholder="Height, weight, eye color, hair, distinctive features…"
+                [value]="character()!.appearance ?? ''"
+                (change)="updateField('appearance', $any($event.target).value)"></textarea>
             </div>
 
             <!-- Notes -->
             <div class="section">
               <h4>Notes</h4>
-              <textarea class="bio-textarea" rows="3" placeholder="Additional notes..."
+              <textarea class="bio-textarea" rows="3" placeholder="Additional notes…"
                 [value]="character()!.notes ?? ''"
                 (change)="updateField('notes', $any($event.target).value)"></textarea>
+            </div>
+
+            <!-- History -->
+            <div class="section">
+              <div class="section-header">
+                <h4>History &amp; Backstory</h4>
+                <button class="btn-secondary-sm" (click)="openHistoryModal()">✏️ Expand</button>
+              </div>
+              @if (character()!.history) {
+                <div class="history-display">{{ character()!.history }}</div>
+              } @else {
+                <p class="empty-text">No history written yet — click Expand to tell your story.</p>
+              }
             </div>
 
             <!-- Personality Traits -->
@@ -647,3 +866,325 @@
     </div>
   }
 </div>
+
+<!-- ===== LEVEL UP MODAL ===== -->
+@if (showLevelUpModal()) {
+  <div class="detail-overlay" (click)="showLevelUpModal.set(false)">
+    <div class="detail-modal levelup-modal" (click)="$event.stopPropagation()">
+      <button class="detail-close" (click)="showLevelUpModal.set(false)">✕</button>
+
+      <!-- Header -->
+      <div class="levelup-header">
+        <span class="levelup-arrow">⬆</span>
+        <div>
+          <h2 class="detail-modal-title">Level {{ levelUpNewLevel() }}</h2>
+          <p class="levelup-class-name">{{ character()!.character_class.name }}</p>
+        </div>
+      </div>
+
+      @if (levelUpLoading()) {
+        <div class="levelup-loading">
+          <div class="spinner-sm"></div>
+          <span>Loading level data…</span>
+        </div>
+      } @else {
+
+        <!-- ── HP GAIN ── -->
+        <div class="lu-section">
+          <h3 class="lu-section-title">❤️ Hit Points</h3>
+          <p class="lu-hint">
+            Average: <strong>{{ levelUpHpAvg() }}</strong> &nbsp;·&nbsp;
+            Max: <strong>{{ levelUpHpMax() }}</strong>
+          </p>
+          <div class="lu-hp-row">
+            <label class="lu-hp-label">HP gained:</label>
+            <input class="lu-hp-input" type="number" min="1" [max]="levelUpHpMax()"
+              [ngModel]="levelUpHpGain()"
+              (ngModelChange)="setLevelUpHp($event)" />
+            <button class="btn-hp-preset" (click)="levelUpHpGain.set(levelUpHpAvg())">Avg</button>
+            <button class="btn-hp-preset" (click)="levelUpHpGain.set(levelUpHpMax())">Max</button>
+          </div>
+          <p class="lu-result">
+            {{ character()!.hit_points }} + {{ levelUpHpGain() }} =
+            <strong>{{ character()!.hit_points + levelUpHpGain() }} HP</strong>
+          </p>
+        </div>
+
+        <!-- ── SUBCLASS ── -->
+        @if (levelUpSubclassRequired()) {
+          <div class="lu-section lu-subclass-section">
+            <h3 class="lu-section-title">⚔️ Choose your Subclass</h3>
+            <p class="lu-hint">Your path specializes at this level — choose wisely.</p>
+            @if (levelUpSubclasses().length) {
+              <div class="subclass-list">
+                @for (sub of levelUpSubclasses(); track sub.index) {
+                  <div class="subclass-option"
+                    [class.selected]="levelUpSelectedSubclass()?.index === sub.index"
+                    (click)="levelUpSelectedSubclass.set(sub)">
+                    <div class="subclass-option-header">
+                      <span class="subclass-radio">
+                        {{ levelUpSelectedSubclass()?.index === sub.index ? '●' : '○' }}
+                      </span>
+                      <strong>{{ sub.name }}</strong>
+                      @if (sub.subclass_flavor) {
+                        <em class="subclass-flavor">{{ sub.subclass_flavor }}</em>
+                      }
+                    </div>
+                    @if (levelUpSelectedSubclass()?.index === sub.index && sub.desc?.length) {
+                      <div class="subclass-desc">
+                        @for (p of sub.desc.slice(0, 2); track $index) { <p>{{ p }}</p> }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              @if (!levelUpSelectedSubclass()) {
+                <p class="lu-warning">⚠ You must choose a subclass to proceed.</p>
+              }
+            } @else {
+              <p class="lu-hint">No subclasses available from the catalog.</p>
+            }
+          </div>
+        }
+
+        <!-- ── ABILITY SCORE IMPROVEMENT ── -->
+        @if (levelUpHasASI()) {
+          <div class="lu-section lu-asi-section">
+            <h3 class="lu-section-title">📊 Ability Score Improvement</h3>
+            <p class="lu-hint">
+              Distribute <strong>{{ levelUpASIRemaining() }}</strong> point{{ levelUpASIRemaining() === 1 ? '' : 's' }} remaining — maximum 20 per score.
+            </p>
+            <div class="asi-grid">
+              @for (stat of STATS; track stat) {
+                @let base  = finalStat(stat);
+                @let bonus = levelUpStatBonuses()[stat] ?? 0;
+                <div class="asi-stat-card" [class.has-bonus]="bonus > 0" [class.maxed]="base + bonus >= 20">
+                  <span class="asi-abbr">{{ STAT_ABBREVIATIONS[stat] }}</span>
+                  <div class="asi-display">
+                    <span class="asi-base">{{ base }}</span>
+                    @if (bonus > 0) { <span class="asi-bonus">+{{ bonus }}</span> }
+                    <span class="asi-sep">→</span>
+                    <strong class="asi-total" [class.changed]="bonus > 0">{{ base + bonus }}</strong>
+                  </div>
+                  <div class="asi-btns">
+                    <button class="asi-btn" (click)="removeASIBonus(stat)" [disabled]="bonus <= 0">−</button>
+                    <button class="asi-btn" (click)="addASIBonus(stat)"
+                      [disabled]="levelUpASIRemaining() <= 0 || base + bonus >= 20">+</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── NEW FEATURES ── -->
+        @if (levelUpFeatures().length) {
+          <div class="lu-section">
+            <h3 class="lu-section-title">✨ New Features</h3>
+            <div class="lu-features">
+              @for (feat of levelUpFeatures(); track feat.index) {
+                <details class="lu-feature">
+                  <summary>{{ feat.name }}</summary>
+                  @if (feat.desc?.length) {
+                    <div class="lu-feature-desc">
+                      @for (p of feat.desc!; track $index) { <p>{{ p }}</p> }
+                    </div>
+                  }
+                </details>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── SPELL SLOTS ── -->
+        @if (slotChanges().length) {
+          <div class="lu-section">
+            <h3 class="lu-section-title">🔮 New Spell Slots</h3>
+            <div class="lu-slots">
+              @for (change of slotChanges(); track change.level) {
+                <div class="lu-slot-row">
+                  <span class="lu-slot-label">Level {{ change.level }} slots</span>
+                  <span class="lu-slot-change">
+                    {{ change.old }} → <strong>{{ change.new }}</strong>
+                    <span class="lu-slot-delta">+{{ change.new - change.old }}</span>
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── PROFICIENCY BONUS ── -->
+        @if (levelUpNewProfBonus() !== (character()!.proficiency_bonus ?? 2)) {
+          <div class="lu-section">
+            <h3 class="lu-section-title">📈 Proficiency Bonus</h3>
+            <p class="lu-result">
+              +{{ character()!.proficiency_bonus ?? 2 }} →
+              <strong>+{{ levelUpNewProfBonus() }}</strong>
+            </p>
+          </div>
+        }
+
+        <!-- ── ACTIONS ── -->
+        <div class="lu-actions">
+          <button class="btn-secondary" (click)="showLevelUpModal.set(false)">Cancel</button>
+          <button class="btn-primary lu-confirm-btn"
+            [disabled]="levelUpSubclassRequired() && !levelUpSelectedSubclass()"
+            (click)="confirmLevelUp()">
+            ⬆ Confirm — Level {{ levelUpNewLevel() }}
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ===== HISTORY MODAL ===== -->
+@if (showHistoryModal()) {
+  <div class="detail-overlay" (click)="showHistoryModal.set(false)">
+    <div class="detail-modal history-modal" (click)="$event.stopPropagation()">
+      <button class="detail-close" (click)="showHistoryModal.set(false)">✕</button>
+      <h2 class="detail-modal-title">History &amp; Backstory</h2>
+      <textarea class="history-modal-textarea"
+        rows="18"
+        placeholder="Write your character's full history — no length limit…"
+        [ngModel]="historyDraft()"
+        (ngModelChange)="historyDraft.set($event)"></textarea>
+      <div class="history-modal-actions">
+        <button class="btn-secondary" (click)="showHistoryModal.set(false)">Cancel</button>
+        <button class="btn-primary" (click)="saveHistory()">Save</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== DETAIL MODAL ===== -->
+@if (selectedDetail()) {
+  <div class="detail-overlay" (click)="closeDetail()">
+    <div class="detail-modal" (click)="$event.stopPropagation()">
+
+      <button class="detail-close" (click)="closeDetail()">✕</button>
+
+      @if (selectedDetail()!.kind === 'spell') {
+        @let d = $any(selectedDetail());
+        @let spell = d.full ?? d.entry;
+
+        <div class="detail-modal-header">
+          <span class="dkind-badge">
+            {{ d.entry.level === 0 ? 'Cantrip' : 'Level ' + d.entry.level + ' Spell' }}
+          </span>
+          <h2 class="detail-modal-title">{{ d.entry.name }}</h2>
+          @if (spell.school?.name ?? d.entry.school) {
+            <span class="dkind-badge muted">{{ spell.school?.name ?? d.entry.school }}</span>
+          }
+          <div class="detail-badges">
+            @if (spell.ritual) { <span class="dkind-badge gold">Ritual</span> }
+            @if (spell.concentration) { <span class="dkind-badge gold">Concentration</span> }
+          </div>
+        </div>
+
+        @if (detailLoading()) {
+          <p class="detail-loading">Loading details…</p>
+        }
+
+        @if (spell.casting_time || spell.range || spell.duration || spell.components?.length) {
+          <div class="detail-info-grid">
+            @if (spell.casting_time) {
+              <div class="detail-info-cell"><span>Casting</span><strong>{{ spell.casting_time }}</strong></div>
+            }
+            @if (spell.range) {
+              <div class="detail-info-cell"><span>Range</span><strong>{{ spell.range }}</strong></div>
+            }
+            @if (spell.duration) {
+              <div class="detail-info-cell"><span>Duration</span><strong>{{ spell.duration }}</strong></div>
+            }
+            @if (spell.components?.length) {
+              <div class="detail-info-cell">
+                <span>Components</span>
+                <strong>{{ spell.components.join(', ') }}@if (spell.material) { <em class="material"> ({{ spell.material }})</em> }</strong>
+              </div>
+            }
+            @if (d.entry.damage_dice) {
+              <div class="detail-info-cell"><span>Damage</span><strong>{{ d.entry.damage_dice }} {{ d.entry.damage_type }}</strong></div>
+            }
+            @if (d.entry.attack_type === 'save' && d.entry.save_type) {
+              <div class="detail-info-cell"><span>Save</span><strong>{{ d.entry.save_type }} DC {{ effectiveDC() }}</strong></div>
+            }
+          </div>
+        }
+
+        @if (spell.desc?.length) {
+          <div class="detail-desc">
+            @for (p of spell.desc; track $index) { <p>{{ p }}</p> }
+          </div>
+        } @else if (!detailLoading()) {
+          <p class="detail-empty">No description available.</p>
+        }
+
+        @if (spell.higher_level?.length) {
+          <div class="detail-higher-level">
+            <strong>At Higher Levels.</strong>
+            @for (p of spell.higher_level; track $index) { <p>{{ p }}</p> }
+          </div>
+        }
+      }
+
+      @if (selectedDetail()!.kind === 'inventory') {
+        @let inv = $any(selectedDetail()).item;
+
+        <div class="detail-modal-header">
+          <span class="dkind-badge">
+            {{ inv.type === 'weapon' ? '⚔️ Weapon' : inv.type === 'armor' ? '🛡️ Armor' : '🎒 Item' }}
+          </span>
+          <h2 class="detail-modal-title">{{ inv.name }}</h2>
+          <span class="dkind-badge muted">{{ inv.state }}</span>
+        </div>
+
+        @if (inv.type === 'weapon' && inv.weapon_data) {
+          <div class="detail-info-grid">
+            <div class="detail-info-cell"><span>Damage</span><strong>{{ inv.weapon_data.damage_dice }}</strong></div>
+            <div class="detail-info-cell"><span>Type</span><strong>{{ inv.weapon_data.damage_type }}</strong></div>
+            <div class="detail-info-cell"><span>Ability</span><strong>{{ inv.weapon_data.ability | titlecase }}</strong></div>
+            <div class="detail-info-cell"><span>Attack Bonus</span><strong>{{ attackBonus(inv) }}</strong></div>
+            <div class="detail-info-cell"><span>Damage Roll</span><strong>{{ damageLabel(inv) }}</strong></div>
+          </div>
+          @if (inv.properties?.length) {
+            <div class="detail-props-block">
+              <h4 class="detail-props-title">Properties</h4>
+              @for (prop of inv.properties!; track prop) {
+                <div class="detail-prop-row">
+                  <span class="detail-prop-name">{{ prop }}</span>
+                  <span class="detail-prop-desc">{{ getPropDesc(prop) }}</span>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        @if (inv.type === 'armor' && inv.armor_data) {
+          <div class="detail-info-grid">
+            <div class="detail-info-cell"><span>Armor Type</span><strong>{{ inv.armor_data.armor_type | titlecase }}</strong></div>
+            <div class="detail-info-cell"><span>Base AC</span><strong>{{ inv.armor_data.base_ac }}</strong></div>
+            @if (inv.state === 'equipped') {
+              <div class="detail-info-cell"><span>Your AC</span><strong>{{ calculatedAC() }}</strong></div>
+            }
+          </div>
+        }
+
+        @if (inv.type === 'item') {
+          <div class="detail-info-grid">
+            <div class="detail-info-cell"><span>Quantity</span><strong>x{{ inv.quantity }}</strong></div>
+            @if (inv.weight) { <div class="detail-info-cell"><span>Weight</span><strong>{{ inv.weight }} lb</strong></div> }
+          </div>
+        }
+
+        @if (inv.description) {
+          <div class="detail-desc"><p>{{ inv.description }}</p></div>
+        } @else {
+          <p class="detail-empty">No additional description.</p>
+        }
+      }
+
+    </div>
+  </div>
+}

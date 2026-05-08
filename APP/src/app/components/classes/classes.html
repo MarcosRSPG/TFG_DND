@@ -39,10 +39,17 @@
     </div>
   </div>
 
+  <div style="display:flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap:wrap;">
+    <button class="sel-toggle-btn" [class.active]="selectionMode()" (click)="toggleSelectionMode()">{{ selectionMode() ? '✕ Cancel' : '☑ Select' }}</button>
+    @if (selectionMode() && selectedIds().size > 0) { <button class="export-pdf-btn" (click)="exportSelection()">📄 PDF ({{ selectedIds().size }})</button> }
+  </div>
+
   <ul class="class-list" aria-label="List of classes">
     @for (dndClass of paginatedClasses(); track dndClass.index) {
-      <li class="class-item">
-        <a [routerLink]="['/classes', dndClass.index]" class="class-link">
+      <li class="class-item" [class.sel-active]="selectionMode()" [class.sel-checked]="isSelected(dndClass.index || '')"
+          (click)="selectionMode() && toggleSelect(dndClass.index || '', $event)">
+        @if (selectionMode()) { <button class="sel-check-btn" (click)="toggleSelect(dndClass.index || '', $event)">{{ isSelected(dndClass.index || '') ? '✔' : '' }}</button> }
+        <a [routerLink]="selectionMode() ? null : ['/classes', dndClass.index]" class="class-link">
           <h3>{{ dndClass.name }}</h3>
           <p>Hit die: d{{ dndClass.hit_die }}</p>
           <p>Saving throws: {{ dndClass.saving_throws[0]?.name }} / {{ dndClass.saving_throws[1]?.name }}</p>

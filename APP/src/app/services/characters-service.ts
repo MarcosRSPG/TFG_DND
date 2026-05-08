@@ -59,8 +59,21 @@ export class CharactersService {
     );
   }
 
+  async uploadImage(id: string, file: File): Promise<{ image: string }> {
+    const formData = new FormData();
+    formData.append('image', file, file.name);
+    return firstValueFrom(
+      this.http.post<{ image: string }>(
+        `${this.apiUrl}/characters/${id}/image`,
+        formData,
+        { headers: this.buildHeaders() },
+      )
+    );
+  }
+
   private toApiPayload(character: Partial<Character>): Record<string, unknown> {
-    const { character_class, ...rest } = character as Record<string, unknown>;
+    // Strip character_class (renamed to 'class') and _id (not allowed in MongoDB $set)
+    const { character_class, _id, id, ...rest } = character as Record<string, unknown>;
     return {
       ...rest,
       ...(character_class !== undefined && { class: character_class }),

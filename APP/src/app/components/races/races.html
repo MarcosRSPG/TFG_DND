@@ -30,10 +30,17 @@
  		</div>
  	</div>
 
+  <div style="display:flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap:wrap;">
+    <button class="sel-toggle-btn" [class.active]="selectionMode()" (click)="toggleSelectionMode()">{{ selectionMode() ? '✕ Cancel' : '☑ Select' }}</button>
+    @if (selectionMode() && selectedIds().size > 0) { <button class="export-pdf-btn" (click)="exportSelection()">📄 PDF ({{ selectedIds().size }})</button> }
+  </div>
+
  	<ul class="race-list" aria-label="List of races">
  		@for (race of paginatedRaces(); track race.index) {
- 			<li class="race-item">
- 				<a [routerLink]="['/races', race.index]" [queryParams]="{section: 'razas', searchName: filters().searchName, size: filters().size}" class="race-link">
+ 			<li class="race-item" [class.sel-active]="selectionMode()" [class.sel-checked]="isSelected(race.index || '')"
+          (click)="selectionMode() && toggleSelect(race.index || '', $event)">
+        @if (selectionMode()) { <button class="sel-check-btn" (click)="toggleSelect(race.index || '', $event)">{{ isSelected(race.index || '') ? '✔' : '' }}</button> }
+ 				<a [routerLink]="selectionMode() ? null : ['/races', race.index]" [queryParams]="{section: 'razas', searchName: filters().searchName, size: filters().size}" class="race-link">
  					<h3>{{ race.name }}</h3>
  					<p>Speed: {{ race.speed }} ft</p>
  					<p>Size: {{ race.size }}</p>

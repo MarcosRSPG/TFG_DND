@@ -140,6 +140,99 @@ html, body {
   background-image: url("/dungeon_fire_pro.gif");
 }
 
+/* ── Selection mode buttons (manual lists) ──────────────────── */
+.sel-toggle-btn {
+  padding: 0.35rem 0.85rem;
+  border-radius: 7px;
+  border: 1px solid rgba(201,162,90,0.4);
+  background: rgba(55,34,19,0.5);
+  color: rgba(201,162,90,0.85);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sel-toggle-btn:hover { border-color: rgba(201,162,90,0.7); color: #d8b470; }
+.sel-toggle-btn.active { border-color: #e07070; color: #e07070; background: rgba(180,40,40,0.15); }
+
+.export-pdf-btn {
+  padding: 0.35rem 0.9rem;
+  border-radius: 7px;
+  border: 1px solid rgba(120,200,120,0.5);
+  background: rgba(40,100,40,0.25);
+  color: #90e090;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.export-pdf-btn:hover { background: rgba(40,120,40,0.45); }
+
+.sel-check-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(201, 162, 90, 0.5);
+  background: rgba(29, 18, 10, 0.6);
+  color: rgba(201, 162, 90, 0.6);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  padding: 0;
+  align-self: center;
+}
+.sel-check-btn:hover { border-color: #d8b470; color: #d8b470; background: rgba(50, 30, 10, 0.8); }
+
+/* When item is selected */
+.entity-item.sel-checked .sel-check-btn,
+.race-item.sel-checked   .sel-check-btn,
+.class-item.sel-checked  .sel-check-btn {
+  border-color: #d8b470;
+  background: rgba(216, 180, 112, 0.25);
+  color: #d8b470;
+}
+
+/* Whole item selectable in selection mode */
+.entity-item.sel-active,
+.race-item.sel-active,
+.class-item.sel-active   { cursor: pointer; user-select: none; }
+
+.entity-item.sel-checked,
+.race-item.sel-checked,
+.class-item.sel-checked  {
+  outline: 2px solid #d8b470;
+  border-radius: 6px;
+  background: rgba(216, 180, 112, 0.08);
+}
+
+/* ── Sheet view: hide global header when on /characters/:id/sheet ── */
+body.sheet-view-active main > header,
+body.sheet-view-active comp-din-header {
+  display: none !important;
+}
+
+body.sheet-view-active main {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ── Print: hide global header & decorations ─────────────────── */
+@media print {
+  /* Hide the site navbar */
+  main > header,
+  comp-din-header { display: none !important; }
+
+  /* Remove the animated background */
+  html, body { background-image: none !important; background-color: white !important; }
+
+  /* Remove main padding/margin that offsets the navbar */
+  main { padding: 0 !important; margin: 0 !important; }
+}
+
 /* Alias variables for character pages */
 :root {
   --accent:       var(--dnd-accent-secondary);

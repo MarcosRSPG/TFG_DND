@@ -49,6 +49,8 @@ export interface InventoryItem {
   state: 'equipped' | 'stored' | 'carried';
   weapon_data?: WeaponData;
   armor_data?: ArmorData;
+  /** Weapon property names (Finesse, Thrown, Versatile…) */
+  properties?: string[];
 }
 
 export interface Trait {
@@ -56,6 +58,8 @@ export interface Trait {
   name: string;
   description: string;
   source: 'race' | 'subrace' | 'class' | 'background' | 'custom';
+  /** Class feature level at which this trait is acquired */
+  level?: number;
 }
 
 export interface SpellEntry {
@@ -126,10 +130,20 @@ export interface Character {
   notes?: string;
   history?: string;
   image?: string;
+  appearance?: string;
+  age?: string;
   personality_traits?: string[];
   ideals?: string[];
   bonds?: string[];
   flaws?: string[];
+  // Extra mechanics
+  initiative_bonus?: number;
+  speed_bonus?: number;
+  ac_bonus?: number;
+  prof_bonus_extra?: number;
+  experience_points?: number;
+  skill_expertise?: string[];
+  skill_bonuses?: Record<string, number>;
 }
 
 export interface Skill {

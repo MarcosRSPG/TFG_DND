@@ -153,7 +153,7 @@ export class SpellForm implements OnInit {
   dcSuccessTypes = ['none', 'half', 'quarter'];
 
   // Image upload
-  imagePreview: string | null = null;
+  imagePreview = signal<string | null>(null);
   originalImageUrl: string | null = null;
   selectedFile: File | null = null;
 
@@ -340,10 +340,11 @@ export class SpellForm implements OnInit {
 
       // Load existing image preview
       if (spell.image) {
-        this.imagePreview = spell.image.startsWith('http')
+        const url = spell.image.startsWith('http')
           ? spell.image
           : `${environment.API_URL}${spell.image}`;
-        this.originalImageUrl = this.imagePreview;
+        this.imagePreview.set(url);
+        this.originalImageUrl = url;
       }
     } catch (err) {
       console.error('Error loading spell data:', err);
@@ -633,7 +634,7 @@ export class SpellForm implements OnInit {
       this.selectedFile = input.files[0];
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.imagePreview = e.target?.result as string;
+        this.imagePreview.set(e.target?.result as string);
       };
       reader.readAsDataURL(this.selectedFile);
     }
@@ -641,7 +642,7 @@ export class SpellForm implements OnInit {
 
   revertImage(): void {
     this.selectedFile = null;
-    this.imagePreview = this.originalImageUrl;
+    this.imagePreview.set(this.originalImageUrl);
     const input = document.getElementById('spell-image') as HTMLInputElement | null;
     if (input) input.value = '';
   }
