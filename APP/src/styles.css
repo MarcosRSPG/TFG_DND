@@ -3,29 +3,29 @@
 /* Dark Fantasy D&D Theme Variables */
 :root {
   /* Primary Accent Colors */
-  --dnd-accent-primary: #B87333;     /* copper */
-  --dnd-accent-secondary: #D4AF37;   /* aged gold */
-  --dnd-accent-muted: #C9A05B;       /* antique bronze */
-  --dnd-accent-bright: #D6B46C;      /* bright bronze */
-  --dnd-accent-glow: #F0D060;        /* glowing gold */
-  
+  --dnd-accent-primary: #b87333; /* copper */
+  --dnd-accent-secondary: #d4af37; /* aged gold */
+  --dnd-accent-muted: #c9a05b; /* antique bronze */
+  --dnd-accent-bright: #d6b46c; /* bright bronze */
+  --dnd-accent-glow: #f0d060; /* glowing gold */
+
   /* Background Colors */
-  --dnd-bg-primary: #1a0f08;          /* deep dark brown */
-  --dnd-bg-card: #2d2416;             /* card background */
-  --dnd-bg-elevated: #2f1a0c;         /* elevated surfaces */
-  
+  --dnd-bg-primary: #1a0f08; /* deep dark brown */
+  --dnd-bg-card: #2d2416; /* card background */
+  --dnd-bg-elevated: #2f1a0c; /* elevated surfaces */
+
   /* Text Colors */
-  --dnd-text-primary: #ffffff;        /* pure white */
-  --dnd-text-secondary: #eadab8;      /* pale cream (was: #eadab8) */
-  --dnd-text-muted: #cfbc96;          /* muted cream (was: #cfbc96) */
-  --dnd-text-dim: #8b6f47;            /* dim text (was: #8b6f47) */
-  --dnd-text-gold: #f0d8b0;           /* gold text (was: #f0d8b0) */
-  --dnd-text-bright: #f1dfbf;         /* bright gold text (was: #f1dfbf) */
-  --dnd-text-error: #f3c2b9;          /* error color (was: #f3c2b9) */
-  --dnd-text-link: #c9a25a;           /* link color (was: #c9a25a) */
-  --dnd-text-highlight: #ffd900bb;      /* highlight gold (was: #ffd700) */
-  --dnd-text-bronze: #bfa77d;         /* bronze text (was: #bfa77d) */
-  
+  --dnd-text-primary: #ffffff; /* pure white */
+  --dnd-text-secondary: #eadab8; /* pale cream (was: #eadab8) */
+  --dnd-text-muted: #cfbc96; /* muted cream (was: #cfbc96) */
+  --dnd-text-dim: #8b6f47; /* dim text (was: #8b6f47) */
+  --dnd-text-gold: #f0d8b0; /* gold text (was: #f0d8b0) */
+  --dnd-text-bright: #f1dfbf; /* bright gold text (was: #f1dfbf) */
+  --dnd-text-error: #f3c2b9; /* error color (was: #f3c2b9) */
+  --dnd-text-link: #c9a25a; /* link color (was: #c9a25a) */
+  --dnd-text-highlight: #ffd900bb; /* highlight gold (was: #ffd700) */
+  --dnd-text-bronze: #bfa77d; /* bronze text (was: #bfa77d) */
+
   /* Borders */
   --dnd-border: rgba(201, 162, 90, 0.22);
   --dnd-border-medium: rgba(201, 162, 90, 0.35);
@@ -35,7 +35,7 @@
   /* Shadows */
   --dnd-shadow: rgba(0, 0, 0, 0.35);
   --dnd-shadow-strong: rgba(0, 0, 0, 0.4);
-  
+
   /* Background Overlays */
   --dnd-bg-gradient-1: rgba(49, 30, 18, 0.9);
   --dnd-bg-gradient-2: rgba(29, 18, 10, 0.92);
@@ -44,6 +44,33 @@
   --dnd-bg-medium: rgba(55, 34, 19, 0.65);
   --dnd-bg-error: rgba(100, 40, 40, 0.8);
   --dnd-bg-error-border: rgba(183, 93, 77, 0.6);
+  --mobile-panel-width: min(82vw, 40rem);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+.filter-group input,
+.filter-group select,
+.create-type-selector select {
+  width: 100%;
+  min-width: 0;
 }
 
 html,
@@ -135,37 +162,47 @@ video {
   vertical-align: baseline;
 }
 
-html, body {
+html,
+body {
   font-family: Arial, sans-serif;
-  background-image: url("/dungeon_fire_pro.gif");
+  background-image: url('/dungeon_fire_pro.gif');
 }
 
 /* ── Selection mode buttons (manual lists) ──────────────────── */
 .sel-toggle-btn {
   padding: 0.35rem 0.85rem;
   border-radius: 7px;
-  border: 1px solid rgba(201,162,90,0.4);
-  background: rgba(55,34,19,0.5);
-  color: rgba(201,162,90,0.85);
+  border: 1px solid rgba(201, 162, 90, 0.4);
+  background: rgba(55, 34, 19, 0.5);
+  color: rgba(201, 162, 90, 0.85);
   font-size: 0.82rem;
   cursor: pointer;
   transition: all 0.15s;
 }
-.sel-toggle-btn:hover { border-color: rgba(201,162,90,0.7); color: #d8b470; }
-.sel-toggle-btn.active { border-color: #e07070; color: #e07070; background: rgba(180,40,40,0.15); }
+.sel-toggle-btn:hover {
+  border-color: rgba(201, 162, 90, 0.7);
+  color: #d8b470;
+}
+.sel-toggle-btn.active {
+  border-color: #e07070;
+  color: #e07070;
+  background: rgba(180, 40, 40, 0.15);
+}
 
 .export-pdf-btn {
   padding: 0.35rem 0.9rem;
   border-radius: 7px;
-  border: 1px solid rgba(120,200,120,0.5);
-  background: rgba(40,100,40,0.25);
+  border: 1px solid rgba(120, 200, 120, 0.5);
+  background: rgba(40, 100, 40, 0.25);
   color: #90e090;
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
 }
-.export-pdf-btn:hover { background: rgba(40,120,40,0.45); }
+.export-pdf-btn:hover {
+  background: rgba(40, 120, 40, 0.45);
+}
 
 .sel-check-btn {
   width: 32px;
@@ -185,12 +222,16 @@ html, body {
   padding: 0;
   align-self: center;
 }
-.sel-check-btn:hover { border-color: #d8b470; color: #d8b470; background: rgba(50, 30, 10, 0.8); }
+.sel-check-btn:hover {
+  border-color: #d8b470;
+  color: #d8b470;
+  background: rgba(50, 30, 10, 0.8);
+}
 
 /* When item is selected */
 .entity-item.sel-checked .sel-check-btn,
-.race-item.sel-checked   .sel-check-btn,
-.class-item.sel-checked  .sel-check-btn {
+.race-item.sel-checked .sel-check-btn,
+.class-item.sel-checked .sel-check-btn {
   border-color: #d8b470;
   background: rgba(216, 180, 112, 0.25);
   color: #d8b470;
@@ -199,11 +240,14 @@ html, body {
 /* Whole item selectable in selection mode */
 .entity-item.sel-active,
 .race-item.sel-active,
-.class-item.sel-active   { cursor: pointer; user-select: none; }
+.class-item.sel-active {
+  cursor: pointer;
+  user-select: none;
+}
 
 .entity-item.sel-checked,
 .race-item.sel-checked,
-.class-item.sel-checked  {
+.class-item.sel-checked {
   outline: 2px solid #d8b470;
   border-radius: 6px;
   background: rgba(216, 180, 112, 0.08);
@@ -224,22 +268,46 @@ body.sheet-view-active main {
 @media print {
   /* Hide the site navbar */
   main > header,
-  comp-din-header { display: none !important; }
+  comp-din-header {
+    display: none !important;
+  }
 
   /* Remove the animated background */
-  html, body { background-image: none !important; background-color: white !important; }
+  html,
+  body {
+    background-image: none !important;
+    background-color: white !important;
+  }
 
   /* Remove main padding/margin that offsets the navbar */
-  main { padding: 0 !important; margin: 0 !important; }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
 }
 
 /* Alias variables for character pages */
 :root {
-  --accent:       var(--dnd-accent-secondary);
-  --card-bg:      var(--dnd-bg-card);
+  --accent: var(--dnd-accent-secondary);
+  --card-bg: var(--dnd-bg-card);
   --border-color: var(--dnd-border);
-  --text-muted:   var(--dnd-text-muted);
-  --text:         var(--dnd-text-primary);
-  --tag-bg:       var(--dnd-bg-elevated);
-  --input-bg:     var(--dnd-bg-elevated);
+  --text-muted: var(--dnd-text-muted);
+  --text: var(--dnd-text-primary);
+  --tag-bg: var(--dnd-bg-elevated);
+  --input-bg: var(--dnd-bg-elevated);
+}
+
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .filter-group,
+  .form-group,
+  .create-type-selector,
+  .unit-input-group,
+  .form-row,
+  .passwords > div {
+    min-width: 0;
+  }
 }

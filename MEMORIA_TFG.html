@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>MEMORIA TECNICA - Trabajo de Fin de Grado</title>
+  <title>MEMORIA TÉCNICA - Trabajo de Fin de Grado</title>
   <style>
     @page {
       size: A4;
@@ -52,22 +52,6 @@
     li {
       margin-bottom: 4pt;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 12pt 0;
-      font-size: 11pt;
-    }
-    th, td {
-      border: 1px solid #000;
-      padding: 6pt;
-      vertical-align: top;
-    }
-    th {
-      background-color: #bf360c;
-      color: white;
-      font-weight: bold;
-    }
     .img-placeholder {
       border: 2px solid #bf360c;
       padding: 10pt;
@@ -78,6 +62,21 @@
       color: #bf360c;
       display: block;
       margin-bottom: 6pt;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12pt 0;
+      font-size: 11pt;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 6pt;
+    }
+    th {
+      background-color: #bf360c;
+      color: white;
+      font-weight: bold;
     }
     .cover-page {
       text-align: center;
@@ -103,9 +102,10 @@
 </head>
 <body>
 
+  <!-- PORTADA -->
   <div class="cover-page">
-    <h1>MEMORIA TECNICA<br>DEL TRABAJO DE FIN DE GRADO</h1>
-    <p><strong>Titulo:</strong> Grimledger: Aplicacion Web para la Gestion de Contenidos de Dungeons &amp; Dragons 5a Edicion</p>
+    <h1>MEMORIA TÉCNICA<br>DEL TRABAJO DE FIN DE GRADO</h1>
+    <p><strong>Título:</strong> Grimledger: Aplicación Web para la Gestión de Contenidos de Dungeons & Dragons 5ª Edición con Integración de Modelos de Lenguaje</p>
     <p><strong>Autor:</strong> [Tu Nombre]</p>
     <p><strong>Fecha:</strong> Mayo 2026</p>
     <p><strong>Grado:</strong> [Tu Grado]</p>
@@ -113,358 +113,568 @@
     <p><strong>Departamento:</strong> [Tu Departamento]</p>
   </div>
 
-  <h1>Indice</h1>
+  <!-- ÍNDICE -->
+  <h1>Índice</h1>
   <ol>
-    <li>Introduccion
+    <li>Introducción
       <ol>
-        <li>Contexto del proyecto</li>
-        <li>Problematica actual</li>
-        <li>Solucion propuesta</li>
+        <li>Contexto del Proyecto y el Ecosistema D&D</li>
+        <li>Problemática Actual</li>
+        <li>Solución Propuesta: Grimledger</li>
       </ol>
     </li>
     <li>Objetivos</li>
-    <li>Especificacion de Requisitos
+    <li>Especificación de Requisitos
       <ol>
-        <li>Requisitos funcionales</li>
-        <li>Requisitos no funcionales</li>
+        <li>Requisitos Funcionales</li>
+        <li>Requisitos No Funcionales</li>
       </ol>
     </li>
-    <li>Analisis
+    <li>Análisis
       <ol>
         <li>Actores</li>
-        <li>Casos de uso</li>
-        <li>Diagrama de casos de uso</li>
-        <li>Diagrama de clases</li>
-        <li>Diagramas de secuencia</li>
+        <li>Casos de Uso</li>
+        <li>Diagrama de Casos de Uso</li>
+        <li>Diagrama de Clases</li>
+        <li>Diagramas de Secuencia</li>
       </ol>
+    </li>
+    <li>Diseño
+      <ol>
+        <li>Arquitectura del Sistema</li>
+        <li>Diagrama de Componentes</li>
+        <li>Diseño de Base de Datos (ER)</li>
+        <li>Diseño de Interfaz / Navegación</li>
+      </ol>
+    </li>
+    <li>Implementación
+      <ol>
+        <li>Tecnologías Utilizadas</li>
+        <li>Justificación Técnica</li>
+      </ol>
+    </li>
+    <li>Pruebas</li>
+    <li>Mejoras Futuras</li>
+    <li>Conclusiones</li>
+    <li>Bibliografía</li>
+  </ol>
+
+  <div class="section-divider"></div>
+
+  <!-- 1. INTRODUCCIÓN -->
+  <h1>1. Introducción</h1>
+
+  <h2>1.1 Contexto del Proyecto y el Ecosistema D&D</h2>
+  <p>El sector de los videojuegos y las herramientas digitales para juegos de rol de mesa (Tabletop Role-Playing Games - TTRPG) ha experimentado un crecimiento exponencial en la última década. Dungeons &amp; Dragons (D&amp;D), editado por Wizards of the Coast, se ha consolidado como el estándar de oro del género. La quinta edición (5e) es la más extendida por su equilibrio entre profundidad mecánica y accesibilidad para nuevos jugadores.</p>
+
+  <p>En este ecosistema, la gestión de contenidos (monstruos, hechizos, objetos, personajes y backgrounds) ha migrado progresivamente del papel a soluciones digitales. Herramientas como D&amp;D Beyond, Roll20 o Foundry VTT han digitalizado buena parte de las reglas, pero siguen siendo limitadas cuando el usuario necesita crear contenido propio o mantener coherencia entre catálogos, formularios y reglas.</p>
+
+  <p>Grimledger nace en este contexto. Es una aplicación web orientada a la gestión y creación de contenido de D&amp;D 5e, con un enfoque claro en personajes y contenido Homebrew. La propuesta del TFG consiste en combinar una SPA desarrollada en Angular 21 con un backend FastAPI, persistencia en MongoDB y una futura integración de Qwen para asistir la creación de personajes, monstruos, hechizos, backgrounds e items.</p>
+
+  <h2>1.2 Problemática Actual</h2>
+  <p>Los usuarios que crean contenido de D&amp;D, especialmente personajes y material Homebrew, se enfrentan a una carga cognitiva inmensa. Deben gestionar reglas, catálogos, estadísticas, relaciones entre entidades y consistencia narrativa. Las herramientas actuales suelen ser pasivas: el usuario debe saber exactamente qué buscar, qué valores introducir y cómo mantener el equilibrio entre fantasía y mecánica.</p>
+
+  <p>Además, la gestión de personajes, monstruos, hechizos, backgrounds e items suele repartirse entre fuentes distintas o formularios poco conectados entre sí. No existe una solución unificada que permita consultar contenido, editar entidades propias y, al mismo tiempo, recibir asistencia contextual para completar formularios complejos con datos coherentes.</p>
+
+  <h2>1.3 Solución Propuesta: Grimledger</h2>
+  <p><strong>Grimledger</strong> nace como una respuesta técnica a estas problemáticas. Es una Single Page Application (SPA) construida con <strong>Angular 21</strong>, apoyada por un backend en <strong>FastAPI</strong> y una base de datos <strong>MongoDB</strong>. A diferencia de herramientas centradas solo en consulta, Grimledger combina catálogo, formularios ricos y una futura capa de asistencia inteligente. En su alcance final de TFG, el proyecto incluye:</p>
+
+  <ul>
+    <li><strong>Gestión Centralizada:</strong> Catálogo y edición de personajes, monstruos, hechizos, backgrounds e items desde una única aplicación.</li>
+    <li><strong>Creación Guiada:</strong> Formularios ricos con validación y estructura de dominio, incluyendo un wizard de creación de personajes.</li>
+    <li><strong>Asistencia con Qwen:</strong> Integración prevista de un modelo de la familia Qwen alojado en AWS EC2 para asistir la creación y enriquecimiento de entidades.</li>
+    <li><strong>Apoyo Visual Progresivo:</strong> Soporte para imágenes reales cuando existan y, mientras tanto, textos descriptivos o prompts de imagen para ilustraciones pendientes.</li>
+  </ul>
+
+  <p>La arquitectura de Grimledger se divide en tres piezas principales: (1) el frontend en Angular 21 con Signals y componentes standalone, (2) el backend en FastAPI con Pydantic para validación tipada, y (3) MongoDB como persistencia documental. Sobre este núcleo se incorporará Qwen como runtime de asistencia especializado con PDFs originales y datos estructurados del dominio.</p>
+
+  <div class="section-divider"></div>
+
+  <!-- 2. OBJETIVOS -->
+  <h1>2. Objetivos</h1>
+
+  <p>El objetivo general de este Trabajo de Fin de Grado es <strong>diseñar, desarrollar y validar una aplicación web para la gestión avanzada de contenidos de Dungeons &amp; Dragons 5ª edición, incorporando asistencia inteligente basada en Qwen para apoyar la creación de contenido original (Homebrew) y personajes.</strong></p>
+
+  <p>Para alcanzar este objetivo general, se han definido los siguientes objetivos específicos:</p>
+
+  <ol>
+    <li><strong>Diseñar una arquitectura coherente con el producto real:</strong> separar claramente frontend (Angular 21), backend (FastAPI) y persistencia documental (MongoDB).</li>
+
+    <li><strong>Implementar el núcleo funcional actual:</strong> autenticación, consulta de catálogos y creación/edición de personajes, monstruos, hechizos, backgrounds e items.</li>
+
+    <li><strong>Incorporar asistencia con IA:</strong> preparar la integración de Qwen para enriquecer formularios y generar sugerencias estructuradas sobre entidades del dominio.</li>
+
+    <li><strong>Especializar el contexto del modelo:</strong> utilizar PDFs originales, base de datos propia y estructuras del dominio como base de conocimiento para el asistente.</li>
+
+    <li><strong>Definir un despliegue simple y defendible:</strong> alojar la solución en una única instancia AWS EC2, priorizando control del stack y viabilidad técnica.</li>
+  </ol>
+
+  <div class="section-divider"></div>
+
+  <!-- 3. ESPECIFICACIÓN DE REQUISITOS -->
+  <h1>3. Especificación de Requisitos</h1>
+
+  <h2>3.1 Requisitos Funcionales</h2>
+
+  <p>Los requisitos funcionales definen QUÉ debe hacer el sistema. A continuación se enumeran los requisitos funcionales de Grimledger, agrupados por módulos:</p>
+
+  <ol>
+    <li><strong>Gestión de Usuarios (RF01-RF03):</strong>
+      <ul>
+        <li><strong>RF01 - Registro de usuario:</strong> El sistema debe permitir a cualquier usuario crear una cuenta proporcionando email, contraseña (mínimo 8 caracteres, una mayúscula, un número) y nombre de usuario. La contraseña se almacena hasheada con bcrypt.</li>
+        <li><strong>RF02 - Inicio de sesión:</strong> El sistema debe validar credenciales y emitir un JWT (JSON Web Token) con validez de 24 horas para acceder a las rutas protegidas.</li>
+        <li><strong>RF03 - Gestión de roles:</strong> El sistema debe diferenciar entre usuario estándar y administrador, restringiendo edición y administración según permisos.</li>
+      </ul>
+    </li>
+
+    <li><strong>Catálogo de D&amp;D 5e (RF04-RF07):</strong>
+      <ul>
+        <li><strong>RF04 - Visualización y filtrado:</strong> El sistema debe permitir listar y consultar monstruos, hechizos, backgrounds, items, razas y clases en múltiples vistas.</li>
+        <li><strong>RF05 - Búsqueda y detalle:</strong> El sistema debe permitir buscar entidades por nombre y acceder a su ficha completa con la información relevante del dominio.</li>
+        <li><strong>RF06 - Soporte de catálogos:</strong> El sistema debe reutilizar catálogos de D&amp;D 5e para poblar formularios y vistas de detalle.</li>
+        <li><strong>RF07 - Gestión de imágenes:</strong> El sistema debe permitir usar imagen real cuando exista y, en su defecto, conservar una descripción textual de la ilustración pendiente.</li>
+      </ul>
+    </li>
+
+    <li><strong>Creación y Edición de Entidades (RF08-RF12):</strong>
+      <ul>
+        <li><strong>RF08 - Gestión de personajes:</strong> El sistema debe permitir crear personajes mediante un wizard paso a paso y persistirlos asociados al usuario autenticado.</li>
+        <li><strong>RF09 - Gestión de monstruos:</strong> El sistema debe permitir crear, editar y visualizar monstruos con estadísticas, habilidades y acciones.</li>
+        <li><strong>RF10 - Gestión de hechizos y backgrounds:</strong> El sistema debe permitir crear, editar y consultar hechizos y backgrounds con sus estructuras específicas.</li>
+        <li><strong>RF11 - Gestión de items:</strong> El sistema debe soportar la creación y edición de armas, armaduras, objetos mágicos, herramientas, monturas y equipo de aventura.</li>
+        <li><strong>RF12 - Edición con control de autoría:</strong> El sistema debe restringir la modificación de contenido según permisos y autoría.</li>
+      </ul>
+    </li>
+
+    <li><strong>Asistencia con Qwen (RF13-RF15):</strong>
+      <ul>
+        <li><strong>RF13 - Asistencia sobre formularios:</strong> El sistema debe preparar una integración de Qwen capaz de asistir la creación de personajes, monstruos, hechizos, backgrounds e items.</li>
+        <li><strong>RF14 - Respuestas estructuradas:</strong> La asistencia de IA debe devolver sugerencias estructuradas y seguras para aplicar sobre el estado local del formulario.</li>
+        <li><strong>RF15 - Enriquecimiento textual y visual:</strong> La IA debe poder proponer descripciones, ajustes de contenido y textos descriptivos de imagen cuando todavía no exista ilustración final.</li>
+      </ul>
     </li>
   </ol>
 
-  <div class="section-divider"></div>
+  <h2>3.2 Requisitos No Funcionales</h2>
 
-  <h1>1. Introduccion</h1>
-
-  <h2>1.1 Contexto del proyecto</h2>
-  <p>Grimledger es un proyecto orientado a la gestion digital de contenidos de Dungeons &amp; Dragons 5a edicion. El repositorio revisado se organiza como un monorepo con un frontend en Angular 21 dentro de <code>APP/</code> y un backend en FastAPI dentro de <code>API/</code>, ambos apoyados en MongoDB. Sobre esta base se ha construido una aplicacion web capaz de consultar catalogo oficial, crear contenido homebrew y gestionar personajes de usuario.</p>
-
-  <p>El ecosistema de herramientas para juegos de rol de mesa suele resolver muy bien la consulta pasiva de reglas, pero no siempre integra en una unica solucion el catalogo, la creacion de variaciones personalizadas, el mantenimiento de fichas completas y la generacion de documentacion util para partida. En este contexto, Grimledger se plantea como una plataforma propia, con control total sobre el modelo de datos y con capacidad de evolucionar hacia servicios mas avanzados.</p>
-
-  <p>La revision del codigo muestra ademas dos lineas de crecimiento ya previstas. La primera es un asistente de IA para formularios, documentado en <code>PLAN_ASISTENTE_IA_FORMULARIOS.md</code>, pensado para ayudar a crear personajes, monstruos, hechizos, backgrounds e items sin guardar automaticamente en backend. La segunda es un sistema de impresion en PDF para seleccionar varios elementos del mismo tipo, por ejemplo monstruos, items o personajes, y descargar dossiers detallados preparados para consulta o impresion.</p>
-
-  <h2>1.2 Problematica actual</h2>
-  <p>La preparacion de contenido para una campana de D&amp;D exige combinar informacion oficial, adaptaciones caseras y documentos auxiliares. En la practica, esto suele obligar al usuario a saltar entre distintas fuentes para consultar razas, clases, hechizos, monstruos y equipo, mientras mantiene en otro lugar sus personajes o sus modificaciones homebrew. El resultado habitual es fragmentacion de informacion y sobrecoste de mantenimiento.</p>
-
-  <p>Tambien existe una segunda dificultad: la creacion y refinado de contenido complejo. Un monstruo con acciones, resistencias, spellcasting y CR razonable, o un personaje con inventario, rasgos, hechizos y bio bien organizados, requiere muchos campos y bastante consistencia interna. Por eso tiene sentido plantear una ayuda futura basada en IA, pero con una condicion fuerte: el modelo no debe tomar control de la persistencia ni operar libremente sobre la interfaz.</p>
-
-  <p>Por ultimo, una vez que el contenido ya existe, aparece la necesidad de distribuirlo y usarlo fuera de la aplicacion. Aqui entra la futura exportacion PDF: no se trata solo de imprimir una ficha suelta, sino de permitir seleccionar varios elementos homogeenos y generar un documento detallado y consistente, util para mesa, preparacion de sesion o archivo.</p>
-
-  <h2>1.3 Solucion propuesta</h2>
-  <p>La solucion propuesta por Grimledger se apoya en una arquitectura web desacoplada. El frontend Angular ofrece una SPA con rutas lazy, componentes standalone, listados con filtros y formularios ricos. El backend FastAPI concentra el acceso a MongoDB, la validacion de modelos y la carga de imagenes. La combinacion actual permite resolver varias necesidades reales del dominio:</p>
-
-  <ul>
-    <li>Consulta del catalogo de razas, clases, backgrounds, hechizos, monstruos e items.</li>
-    <li>Creacion, edicion y borrado de contenido homebrew en backgrounds, hechizos, monstruos e items.</li>
-    <li>Creacion de personajes mediante asistente por pasos y gestion detallada de ficha.</li>
-    <li>Uso de una API propia sobre datos oficiales sembrados en MongoDB, evitando depender del tercero en tiempo de uso normal.</li>
-  </ul>
-
-  <p>Sobre esta base implementada se plantean dos ampliaciones futuras coherentes con el sistema actual. La primera es un copiloto de formularios basado en IA, ejecutado con comandos tipados y proxy backend. La segunda es una capa documental de exportacion PDF por lotes homogeneos. Ambas lineas son compatibles con el codigo existente porque reutilizan la separacion actual entre estado local del frontend y servicios centralizados del backend.</p>
-
-  <div class="section-divider"></div>
-
-  <h1>2. Objetivos</h1>
-
-  <p>El objetivo general de este Trabajo de Fin de Grado es <strong>desarrollar una aplicacion web para la gestion centralizada de contenidos de Dungeons &amp; Dragons 5a edicion, con soporte real para catalogo, contenido homebrew y personajes, y dejar definida una base tecnica solida para futuras capacidades de asistencia inteligente y generacion documental en PDF.</strong></p>
-
-  <p>Para alcanzar este objetivo general, se concretan los siguientes objetivos especificos:</p>
+  <p>Los requisitos no funcionales definen CÓMO debe comportarse el sistema en términos de calidad, rendimiento y seguridad:</p>
 
   <ol>
-    <li><strong>Construir una arquitectura web desacoplada:</strong> separar claramente frontend, backend y persistencia mediante Angular 21, FastAPI y MongoDB.</li>
-    <li><strong>Centralizar el catalogo de juego:</strong> ofrecer consulta unificada de razas, clases, backgrounds, hechizos, monstruos e items desde una API propia.</li>
-    <li><strong>Soportar contenido editable:</strong> permitir crear, editar y eliminar entidades homebrew del dominio, manteniendo una diferenciacion entre catalogo oficial y contenido generado por usuarios.</li>
-    <li><strong>Gestionar personajes de forma completa:</strong> incluir un flujo guiado de creacion y una ficha posterior con inventario, hechizos, rasgos y biografia.</li>
-    <li><strong>Preparar la integracion futura de IA:</strong> definir una estrategia segura para asistir en formularios sin que el modelo persista cambios automaticamente.</li>
-    <li><strong>Preparar la exportacion documental futura:</strong> plantear un sistema capaz de seleccionar multiples entidades del mismo tipo y descargar PDFs detallados y consistentes.</li>
+    <li><strong>RNF01 - Rendimiento:</strong> El sistema debe responder con fluidez en consultas de catálogo y mantener tiempos de respuesta razonables en operaciones asistidas por IA.</li>
+
+    <li><strong>RNF02 - Arquitectura modular:</strong> El frontend y el backend deben permanecer desacoplados, permitiendo ampliar el asistente IA sin reescribir los formularios principales.</li>
+
+    <li><strong>RNF03 - Seguridad:</strong> Todas las rutas protegidas deben requerir JWT válido. Las contraseñas nunca se almacenan en texto plano y la autorización debe respetar rol y autoría.</li>
+
+    <li><strong>RNF04 - Eficiencia operativa:</strong> El sistema debe poder mantenerse inicialmente sobre una única instancia AWS EC2 con consumo de recursos controlado.</li>
+
+    <li><strong>RNF05 - Usabilidad:</strong> La interfaz debe ser clara, responsive y consistente con el tono visual de Grimledger, tanto en escritorio como en tablet.</li>
+
+    <li><strong>RNF06 - Portabilidad:</strong> El backend debe poder ejecutarse en cualquier servidor con Python 3.11+ y Docker instalado. El frontend debe ser compatible con navegadores modernos (Chrome, Firefox, Edge, Safari) sin necesidad de plugins.</li>
   </ol>
 
   <div class="section-divider"></div>
 
-  <h1>3. Especificacion de Requisitos</h1>
-
-  <h2>3.1 Requisitos funcionales</h2>
-  <p>La siguiente tabla resume los requisitos funcionales principales, diferenciando entre lo implementado hoy y lo previsto como evolucion futura.</p>
-
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Requisito</th>
-      <th>Estado</th>
-    </tr>
-    <tr>
-      <td>RF01</td>
-      <td>El sistema debe permitir registrar usuarios mediante nombre, email y contrasena.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF02</td>
-      <td>El sistema debe permitir iniciar sesion, verificar token y cerrar sesion usando JWT.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF03</td>
-      <td>El sistema debe mostrar un compendio central con razas, clases, backgrounds, hechizos, monstruos e items.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF04</td>
-      <td>El sistema debe permitir buscar, filtrar y paginar entidades del catalogo.</td>
-      <td>Implementado con algunos filtros parciales</td>
-    </tr>
-    <tr>
-      <td>RF05</td>
-      <td>El sistema debe mostrar vistas de detalle para razas, clases, backgrounds, hechizos, monstruos e items.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF06</td>
-      <td>El sistema debe permitir crear, editar y borrar backgrounds.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF07</td>
-      <td>El sistema debe permitir crear, editar y borrar hechizos.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF08</td>
-      <td>El sistema debe permitir crear, editar y borrar monstruos.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF09</td>
-      <td>El sistema debe permitir crear, editar y borrar items de distintos subtipos: arma, armadura, herramienta, montura, equipo aventurero y objeto magico.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF10</td>
-      <td>El sistema debe permitir crear personajes mediante asistente por pasos.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF11</td>
-      <td>El sistema debe permitir gestionar la ficha de personaje, incluyendo equipo, hechizos, rasgos y biografia.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF12</td>
-      <td>El sistema debe permitir subir imagenes en entidades que lo soportan, como monstruos, hechizos e items concretos.</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>RF13</td>
-      <td>El sistema debe incorporar un asistente de IA para formularios capaz de sugerir y aplicar cambios tipados sobre el estado local.</td>
-      <td>Planificado</td>
-    </tr>
-    <tr>
-      <td>RF14</td>
-      <td>La IA debe poder ayudar a crear personajes, monstruos, items y otras entidades del dominio sin guardar automaticamente.</td>
-      <td>Planificado</td>
-    </tr>
-    <tr>
-      <td>RF15</td>
-      <td>El sistema debe permitir seleccionar varios elementos del mismo tipo y exportarlos a un PDF conjunto con informacion detallada.</td>
-      <td>Planificado</td>
-    </tr>
-    <tr>
-      <td>RF16</td>
-      <td>La exportacion PDF debe admitir colecciones homogeneas como monstruos, items o personajes, con maquetacion consistente.</td>
-      <td>Planificado</td>
-    </tr>
-  </table>
-
-  <h2>3.2 Requisitos no funcionales</h2>
-  <p>Los requisitos no funcionales describen como debe comportarse el sistema en terminos de calidad tecnica, mantenibilidad y evolucion futura.</p>
-
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Requisito</th>
-      <th>Observacion</th>
-    </tr>
-    <tr>
-      <td>RNF01</td>
-      <td>La interfaz debe ejecutarse como SPA moderna en navegadores actuales.</td>
-      <td>Cubierto por Angular 21 y rutas lazy.</td>
-    </tr>
-    <tr>
-      <td>RNF02</td>
-      <td>La aplicacion debe separar presentacion, servicios y persistencia.</td>
-      <td>Cubierto por la division `APP/` y `API/`.</td>
-    </tr>
-    <tr>
-      <td>RNF03</td>
-      <td>La persistencia debe soportar estructuras heterogeneas del dominio D&amp;D.</td>
-      <td>Cubierto por MongoDB y modelos documentales.</td>
-    </tr>
-    <tr>
-      <td>RNF04</td>
-      <td>El sistema debe permitir evolucionar con nuevas capacidades sin rehacer la arquitectura base.</td>
-      <td>Especialmente relevante para IA y PDF.</td>
-    </tr>
-    <tr>
-      <td>RNF05</td>
-      <td>Las operaciones de dominio deben validarse mediante tipado y esquemas de entrada/salida.</td>
-      <td>Cubierto por TypeScript estricto y Pydantic, aunque con algunas inconsistencias a revisar.</td>
-    </tr>
-    <tr>
-      <td>RNF06</td>
-      <td>La seguridad debe impedir el acceso no autorizado y evitar la exposicion de secretos sensibles.</td>
-      <td>Existe una base JWT, pero requiere endurecimiento futuro.</td>
-    </tr>
-    <tr>
-      <td>RNF07</td>
-      <td>La futura IA no debe guardar datos por su cuenta ni acceder a secretos del cliente.</td>
-      <td>Requisito explicitamente fijado en el plan del asistente.</td>
-    </tr>
-    <tr>
-      <td>RNF08</td>
-      <td>La futura exportacion PDF debe conservar legibilidad, orden y nivel alto de detalle incluso en lotes de varias entidades.</td>
-      <td>Requisito futuro de calidad documental.</td>
-    </tr>
-  </table>
-
-  <div class="section-divider"></div>
-
-  <h1>4. Analisis</h1>
+  <!-- 4. ANÁLISIS -->
+  <h1>4. Análisis</h1>
 
   <h2>4.1 Actores</h2>
-  <p>El sistema se analiza a partir de tres actores principales, extraidos del comportamiento real del frontend y del backend, y de las ampliaciones previstas.</p>
+
+  <p>En el sistema Grimledger se han identificado tres actores principales. En el contexto del análisis UML, un actor representa un rol que interactúa con el sistema para consultar información, crear entidades o administrarlas.</p>
 
   <ol>
-    <li><strong>Usuario no autenticado:</strong> puede acceder a login y registro, pero no debe operar con el resto de la aplicacion funcional. Su objetivo principal es autenticarse.</li>
-    <li><strong>Usuario autenticado:</strong> consulta catalogo, crea y gestiona personajes, y puede crear o editar contenido homebrew segun permisos y autoria.</li>
-    <li><strong>Administrador:</strong> hereda el comportamiento del usuario autenticado y, en el estado actual del frontend, se considera con capacidad de edicion completa sobre el contenido mostrado. Esta figura existe ya en el modelo logico mediante <code>isAdmin</code>, aunque la autorizacion backend todavia necesita refuerzo.</li>
+    <li><strong>Usuario No Registrado (Visitante):</strong>
+      <p>Representa a cualquier persona que accede a la aplicación sin haber iniciado sesión. Puede visualizar la home y acceder a los formularios de registro y login, pero no puede consultar entidades protegidas ni crear contenido.</p>
+    </li>
+
+    <li><strong>Usuario Registrado:</strong>
+      <p>Es el actor principal del sistema. Puede consultar catálogos, crear y editar sus personajes, y trabajar con monstruos, hechizos, backgrounds e items según los permisos definidos. También será el principal beneficiario de la integración de Qwen como asistencia contextual sobre formularios.</p>
+    </li>
+
+    <li><strong>Administrador (Admin):</strong>
+      <p>Es el actor con mayores privilegios. Además de todo lo que puede hacer un usuario registrado, puede gestionar contenido con permisos ampliados y administrar usuarios según la política de roles del sistema.</p>
+    </li>
   </ol>
 
-  <p>De cara al futuro, estos mismos actores seguiran siendo validos para las dos ampliaciones principales. El usuario autenticado sera quien invoque el asistente de IA sobre formularios y quien seleccione conjuntos homogeneos para exportacion PDF. El administrador seguira teniendo un papel reforzado en moderacion y gestion del contenido comun.</p>
+  <p>Es importante destacar que, aunque una misma persona pueda actuar como usuario registrado y administrador, en el modelo de seguridad son roles distintos y el backend verifica el claim de rol en cada petición protegida.</p>
 
-  <h2>4.2 Casos de uso</h2>
-  <p>Los casos de uso mas relevantes, combinando el estado actual y el alcance futuro previsto, son los siguientes:</p>
+  <h2>4.2 Casos de Uso</h2>
 
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Caso de uso</th>
-      <th>Actor</th>
-      <th>Estado</th>
-    </tr>
-    <tr>
-      <td>CU01</td>
-      <td>Registrarse en el sistema.</td>
-      <td>Usuario no autenticado</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>CU02</td>
-      <td>Iniciar sesion y validar acceso.</td>
-      <td>Usuario no autenticado</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>CU03</td>
-      <td>Consultar el compendio y navegar por detalles del catalogo.</td>
-      <td>Usuario autenticado</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>CU04</td>
-      <td>Crear, editar o borrar contenido homebrew del dominio.</td>
-      <td>Usuario autenticado / Administrador</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>CU05</td>
-      <td>Crear un personaje mediante asistente guiado.</td>
-      <td>Usuario autenticado</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>CU06</td>
-      <td>Gestionar una ficha de personaje con equipo, hechizos, rasgos y bio.</td>
-      <td>Usuario autenticado</td>
-      <td>Implementado</td>
-    </tr>
-    <tr>
-      <td>CU07</td>
-      <td>Recibir ayuda de IA sobre un formulario sin guardar automaticamente en backend.</td>
-      <td>Usuario autenticado</td>
-      <td>Planificado</td>
-    </tr>
-    <tr>
-      <td>CU08</td>
-      <td>Generar borradores de personajes, monstruos o items mediante IA sobre el estado local.</td>
-      <td>Usuario autenticado</td>
-      <td>Planificado</td>
-    </tr>
-    <tr>
-      <td>CU09</td>
-      <td>Seleccionar varios elementos del mismo tipo y exportarlos a un PDF conjunto detallado.</td>
-      <td>Usuario autenticado / Administrador</td>
-      <td>Planificado</td>
-    </tr>
-  </table>
+  <p>Los casos de uso describen las interacciones específicas entre los actores y el sistema. A continuación se detallan los casos de uso principales, agrupados por módulos. Cada caso de uso sigue el formato: "El sistema permite a [Actor] [Acción] para [Objetivo]".</p>
 
-  <h2>4.3 Diagrama de casos de uso</h2>
-  <div class="img-placeholder">
-    <strong>INSERT IMAGE 1: Diagrama de Casos de Uso - Archivo: img_01_casos_uso.png</strong>
-    <p><u>HOW TO INSERT:</u></p>
-    <ol>
-      <li>Incluye los actores <code>Usuario no autenticado</code>, <code>Usuario autenticado</code> y <code>Administrador</code>.</li>
-      <li>Representa como casos de uso reales el registro, login, consulta de catalogo, edicion homebrew, creacion de personaje y gestion de ficha.</li>
-      <li>Representa con linea discontinua o nota separada las ampliaciones futuras de IA y exportacion PDF.</li>
-      <li>Guarda el diagrama como <code>img_01_casos_uso.png</code> e insertalo en Word.</li>
-    </ol>
-  </div>
+  <ol>
+    <li><strong>Módulo de Autenticación:</strong>
+      <ul>
+        <li><strong>CU01 - Registrar Usuario:</strong> El sistema permite a un Usuario No Registrado crear una cuenta proporcionando email, contraseña y nombre de usuario. El sistema valida que el email no esté en uso, que la contraseña cumpla con la política de seguridad, y almacena el hash en MongoDB. Finalmente, redirige al login.</li>
 
-  <h2>4.4 Diagrama de clases</h2>
-  <p>El modelo conceptual del sistema gira alrededor de varias entidades de dominio. <code>User</code> representa al usuario autenticado. <code>Character</code> es la entidad mas rica y agrupa inventario, hechizos, rasgos y biografia. <code>Background</code>, <code>Spell</code>, <code>Monster</code> e <code>Item</code> representan contenido editable y tambien bases para el contenido oficial importado.</p>
+        <li><strong>CU02 - Iniciar Sesión:</strong> El sistema permite a un Usuario No Registrado (o Registrado) autenticarse mediante email y contraseña. El sistema valida las credenciales contra la base de datos, genera un JWT (firmado con una clave secreta) y lo devuelve al cliente Angular, que lo almacena en localStorage para futuras peticiones.</li>
 
-  <p>En el caso de <code>Item</code>, el analisis debe reflejar su naturaleza polimorfica: una misma coleccion fisica soporta armas, armaduras, herramientas, monturas, equipo aventurero y objetos magicos. Ademas, <code>Race</code>, <code>Subrace</code>, <code>DndClass</code>, <code>Subclass</code>, <code>Trait</code> y <code>Feature</code> actuan como soporte del catalogo y sirven tanto para consulta como para enriquecer la creacion de personajes.</p>
+        <li><strong>CU03 - Cerrar Sesión:</strong> El sistema permite a un Usuario Registrado (o Admin) cerrar su sesión. El sistema invalida el JWT en el cliente (eliminándolo de localStorage) y redirige al home. (Nota: el JWT sigue siendo válido hasta su expiración a menos que se implemente una blacklist en el backend).</li>
+      </ul>
+    </li>
+
+    <li><strong>Módulo de Catálogo y Consulta:</strong>
+      <ul>
+        <li><strong>CU04 - Consultar Catálogos:</strong> El sistema permite a un Usuario Registrado listar y consultar monstruos, hechizos, items, razas, clases y backgrounds.</li>
+
+        <li><strong>CU05 - Buscar y Filtrar:</strong> El sistema permite buscar entidades por nombre y aplicar filtros según el tipo de contenido mostrado.</li>
+
+        <li><strong>CU06 - Ver Detalle:</strong> El sistema permite acceder a la ficha completa de una entidad y visualizar sus datos estructurados.</li>
+
+        <li><strong>CU07 - Navegar entre Manual y Detalles:</strong> El sistema permite moverse entre el catálogo/manual y las vistas detalladas sin perder contexto.</li>
+      </ul>
+    </li>
+
+    <li><strong>Módulo de Creación y Edición:</strong>
+      <ul>
+        <li><strong>CU08 - Crear Personaje:</strong> El sistema permite construir un personaje mediante un wizard con pasos de raza, clase, background, estadísticas y resumen.</li>
+
+        <li><strong>CU09 - Crear o Editar Monstruo:</strong> El sistema permite gestionar monstruos con estadísticas, habilidades, acciones y soporte de imagen.</li>
+
+        <li><strong>CU10 - Crear o Editar Hechizo, Background e Item:</strong> El sistema permite trabajar con formularios especializados según el dominio de cada entidad.</li>
+      </ul>
+    </li>
+
+    <li><strong>Módulo de Asistencia con IA:</strong>
+      <ul>
+        <li><strong>CU11 - Solicitar Sugerencias a Qwen:</strong> El sistema permite enviar contexto saneado del formulario activo a Qwen para recibir sugerencias estructuradas.</li>
+
+        <li><strong>CU12 - Aplicar Ajustes Propuestos:</strong> El usuario puede aceptar o descartar sugerencias de IA sobre textos, estadísticas o estructuras del formulario.</li>
+
+        <li><strong>CU13 - Generar Descripción de Imagen:</strong> El sistema puede proponer una descripción textual de la ilustración pendiente cuando todavía no exista un archivo real.</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h2>4.3 Diagrama de Casos de Uso</h2>
 
   <div class="img-placeholder">
-    <strong>INSERT IMAGE 2: Diagrama de Clases - Archivo: img_02_clases.png</strong>
+    <strong>INSERT IMAGE 1: Diagrama de Casos de Uso (Use Case Diagram) - Archivo: img_01_casos_uso.png</strong>
     <p><u>HOW TO INSERT:</u></p>
     <ol>
-      <li>Incluye al menos las entidades <code>User</code>, <code>Character</code>, <code>Background</code>, <code>Spell</code>, <code>Monster</code>, <code>Item</code>, <code>Race</code> y <code>DndClass</code>.</li>
-      <li>Muestra que <code>Character</code> se relaciona con raza, clase y trasfondo, y que embebe inventario, rasgos y spellcasting.</li>
-      <li>Refleja la especializacion conceptual de <code>Item</code> por subtipos.</li>
-      <li>Guarda el diagrama como <code>img_02_clases.png</code> e insertalo en Word.</li>
+      <li>El diagrama debe mostrar los 3 actores (Usuario No Registrado, Usuario Registrado, Administrador) y sus casos de uso asociados (CU01-CU13) centrados en autenticación, consulta, creación/edición y asistencia IA.</li>
+      <li>Utiliza Draw.io (diagrams.net) con el estilo "UML Use Case" para crear el diagrama.</li>
+      <li>Guarda el diagrama como PNG con resolución mínima de 1920x1080 en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_01_casos_uso.png</code></li>
+      <li>En Word: Haz clic en "Insert > Pictures > This Device".</li>
+      <li>Selecciona <code>img_01_casos_uso.png</code> y haz clic en "Insert".</li>
+      <li>Redimensiona la imagen arrastrando las esquinas manteniendo presionado Shift para mantener la proporción.</li>
     </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantené solo la imagen dentro de esta caja naranja) <<<</strong></p>
   </div>
 
-  <h2>4.5 Diagramas de secuencia</h2>
-  <p>Para el analisis temporal del sistema resultan especialmente utiles dos secuencias. La primera describe el flujo de autenticacion actual, desde la entrada de credenciales hasta la validacion del token y el acceso a la SPA. La segunda puede plantearse como secuencia futura de exportacion PDF por lotes, mostrando seleccion multiple en el frontend, llamada al backend y composicion del documento final.</p>
+  <p><strong>Explicación del Diagrama de Casos de Uso:</strong></p>
+
+  <p>El diagrama de casos de uso (Use Case Diagram) es una herramienta visual fundamental en el análisis de requisitos. En este documento representa los actores reales del proyecto y los casos de uso vinculados al alcance final del TFG.</p>
+
+  <p><strong>Relaciones principales:</strong></p>
+  <ul>
+    <li>El <strong>Usuario No Registrado</strong> solo tiene acceso a dos casos de uso: "Registrar Usuario" (CU01) y "Iniciar Sesión" (CU02). Esto refleja la política de seguridad de "registro abierto, uso restringido".</li>
+
+    <li>El <strong>Usuario Registrado</strong> concentra el núcleo funcional del sistema: consultar catálogos, crear y editar entidades del dominio, y utilizar la asistencia de Qwen sobre formularios.</li>
+
+    <li>El <strong>Administrador</strong> hereda todo lo anterior y añade capacidades de gestión ampliada sobre contenido y usuarios.</li>
+  </ul>
+
+  <p><strong>Notas de diseño:</strong> En UML, los casos de uso se conectan a los actores mediante asociaciones (líneas sólidas). Si un caso de uso "incluye" obligatoriamente a otro (ej: "Generar Monstruo" incluye "Validar Descripción"), se usa una relación «include» (flecha discontinua). Si un caso de uso es opcional y depende de una condición (ej: "Exportar a PDF" extiende a "Ver Personaje"), se usa una relación «extend» (flecha discontinua con punta).</p>
+
+  <h2>4.4 Diagrama de Clases</h2>
 
   <div class="img-placeholder">
-    <strong>INSERT IMAGE 3: Diagrama de Secuencia - Login - Archivo: img_03_seq_login.png</strong>
+    <strong>INSERT IMAGE 2: Diagrama de Clases (Class Diagram) - Archivo: img_02_clases.png</strong>
     <p><u>HOW TO INSERT:</u></p>
     <ol>
-      <li>Representa el flujo <code>Usuario -&gt; Angular -&gt; FastAPI -&gt; MongoDB -&gt; Angular</code>.</li>
-      <li>Incluye envio de credenciales, validacion de usuario, generacion de JWT y almacenamiento del token en cliente.</li>
-      <li>Guarda el diagrama como <code>img_03_seq_login.png</code> e insertalo en Word.</li>
+      <li>El diagrama debe mostrar las clases principales: Usuario, Personaje, Monstruo, Hechizo, Background e Item, y sus relaciones principales.</li>
+      <li>Utiliza Draw.io con el estilo "UML Class" para crear el diagrama. Incluye atributos (- nombre: string, + nivel: int) y métodos (+ atacar(), + recibirDaño()).</li>
+      <li>Guarda el diagrama como PNG en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_02_clases.png</code></li>
+      <li>En Word: Insert > Pictures > This Device > Selecciona img_02_clases.png.</li>
+      <li>Ajusta el tamaño para que sea legible (aprox. ancho de página menos márgenes).</li>
     </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
+  </div>
+
+  <p><strong>Explicación del Diagrama de Clases:</strong></p>
+
+  <p>El diagrama de clases (Class Diagram) modela la estructura estática del sistema: clases, atributos y relaciones. En Grimledger, la clase central es <strong>Usuario</strong>, vinculada a entidades editables como <strong>Personaje</strong>, <strong>Monstruo</strong>, <strong>Hechizo</strong>, <strong>Background</strong> e <strong>Item</strong>.</p>
+
+  <p><strong>Entidades principales y sus relaciones:</strong></p>
+  <ul>
+    <li><strong>Usuario:</strong> Atributos: -id, -email, -passwordHash, -role. Relación: 1 Usuario puede crear y gestionar sus propias entidades.</li>
+
+    <li><strong>Personaje:</strong> Atributos: -id, -nombre, -nivel, atributos, inventario, rasgos y spellcasting. Relación: cada personaje pertenece a 1 Usuario.</li>
+
+    <li><strong>Monstruo:</strong> Atributos: -id, -nombre, -challenge rating, estadísticas, acciones y habilidades.</li>
+
+    <li><strong>Hechizo:</strong> Atributos: -id, -nombre, -nivel, -escuela, -tiempo de lanzamiento, -rango y -componentes.</li>
+
+    <li><strong>Background e Item:</strong> Modelan rasgos, equipo inicial y variantes de objetos según el dominio de D&amp;D.</li>
+  </ul>
+
+  <p><strong>Diagrama de base de datos vs Diagrama de clases:</strong> Aunque en MongoDB no usamos "tablas" tradicionales, el diagrama de clases ayuda a visualizar cómo los documentos JSON se relacionan entre sí. Por ejemplo, en MongoDB, un documento de <code>Usuario</code> podría tener un array embebido de <code>Personaje</code> (si son pocos), o referenciarlos mediante IDs (si un usuario tiene cientos).</p>
+
+  <h2>4.5 Diagramas de Secuencia</h2>
+
+  <div class="img-placeholder">
+    <strong>INSERT IMAGE 3: Diagrama de Secuencia - Generar Monstruo con IA (Caso CU08) - Archivo: img_03_secuencia_generar.png</strong>
+    <p><u>HOW TO INSERT:</u></p>
+    <ol>
+      <li>Este diagrama debe mostrar la interacción temporal entre: Usuario, Frontend (Angular), Backend (FastAPI), Base de Datos (MongoDB) y runtime local de Qwen en AWS EC2.</li>
+      <li>Utiliza Draw.io con estilo "UML Sequence" (lifelines verticales, mensajes horizontales con flechas).</li>
+      <li>Guarda como PNG en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_03_secuencia_generar.png</code></li>
+      <li>En Word: Insert > Pictures > This Device > Selecciona img_03_secuencia_generar.png.</li>
+      <li>Ajusta tamaño al ancho de página.</li>
+    </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
+  </div>
+
+  <p><strong>Explicación del Diagrama de Secuencia (CU08 - Generar Monstruo):</strong></p>
+
+  <p>El diagrama de secuencia (Sequence Diagram) modela cómo se intercambian mensajes entre los objetos a lo largo del tiempo para completar un caso de uso específico. Para el caso CU08 (Generar Monstruo con IA), los pasos son:</p>
+
+  <ol>
+    <li>El <strong>Usuario</strong> escribe una instrucción en el formulario activo (por ejemplo, para crear un monstruo o enriquecer un personaje) y hace clic en "Generar".</li>
+
+    <li>El <strong>Frontend (Angular)</strong> valida el contexto mínimo, adjunta el JWT del usuario en la cabecera HTTP <code>Authorization: Bearer &lt;token&gt;</code> y envía un snapshot saneado del formulario a <code>/api/ai/generate</code>.</li>
+
+    <li>El <strong>Backend (FastAPI)</strong> recibe la petición, verifica el JWT, enriquece el contexto con datos de MongoDB y construye un prompt estructurado para Qwen.</li>
+
+    <li>El <strong>Servicio de IA (Qwen en AWS EC2)</strong> recibe el prompt, procesa la petición y devuelve una respuesta estructurada con sugerencias de contenido.</li>
+
+    <li>El <strong>Backend</strong> valida la respuesta usando Pydantic y devuelve al frontend una estructura segura y consistente.</li>
+
+    <li>El <strong>Frontend</strong> muestra la sugerencia, el diff o los campos propuestos para que el usuario decida si aplicarlos.</li>
+  </ol>
+
+  <div class="img-placeholder">
+    <strong>INSERT IMAGE 4: Diagrama de Secuencia - Login de Usuario (Caso CU02) - Archivo: img_04_secuencia_login.png</strong>
+    <p><u>HOW TO INSERT:</u></p>
+    <ol>
+      <li>Este diagrama es más simple: Usuario → Angular (envía credenciales) → Backend (valida en MongoDB) → Backend (genera JWT) → Angular (guarda JWT en localStorage) → Usuario (redirigido a home).</li>
+      <li>Guarda como PNG en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_04_secuencia_login.png</code></li>
+      <li>Inserta en Word como los anteriores.</li>
+    </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
+  </div>
+
+  <p><strong>Explicación del Diagrama de Secuencia (CU02 - Login):</strong></p>
+
+  <p>El caso de uso de login (CU02) es crítico porque establece la identidad del usuario para todo el sistema. El diagrama muestra:</p>
+
+  <ol>
+    <li>El <strong>Usuario</strong> introduce email y contraseña en un formulario de Angular (login page).</li>
+
+    <li>Angular usa el <code>AuthService</code> (un servicio inyectable) para enviar POST a <code>/api/auth/login</code> con <code>{ "email": "...", "password": "..." }</code>.</li>
+
+    <li>El <strong>Backend (FastAPI)</strong> recibe la petición (nota: esta ruta NO tiene middleware de JWT porque el usuario aún no está autenticado). Busca el usuario en <strong>MongoDB</strong> por email. Si existe, usa <code>bcrypt.checkpw()</code> para comparar la contraseña proporcionada con el hash almacenado.</li>
+
+    <li>Si las credenciales son válidas, el Backend genera un JWT (JSON Web Token) con payload <code>{ "sub": user_id, "email": "...", "role": "user" }</code>, lo firma con una clave secreta (almacenada en variables de entorno), y lo devuelve al Frontend con status 200.</li>
+
+    <li>El <strong>Frontend</strong> recibe el JWT, lo almacena en <code>localStorage</code> (o <code>sessionStorage</code>), y redirige al usuario a la página principal (<code>/home</code>).</li>
+  </ol>
+
+  <p>Nota técnica: A partir de este momento, todas las peticiones a rutas protegidas (cualquier cosa excepto /login y /register) deben incluir el JWT en la cabecera <code>Authorization</code>. El interceptor de Angular (<code>AuthInterceptor</code>) se encarga de añadirlo automáticamente.</p>
+
+  <div class="section-divider"></div>
+
+  <!-- SECCIONES 5-10: ESTRUCTURA Y CONTENIDO BÁSICO -->
+  <!-- (El usuario completará el detalle) -->
+
+  <h1>5. Diseño</h1>
+
+  <h2>5.1 Arquitectura del Sistema</h2>
+  <p>[COMPLETAR POR EL USUARIO - Explicación de cómo está dividido el sistema en frontend (Angular 21), backend (FastAPI) y base de datos (MongoDB). Incluir diagrama de arquitectura.]</p>
+
+  <div class="img-placeholder">
+    <strong>INSERT IMAGE 5: Diagrama de Arquitectura del Sistema - Archivo: img_05_arquitectura.png</strong>
+    <p><u>HOW TO INSERT:</u></p>
+    <ol>
+      <li>Muestra capas: Cliente (Navegador) → Frontend (Angular 21 en Nginx) → Backend (FastAPI en AWS EC2) → Base de Datos (MongoDB).</li>
+      <li>Incluye flujo de datos: HTTPS, JWT, JSON.</li>
+      <li>Guarda en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_05_arquitectura.png</code></li>
+      <li>Inserta en Word.</li>
+    </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
+  </div>
+
+  <h2>5.2 Diagrama de Componentes</h2>
+  <p>[COMPLETAR POR EL USUARIO - Lista de servicios, APIs, módulos de Angular y FastAPI. Incluir diagrama de componentes.]</p>
+
+  <div class="img-placeholder">
+    <strong>INSERT IMAGE 6: Diagrama de Componentes (Angular/FastAPI) - Archivo: img_06_componentes.png</strong>
+    <p><u>HOW TO INSERT:</u></p>
+    <ol>
+      <li>Muestra componentes de Angular: AppComponent, HeaderComponent, MonsterListComponent, MonsterDetailComponent, LoginComponent, etc.</li>
+      <li>Muestra servicios: MonsterService, AuthService, IAervice.</li>
+      <li>Guarda en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_06_componentes.png</code></li>
+      <li>Inserta en Word.</li>
+    </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
+  </div>
+
+  <h2>5.3 Diseño de Base de Datos (ER)</h2>
+  <p>[COMPLETAR POR EL USUARIO - Explicación de colecciones de MongoDB: usuarios, personajes, monstruos, hechizos, backgrounds e items. Incluir diagrama ER.]</p>
+
+  <div class="img-placeholder">
+    <strong>INSERT IMAGE 7: Diagrama Entidad-Relación (ER) - Archivo: img_07_er.png</strong>
+    <p><u>HOW TO INSERT:</u></p>
+    <ol>
+      <li>Muestra entidades y relaciones reales del proyecto: Usuario 1:N Personaje, relaciones con Monstruo, Hechizo, Background e Item, y referencias documentales cuando corresponda.</li>
+      <li>Para MongoDB, indica si usas embebido o referencias.</li>
+      <li>Guarda en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_07_er.png</code></li>
+      <li>Inserta en Word.</li>
+    </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
+  </div>
+
+  <h2>5.4 Diseño de Interfaz / Navegación</h2>
+  <p>[COMPLETAR POR EL USUARIO - Cómo se mueve el usuario por la aplicación. Incluir capturas de pantalla de las páginas principales.]</p>
+
+  <div class="img-placeholder">
+    <strong>INSERT IMAGE 8: Captura de Pantalla - Página de Login - Archivo: img_08_login.png</strong>
+    <p><u>HOW TO INSERT:</u></p>
+    <ol>
+      <li>En tu navegador, ve a <code>http://localhost:4200/login</code> (o la URL de tu despliegue).</li>
+      <li>Presiona F12 para abrir DevTools, ve a la pestaña "Responsive Design" y selecciona una tablet (iPad) o Desktop.</li>
+      <li>Toma una captura de pantalla (herramienta de recorte de Windows o extensión "Full Page Screen Capture").</li>
+      <li>Guarda como PNG en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_08_login.png</code></li>
+      <li>En Word: Insert > Pictures > This Device.</li>
+    </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
   </div>
 
   <div class="img-placeholder">
-    <strong>INSERT IMAGE 4: Diagrama de Secuencia - Exportacion PDF por Lotes - Archivo: img_04_seq_pdf.png</strong>
+    <strong>INSERT IMAGE 9: Captura de Pantalla - Lista de Monstruos - Archivo: img_09_monster_list.png</strong>
     <p><u>HOW TO INSERT:</u></p>
     <ol>
-      <li>Representa el flujo futuro <code>Usuario -&gt; Angular -&gt; FastAPI -&gt; Motor PDF -&gt; Angular</code>.</li>
-      <li>Incluye seleccion multiple de entidades del mismo tipo, envio de identificadores, composicion del PDF y descarga final.</li>
-      <li>Marca claramente que se trata de una capacidad futura sobre la arquitectura actual.</li>
-      <li>Guarda el diagrama como <code>img_04_seq_pdf.png</code> e insertalo en Word.</li>
+      <li>En la app, navega a "Monstruos" y toma captura de la tabla con botones de filtro/búsqueda.</li>
+      <li>Guarda en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_09_monster_list.png</code></li>
+      <li>Inserta en Word.</li>
     </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
   </div>
+
+  <div class="section-divider"></div>
+
+  <h1>6. Implementación</h1>
+
+  <h2>6.1 Tecnologías Utilizadas</h2>
+  <p>Para el desarrollo de Grimledger se ha utilizado un enfoque moderno y sistemático, combinando tecnologías web actuales, un backend tipado y una estrategia de despliegue sencilla. A continuación se detallan las principales tecnologías utilizadas.</p>
+
+  <h3>6.1.1 Tecnologías de Desarrollo (Stack Principal)</h3>
+  <ul>
+    <li><strong>Angular 21</strong> (Frontend): Framework utilizado para construir la SPA, con uso de componentes standalone y Signals para reactividad fina.</li>
+    <li><strong>TypeScript 5.9</strong> (Lenguaje): Lenguaje principal del frontend con tipado estricto.</li>
+    <li><strong>FastAPI</strong> (Backend): Framework de Python para construir la API REST del sistema.</li>
+    <li><strong>Python 3.12</strong> (Lenguaje Backend): Versión empleada en el backend y en el entorno contenedorizado del proyecto.</li>
+    <li><strong>MongoDB</strong> (Base de Datos): Base de datos documental elegida por su flexibilidad para entidades complejas y heterogéneas.</li>
+    <li><strong>AWS EC2</strong> (Despliegue): Infraestructura prevista para alojar frontend, backend y runtime de Qwen en una única instancia.</li>
+    <li><strong>Familia Qwen</strong> (IA): Línea de modelos seleccionada para la futura asistencia sobre formularios. La variante exacta dependerá de los recursos disponibles en EC2.</li>
+  </ul>
+
+  <h3>6.1.2 Metodología: Spec-Driven Development (SDD)</h3>
+  <p>El proyecto se ha desarrollado utilizando la metodología <strong>Spec-Driven Development (SDD)</strong>, un enfoque que prioriza la especificación clara antes de la implementación. En este TFG, SDD ha servido para alinear alcance, arquitectura y tareas con el estado real del producto.</p>
+  <ol>
+    <li><strong>Exploración:</strong> análisis del repositorio, de los requisitos y de los límites reales del proyecto.</li>
+    <li><strong>Especificación:</strong> definición del alcance, de las funcionalidades objetivo y de las restricciones técnicas.</li>
+    <li><strong>Diseño:</strong> concreción de la arquitectura Angular + FastAPI + MongoDB + Qwen.</li>
+    <li><strong>Implementación y verificación:</strong> desarrollo incremental con validación continua de que el código y la documentación no prometan más de lo que realmente existe.</li>
+  </ol>
+  <p>Esta metodología ayuda a mantener trazabilidad entre requisitos, diseño y resultados, algo especialmente valioso en un TFG con varias capas tecnológicas y un alcance acotado por tiempo.</p>
+
+  <h3>6.1.3 Herramientas de Apoyo al Desarrollo</h3>
+  <p>Además del stack principal, el proyecto se apoya en un conjunto de herramientas orientadas a mantener consistencia y calidad durante el desarrollo:</p>
+  <ul>
+    <li><strong>Git:</strong> control de versiones y trazabilidad de cambios.</li>
+    <li><strong>Docker:</strong> soporte para ejecutar el backend en un entorno controlado.</li>
+    <li><strong>Vitest:</strong> framework de pruebas unitarias para Angular.</li>
+    <li><strong>Herramientas de documentación:</strong> diagramas, capturas de interfaz y documentación técnica asociada al TFG.</li>
+  </ul>
+  <p>Estas herramientas complementan el desarrollo del sistema, pero el foco del TFG se mantiene en la arquitectura y funcionalidades de Grimledger, no en la automatización del proceso de desarrollo.</p>
+
+  <h2>6.2 Justificación Técnica</h2>
+
+  <h3>6.2.1 Justificación del Stack Tecnológico</h3>
+  <p><strong>Angular 21 con Signals (sobre React 18/Vue 3):</strong> Se eligió Angular 21 porque es un framework "con baterías incluidas" (enrutador, formularios, HTTP client nativos), a diferencia de React que depende de bibliotecas externas (React Router, Formik, Axios). Además, Angular 21 introduce <strong>Signals</strong>, un sistema de reactividad fina que elimina la necesidad de Zone.js en la mayoría de los casos, mejorando drásticamente el rendimiento en aplicaciones con muchos elementos en pantalla (como el listado de monstruos). TypeScript está integrado de forma nativa con <code>strict: true</code>, asegurando un tipado fuerte desde el inicio.</p>
+
+  <p><strong>FastAPI + Pydantic v2 (sobre Express/Django):</strong> FastAPI ofrece validación automática de esquemas mediante <strong>Pydantic v2</strong>, lo que significa que si el modelo de IA devuelve un JSON con un campo faltante o del tipo incorrecto, la API responde con un error 422 antes de tocar código de negocio. Express (Node.js) requeriría middleware adicional (como Joi o express-validator), y Django (Python) tiene un sistema de formularios más orientado a aplicaciones web tradicionales, no APIs RESTful de alta performance.</p>
+
+  <p><strong>MongoDB (sobre PostgreSQL/MySQL):</strong> D&D 5e tiene estructuras de datos variables: cada monstruo tiene un conjunto único de habilidades, acciones y tesoros. En una base de datos relacional, esto requeriría decenas de tablas intermedias o columnas JSON genéricas. MongoDB permite almacenar documentos JSON complejos de forma nativa, con esquemas flexibles que se adaptan a contenido "Homebrew" generado por la IA.</p>
+
+  <p><strong>AWS EC2 con Qwen (sobre proveedores cerrados):</strong> Se eligió trabajar con la familia <strong>Qwen</strong> en una instancia <strong>AWS EC2</strong> por tres razones: (1) control del despliegue, (2) posibilidad de especializar el contexto con PDFs y datos propios, y (3) coherencia con una arquitectura sencilla basada en una única máquina.</p>
+
+  <h3>6.2.2 Justificación del Método SDD (Spec-Driven Development)</h3>
+  <p>La elección de <strong>Spec-Driven Development (SDD)</strong> sobre metodologías agiles tradicionales (Scrum, Kanban) se debe a su enfoque en la <strong>claridad antes que la velocidad</strong>. En Scrum, se tiende a crear "historias de usuario" vagas que luego requieren mucho "refinement". En SDD:</p>
+  <ul>
+    <li><strong>Reducción de errores:</strong> Al escribir especificaciones con formato Given/When/Then y palabras clave RFC 2119 (MUST, SHALL, SHOULD), se elimina la ambigüedad. El desarrollador (o la IA asistente) sabe exactamente QUÉ debe hacer, no tiene que "adivinar".</li>
+    <li><strong>Trazabilidad:</strong> Cada decisión técnica puede relacionarse con requisitos, diseño e implementación, reduciendo la ambigüedad durante el desarrollo.</li>
+    <li><strong>Gestión del conocimiento:</strong> La documentación de decisiones y restricciones permite mantener coherencia entre sesiones de trabajo y facilita la defensa posterior del proyecto.</li>
+  </ul>
+
+  <h3>6.2.3 Justificación del Despliegue Simple en AWS EC2</h3>
+  <p>Se optó por un despliegue inicial en una única instancia <strong>AWS EC2</strong> para mantener el sistema defendible dentro del alcance del TFG. Esta decisión simplifica la operación, reduce la complejidad de infraestructura y facilita explicar la arquitectura completa en la memoria.</p>
+  <ul>
+    <li><strong>Simplicidad operativa:</strong> frontend, backend y runtime de Qwen pueden documentarse y desplegarse bajo una misma estrategia.</li>
+    <li><strong>Control del stack:</strong> evita depender de servicios externos opacos para la inferencia.</li>
+    <li><strong>Ajuste al alcance:</strong> permite centrar el esfuerzo del TFG en el producto y no en una infraestructura distribuida excesiva.</li>
+  </ul>
+  <p>La contrapartida es que esta decisión obliga a vigilar con cuidado la variante de Qwen seleccionada, la memoria disponible y la latencia de inferencia, pero ese equilibrio forma parte del interés técnico del proyecto.</p>
+
+  <div class="img-placeholder">
+    <strong>INSERT IMAGE 10: Captura de Pantalla - Generador de Monstruo con IA - Archivo: img_10_ia_generator.png</strong>
+    <p><u>HOW TO INSERT:</u></p>
+    <ol>
+      <li>En la app, ve a "Generar Monstruo", escribe una descripción y genera.</li>
+      <li>Captura la pantalla con el formulario y el resultado JSON/visual.</li>
+      <li>Guarda en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_10_ia_generator.png</code></li>
+      <li>Inserta en Word.</li>
+    </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <h1>7. Pruebas</h1>
+  <p>[COMPLETAR POR EL USUARIO - Explicar qué has probado: unit tests (Vitest + jsdom en Angular), pruebas de endpoints FastAPI y testing manual de formularios, vistas de detalle e imágenes. Mencionar errores corregidos durante el desarrollo.]</p>
+
+  <p>Ejemplo de lo que debés escribir:</p>
+  <p>"Se realizaron pruebas unitarias para los servicios de Angular (MonsterService, AuthService) utilizando Vitest 4.0.8 con jsdom para simular el entorno del navegador. Se alcanzó un 80% de cobertura en lógica de negocio. En el backend, se utilizaron las pruebas integradas de FastAPI (TestClient) para verificar que los endpoints protegidos requirieran JWT válido. Se corrigió un error crítico donde el middleware de autenticación no verificaba la expiración del token (solo la firma)."</p>
+
+  <div class="img-placeholder">
+    <strong>INSERT IMAGE 11: Captura de Pantalla - Ejecución de Tests (Vitest) - Archivo: img_11_tests.png</strong>
+    <p><u>HOW TO INSERT:</u></p>
+    <ol>
+      <li>En la terminal, en la carpeta <code>APP/</code>, ejecuta <code>npm test</code> o <code>ng test</code>.</li>
+      <li>Captura la salida de la terminal mostrando los tests pasados (PASS) y la cobertura (coverage).</li>
+      <li>Guarda en: <code>C:\Users\informatica\Documents\TFG\TFG_DND\img\img_11_tests.png</code></li>
+      <li>Inserta en Word.</li>
+    </ol>
+    <p><strong style="color:#bf360c; background-color:yellow; padding:4pt;">>>> DESPUÉS DE INSERTAR LA IMAGEN, BORRÁ TODO ESTE TEXTO (mantendré solo la imagen dentro de esta caja naranja) <<</strong></p>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <h1>8. Mejoras Futuras</h1>
+  <p>[COMPLETAR POR EL USUARIO - 0.5-1 página sobre: extensión de Qwen a todos los formularios, preparación de contexto con PDFs, mejora de rendimiento en EC2, soporte multimodal para imágenes y ampliación de cobertura de pruebas.]</p>
+
+  <div class="section-divider"></div>
+
+  <h1>9. Conclusiones</h1>
+  <p>[COMPLETAR POR EL USUARIO - 0.5-1 página sobre: qué has aprendido con Angular 21, FastAPI, MongoDB y Qwen; por qué fue importante recortar el alcance al núcleo realmente implementado; y cómo el resultado final queda centrado en personajes, monstruos, hechizos, backgrounds e items.]</p>
+
+  <div class="section-divider"></div>
+
+  <h1>10. Bibliografía</h1>
+  <ol>
+    <li>Angular Documentation. (2026). <em>Angular 21 Official Docs</em>. Recuperado de https://angular.dev/</li>
+    <li>FastAPI Documentation. (2026). <em>FastAPI with Python 3.12</em>. Recuperado de https://fastapi.tiangolo.com/</li>
+    <li>MongoDB Documentation. (2026). <em>MongoDB 7.0 Manual</em>. Recuperado de https://www.mongodb.com/docs/</li>
+    <li>Wizards of the Coast. (2024). <em>Dungeons & Dragons Player's Handbook (5th Edition, Revised)</em>. Renton, WA: Wizards of the Coast.</li>
+    <li>Wizards of the Coast. (2024). <em>Dungeons & Dragons Monster Manual (5th Edition, Revised)</em>. Renton, WA: Wizards of the Coast.</li>
+    <li>Crawford, J. (2024). <em>Dungeon Master's Guide (5th Edition, Revised)</em>. Wizards of the Coast.</li>
+    <li>Pydantic Documentation. (2026). <em>Pydantic v2 - Data Validation</em>. Recuperado de https://docs.pydantic.dev/</li>
+    <li>Vitest Documentation. (2026). <em>Vitest - Next Generation Testing Framework</em>. Recuperado de https://vitest.dev/</li>
+    <li>AWS Documentation. (2026). <em>Amazon EC2 User Guide</em>. Recuperado de https://docs.aws.amazon.com/ec2/</li>
+    <li>Qwen Team. (2025). <em>Qwen Technical Report</em>. Recuperado de https://qwen.ai/research/</li>
+  </ol>
 
 </body>
 </html>

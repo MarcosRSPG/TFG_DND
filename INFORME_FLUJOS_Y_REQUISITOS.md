@@ -1,17 +1,26 @@
 # INFORME DE FLUJOS DE TRABAJO Y REQUISITOS - GRIMLEDGER
 
+## ADENDA DE ALCANCE ACTUAL DEL TFG
+
+Para la memoria final y la defensa del TFG, este documento debe interpretarse con el siguiente recorte de alcance:
+
+- Solo son vinculantes los flujos respaldados por el codigo actual o por la siguiente integracion directa de IA.
+- El alcance final incluye autenticacion, consulta de catalogos, y creacion/edicion/visualizacion de personajes, monstruos, hechizos, backgrounds e items.
+- La integracion de Qwen se limita a asistir esos formularios y entidades.
+- Todo lo relativo a campañas, multijugador, notas compartidas, combate en tiempo real, gestion de DM, mapas y grid tactico queda fuera de alcance para esta entrega y debe considerarse historico o descartado.
+
 ## 1. INTRODUCCIÓN
 
-Este documento complementa el informe de requisitos principal, detallando los flujos de trabajo específicos que los usuarios podrán realizar en la plataforma Grimledger, organizados en **3 niveles de implementación progresiva**.
+Este documento complementa el informe de requisitos principal. Contiene flujos de trabajo historicos y de evolucion, pero para el TFG actual debe leerse priorizando el alcance realmente implementado y defendible.
 
 ### 1.1 Tipos de Usuarios
-- **Jugador (Player)**: Usuario que participa en campañas con un personaje
-- **Dungeon Master (DM)**: Usuario que crea y gestiona campañas
-- **Usuario Creador**: Cualquier usuario que crea contenido homebrew (monstruos, hechizos, objetos)
+- **Usuario autenticado**: Usuario que consulta, crea y gestiona entidades del sistema.
+- **Administrador**: Usuario con permisos ampliados sobre contenido y gestion.
+- **Usuario creador**: Usuario centrado en crear contenido homebrew y personajes.
 
 ### 1.2 Estructura del Documento por Niveles
 
-Este documento organiza los flujos de trabajo en 3 niveles de implementación:
+Este documento organiza los flujos de trabajo en 3 niveles de implementación, aunque para el TFG actual solo el **Nivel 1** debe considerarse alcance activo.
 
 **NIVEL 1 - CREACIÓN Y GESTIÓN DE CONTENIDO (Foundation)**
 - Visualización, creación, modificación y eliminación de contenido
@@ -20,12 +29,14 @@ Este documento organiza los flujos de trabajo en 3 niveles de implementación:
 - Sistema fundamental antes de funcionalidades multijugador
 
 **NIVEL 2 - CAMPAÑA Y MULTIJUGADOR (Core Gameplay)**
+*(Descartado para la entrega final del TFG actual)*
 - Creación y gestión de campañas
 - Sistema de tiempo real (chat, dados, iniciativas)
 - Combate básico con stats y turnos
 - Colaboración entre jugadores y DM
 
 **NIVEL 3 - GRID DE BATALLA TÁCTICO (Advanced Features)**
+*(Descartado para la entrega final del TFG actual)*
 - Mapa de batalla con grid
 - Posicionamiento visual de combatientes
 - Drag & drop de tokens

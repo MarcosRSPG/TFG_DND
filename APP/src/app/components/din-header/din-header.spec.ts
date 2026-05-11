@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { DinHeader } from './din-header';
 
@@ -8,9 +9,9 @@ describe('DinHeader', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DinHeader]
-    })
-    .compileComponents();
+      imports: [DinHeader],
+      providers: [provideRouter([])],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(DinHeader);
     component = fixture.componentInstance;

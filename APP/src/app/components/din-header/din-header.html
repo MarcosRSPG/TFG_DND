@@ -1,47 +1,161 @@
-<nav class="board board--type-bulletin bulletin">
-        <section>  
-            <figure [hidden]="!authService.isLoggedIn()" routerLink="/" aria-label="Home" title="Home">
-                <img src="icon.png" alt="GRIMLEDGER icon">
-            </figure>
-            <h1 routerLink="/" [style.font-size]="!authService.isLoggedIn() ? '5em' : '2em'" [style.text-align]="!authService.isLoggedIn() ? 'center' : 'start'">GRIMLEDGER</h1>
-        </section>
-        @if (authService.isLoggedIn()) {
-        <ul>
-            <li>
-                <a routerLink="/user" aria-label="User" title="User">
-                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/person-fill.svg" alt="User">
-                </a>
-            </li>
-            <li>
-                <a routerLink="/manual" aria-label="Manual" title="Manual">
-                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/book-fill.svg" alt="Manual">
-                </a>
-            </li>
-            <li>
-                <a routerLink="/characters" aria-label="Mis Personajes" title="Mis Personajes">
-                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/person-badge-fill.svg" alt="Mis Personajes">
-                </a>
-            </li>
-            <li>
-                <a routerLink="/campaigns" aria-label="Campaigns" title="Campaigns">
-                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/map-fill.svg" alt="Campaigns">
-                </a>
-            </li>
-            <li>
-                <a routerLink="/about" aria-label="About us" title="About us">
-                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/people-fill.svg" alt="About us">
-                </a>
-            </li>
-            <li>
-                <a routerLink="/contact" aria-label="Contact" title="Contact">
-                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/envelope-fill.svg" alt="Contact">
-                </a>
-            </li>
-            <li>
-                <a (click)="authService.logout()" routerLink="/login" aria-label="Logout" title="Logout">
-                    <img class="nav-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/box-arrow-right.svg" alt="Logout">
-                </a>
-            </li>
-        </ul>
-        }
+<nav
+  class="board board--type-bulletin bulletin"
+  [class.header--guest]="!authService.isLoggedIn()"
+  [class.header--authenticated]="authService.isLoggedIn()"
+>
+  <section class="header-brand">
+    <figure
+      class="header-logo"
+      [hidden]="!authService.isLoggedIn()"
+      routerLink="/"
+      aria-label="Home"
+      title="Home"
+      (click)="closeMobileMenu()"
+    >
+      <img src="icon.png" alt="GRIMLEDGER icon" />
+    </figure>
+    <h1 class="header-title" routerLink="/" (click)="closeMobileMenu()">GRIMLEDGER</h1>
+  </section>
+  @if (authService.isLoggedIn()) {
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-label="Toggle navigation"
+      aria-controls="header-nav"
+      [attr.aria-expanded]="isMobileMenuOpen()"
+      (click)="toggleMobileMenu()"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="header-nav" class="header-nav" [class.header-nav--open]="isMobileMenuOpen()">
+      <li>
+        <a
+          class="nav-link"
+          routerLink="/user"
+          aria-label="User"
+          title="User"
+          (click)="closeMobileMenu()"
+        >
+          <span class="nav-link__badge">
+            <img
+              class="nav-icon"
+              src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/person-fill.svg"
+              alt="User"
+            />
+          </span>
+          <span class="nav-link__label">User</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-link"
+          routerLink="/manual"
+          aria-label="Manual"
+          title="Manual"
+          (click)="closeMobileMenu()"
+        >
+          <span class="nav-link__badge">
+            <img
+              class="nav-icon"
+              src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/book-fill.svg"
+              alt="Manual"
+            />
+          </span>
+          <span class="nav-link__label">Manual</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-link"
+          routerLink="/characters"
+          aria-label="Mis Personajes"
+          title="Mis Personajes"
+          (click)="closeMobileMenu()"
+        >
+          <span class="nav-link__badge">
+            <img
+              class="nav-icon"
+              src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/person-badge-fill.svg"
+              alt="Mis Personajes"
+            />
+          </span>
+          <span class="nav-link__label">Personajes</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-link"
+          routerLink="/campaigns"
+          aria-label="Campaigns"
+          title="Campaigns"
+          (click)="closeMobileMenu()"
+        >
+          <span class="nav-link__badge">
+            <img
+              class="nav-icon"
+              src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/map-fill.svg"
+              alt="Campaigns"
+            />
+          </span>
+          <span class="nav-link__label">Campaigns</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-link"
+          routerLink="/about"
+          aria-label="About us"
+          title="About us"
+          (click)="closeMobileMenu()"
+        >
+          <span class="nav-link__badge">
+            <img
+              class="nav-icon"
+              src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/people-fill.svg"
+              alt="About us"
+            />
+          </span>
+          <span class="nav-link__label">About us</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-link"
+          routerLink="/contact"
+          aria-label="Contact"
+          title="Contact"
+          (click)="closeMobileMenu()"
+        >
+          <span class="nav-link__badge">
+            <img
+              class="nav-icon"
+              src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/envelope-fill.svg"
+              alt="Contact"
+            />
+          </span>
+          <span class="nav-link__label">Contact</span>
+        </a>
+      </li>
+      <li>
+        <a
+          class="nav-link"
+          (click)="logout()"
+          routerLink="/login"
+          aria-label="Logout"
+          title="Logout"
+        >
+          <span class="nav-link__badge">
+            <img
+              class="nav-icon"
+              src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/box-arrow-right.svg"
+              alt="Logout"
+            />
+          </span>
+          <span class="nav-link__label">Logout</span>
+        </a>
+      </li>
+    </ul>
+  }
 </nav>

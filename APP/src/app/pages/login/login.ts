@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Alerts, AlertVariant } from '../../components/alerts/alerts';
 import { LoginService } from '../../services/login-service';
 
@@ -14,6 +14,7 @@ import { LoginService } from '../../services/login-service';
 export class Login {
   private readonly loginService = inject(LoginService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   email = '';
   password = '';
@@ -25,7 +26,8 @@ export class Login {
   async login() {
     try {
       await this.loginService.login(this.email, this.password);
-      this.router.navigate(['/']);
+      const redirectTo = this.route.snapshot.queryParamMap.get('redirectTo') || '/';
+      await this.router.navigateByUrl(redirectTo);
     } catch (error: unknown) {
       this.showAlert('Login failed', this.getErrorMessage(error), 'error');
     }

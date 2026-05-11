@@ -1,7 +1,7 @@
 /* CREATE BUTTON STYLES */
 .create-section {
   margin-bottom: 2rem;
-  width: min(35vw, 100%) !important;
+  width: min(35vw, 100%);
   margin-left: auto;
   margin-right: auto;
 }
@@ -46,7 +46,8 @@
   min-width: 2.5rem;
 }
 
-.pagination-btn:hover:not(:disabled), .pagination-btn.active {
+.pagination-btn:hover:not(:disabled),
+.pagination-btn.active {
   background: rgba(201, 162, 90, 0.18);
   border-color: rgba(201, 162, 90, 0.5);
   color: #f0d8b0;
@@ -73,7 +74,7 @@
   background: rgba(55, 34, 19, 0.65);
   border: 1px solid rgba(201, 162, 90, 0.22);
   border-radius: 8px;
-  width: min(35vw, 100%) !important;
+  width: min(35vw, 100%);
   margin-left: auto;
   margin-right: auto;
 }
@@ -117,7 +118,7 @@
   padding: 0;
   display: grid;
   gap: 0.9rem;
-  width: min(35vw, 100%) !important;
+  width: min(35vw, 100%);
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
@@ -129,7 +130,10 @@
   padding: 0;
   overflow: hidden;
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.24);
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .entity-item:hover {
@@ -228,19 +232,22 @@
 
 @media (max-width: 860px) {
   .entity-list {
-    width: min(60vw, 100%);
+    width: var(--mobile-panel-width);
     grid-template-columns: 1fr;
   }
 
   .entity-message {
-    width: min(60vw, 100%);
+    width: var(--mobile-panel-width);
   }
 
   .filters-section {
-    width: min(60vw, 100%);
+    width: var(--mobile-panel-width);
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 0.85rem;
   }
 
   .create-section {
-    width: min(60vw, 100%);
+    width: var(--mobile-panel-width);
   }
 }

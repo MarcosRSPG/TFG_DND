@@ -10,7 +10,7 @@
 	display: block;
 	box-sizing: border-box;
 	min-height: calc(100vh - var(--header-offset));
-	padding: calc(var(--header-offset) + 6rem) 0 1.5rem;
+	padding: calc(var(--header-offset) + 2.5rem) 0 1.5rem;
 	
 }
 
@@ -199,7 +199,7 @@ h1 {
 @media (max-width: 1024px) {
 	:host {
 		--header-offset: clamp(110px, 16vw, 150px);
-		padding-top: calc(var(--header-offset) + 1.4rem);
+		padding-top: calc(var(--header-offset) + 1.8rem);
 	}
 
 	.manual-page {
@@ -224,7 +224,7 @@ h1 {
 @media (max-width: 720px) {
 	:host {
 		--header-offset: 96px;
-		padding-top: calc(var(--header-offset) + 1rem);
+		padding-top: calc(var(--header-offset) + 4rem);
 	}
 
 	.manual-page {

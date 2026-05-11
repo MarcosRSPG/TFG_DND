@@ -12,11 +12,32 @@ El asistente debe ayudar a completar, corregir, explicar, transformar y enriquec
 - La IA no puede persistir cambios automaticamente en backend.
 - La IA no debe manipular el DOM de forma libre.
 - La IA debe operar mediante comandos tipados sobre estado Angular.
-- La clave de Mistral no puede vivir en `APP/src/environments/*`.
-- La clave de Mistral debe vivir en `API/config.py` y usarse desde un proxy/backend gateway.
+- El modelo elegido pasa a ser una variante de **Qwen** autohospedada; no se debe depender de un proveedor externo como arquitectura principal.
+- Cualquier secreto de descarga, token de Hugging Face o configuracion del runtime de Qwen no puede vivir en `APP/src/environments/*`.
+- La configuracion del modelo debe vivir en backend, preferentemente en `API/config.py` o en variables de entorno consumidas por FastAPI.
 - La IA puede leer contexto de negocio de forma controlada y en modo solo lectura.
 - Los campos sensibles de autenticacion no deben enviarse al modelo en texto plano.
-- Los archivos binarios locales como `selectedFile` no son manipulables por IA. La IA solo puede sugerir prompts, nombres o metadatos relacionados.
+- Los archivos binarios locales como `selectedFile` no son manipulables por IA. La IA solo puede sugerir prompts, nombres, descripciones de imagen o metadatos relacionados hasta que exista una integracion multimodal real.
+
+## 2.1 Alcance funcional real del asistente
+
+Este planning queda limitado a los formularios y entidades que forman parte del producto final del TFG y que ya existen en el codigo o estan decididos como siguiente implementacion directa.
+
+Incluye:
+
+- Creacion y edicion asistida de personajes.
+- Creacion y edicion asistida de monstruos.
+- Creacion y edicion asistida de hechizos.
+- Creacion y edicion asistida de backgrounds.
+- Creacion y edicion asistida de items de cualquier subtipo soportado.
+
+Queda fuera de alcance:
+
+- Campañas.
+- Flujos de DM.
+- Combate en tiempo real.
+- Grid tactico y mapas.
+- Notas colaborativas y multiplayer.
 
 ## 3. Estado actual del repo
 
@@ -26,6 +47,7 @@ El asistente debe ayudar a completar, corregir, explicar, transformar y enriquec
 - Backend FastAPI en `API/`.
 - Los formularios usan mayormente `FormsModule` + `signal` + `formData`.
 - Existen servicios de catalogo y dominio reutilizables como `DndOptionsService`, `ItemsService`, `MonstersService`, `SpellsService`, `BackgroundsService` y `LoginService`.
+- `character-form` ya existe como wizard multi-step con bastante estado derivado y dependencias entre pasos.
 - `monster-form` y `spell-form` ya son forms ricos con bastante estado local y subestructuras anidadas.
 - Los item forms son mas simples, pero suficientemente consistentes como para entrar en una capa comun.
 
@@ -35,6 +57,7 @@ El asistente debe ayudar a completar, corregir, explicar, transformar y enriquec
 | --- | --- | --- | --- | --- |
 | Login | `APP/src/app/pages/login/login.ts` | Autenticacion | Baja | Baja |
 | Register | `APP/src/app/pages/register/register.ts` | Autenticacion | Baja | Baja |
+| CharacterForm | `APP/src/app/pages/character-form/character-form.ts` | Characters | Muy alta | Muy alta |
 | BackgroundForm | `APP/src/app/pages/background-form/background-form.ts` | Backgrounds | Alta | Alta |
 | SpellForm | `APP/src/app/pages/spell-form/spell-form.ts` | Spells | Alta | Muy alta |
 | MonsterForm | `APP/src/app/pages/monster-form/monster-form.ts` | Monsters | Muy alta | Muy alta |
@@ -47,15 +70,19 @@ El asistente debe ayudar a completar, corregir, explicar, transformar y enriquec
 
 ### 3.3 Dependencias y fuentes de contexto util para IA
 
+- `APP/src/app/interfaces/Character.ts`
 - `APP/src/app/interfaces/monster.ts`
 - `APP/src/app/interfaces/spell.ts`
 - `APP/src/app/interfaces/background.ts`
 - `APP/src/app/interfaces/item.ts`
+- `APP/src/app/services/characters-service.ts`
 - `APP/src/app/services/dnd-options-service.ts`
 - `APP/src/app/services/items-service.ts`
 - `APP/src/app/services/monsters-service.ts`
 - `APP/src/app/services/spells-service.ts`
 - `APP/src/app/services/backgrounds-service.ts`
+- `API/services/*` como capa de negocio para enriquecer contexto con datos persistidos
+- Corpus documental a preparar desde PDFs originales y referencias propias del proyecto
 
 ## 4. Vision funcional del asistente
 
@@ -88,24 +115,25 @@ El asistente debe comportarse como un copiloto de formularios, no como un agente
 
 ## 5.1 Resumen
 
-La arquitectura correcta es `frontend tool execution + backend model proxy`.
+La arquitectura correcta es `frontend tool execution + backend model runtime`.
 
 Flujo base:
 
 1. El usuario interactua con el panel de IA en un formulario.
 2. Angular genera un snapshot sanitizado del estado del form.
 3. Angular envia ese snapshot y el catalogo de herramientas disponibles al backend.
-4. FastAPI llama a Mistral y devuelve respuesta estructurada.
-5. Angular valida la respuesta.
-6. Angular ejecuta los comandos permitidos sobre el estado local del form.
-7. Angular muestra resumen, diff y opcion de deshacer.
+4. FastAPI enriquece el contexto con base de datos y corpus documental.
+5. FastAPI llama al runtime local de Qwen y devuelve respuesta estructurada.
+6. Angular valida la respuesta.
+7. Angular ejecuta los comandos permitidos sobre el estado local del form.
+8. Angular muestra resumen, diff y opcion de deshacer.
 
 ## 5.2 Por que el frontend ejecuta las tools
 
 - El estado editable real vive en Angular signals y modelos locales.
 - El backend no conoce el estado temporal completo del formulario ni su UI.
 - El usuario pidio que la IA toque solo el frontend del usuario, no el backend.
-- El backend solo debe actuar como gateway seguro para ocultar la API key y centralizar prompts, logs y rate limiting.
+- El backend debe actuar como orquestador seguro del modelo, del contexto documental y de los datos persistidos, centralizando prompts, logs, timeouts y control de recursos.
 
 ## 5.3 Capas a crear
 
@@ -122,10 +150,11 @@ Flujo base:
 ### Backend
 
 - `API/routes/ai.py`
-- `API/services/mistral_service.py`
+- `API/services/qwen_service.py`
+- `API/services/document_context_service.py`
 - `API/services/ai_prompt_service.py`
 - `API/models/ai.py`
-- config de `MISTRAL_API_KEY`, `MISTRAL_MODEL`, timeouts y rate limit
+- config de `QWEN_MODEL_ID` o path local, `HF_TOKEN` si aplica, limites de contexto, timeouts y politicas de uso de CPU/GPU en una sola EC2
 
 ## 6. Contratos tecnicos propuestos
 
@@ -274,7 +303,7 @@ interface AiFormAdapter<TSnapshot> {
 - Generar descripciones cortas y largas.
 - Generar variantes de una misma entidad.
 - Generar presets iniciales segun objetivo.
-- Generar prompts para imagen o ilustracion.
+- Generar prompts o descripciones de imagen para ilustracion futura.
 
 ## 7.6 Utilidades de productividad
 
@@ -332,7 +361,33 @@ Limitaciones especiales:
 - No enviar `password` ni `confirmPassword` al modelo.
 - La IA puede evaluar reglas de password solo con metadatos locales como longitud, presencia de numeros o simbolos, sin exponer el valor.
 
-## 8.3 MonsterForm
+## 8.3 CharacterForm
+
+Objetivo:
+
+- Ayudar a crear personajes jugables coherentes sin romper el wizard actual.
+
+Utilidades:
+
+- Proponer concepto general del personaje a partir de una fantasia breve.
+- Recomendar combinaciones coherentes de raza, clase y background.
+- Sugerir reparto de stats segun arquetipo deseado.
+- Explicar tradeoffs entre opciones marciales, caster o hibridas.
+- Completar rasgos de personalidad, ideales, bonds, flaws, historia y notas.
+- Sugerir alineamiento y tono narrativo consistentes con el concepto.
+- Generar descripcion o prompt textual de retrato mientras no exista imagen final.
+- Detectar incoherencias entre clase, stats, background y fantasia declarada.
+
+Quick actions recomendadas:
+
+- `Crear fighter tanque`
+- `Crear rogue sigiloso`
+- `Crear caster de soporte`
+- `Balancear stats`
+- `Completar personalidad`
+- `Generar historia corta`
+
+## 8.4 MonsterForm
 
 Objetivo:
 
@@ -350,7 +405,7 @@ Utilidades:
 - Ajustar alignment y subtype segun fantasia buscada.
 - Detectar monstruos demasiado rotos o demasiado flojos.
 - Generar descripcion narrativa y tactica de combate.
-- Sugerir imagen prompt.
+- Sugerir prompt o descripcion textual de imagen mientras no exista archivo real.
 
 Quick actions recomendadas:
 
@@ -362,7 +417,7 @@ Quick actions recomendadas:
 - `Completar spellcasting`
 - `Mejorar descripcion`
 
-## 8.4 SpellForm
+## 8.5 SpellForm
 
 Objetivo:
 
@@ -387,7 +442,7 @@ Quick actions recomendadas:
 - `Completar AoE`
 - `Asignar clases`
 
-## 8.5 BackgroundForm
+## 8.6 BackgroundForm
 
 Objetivo:
 
@@ -411,7 +466,7 @@ Quick actions recomendadas:
 - `Completar rasgos sociales`
 - `Armar equipo inicial`
 
-## 8.6 WeaponForm
+## 8.7 WeaponForm
 
 Objetivo:
 
@@ -436,7 +491,7 @@ Quick actions recomendadas:
 - `Agregar propiedades validas`
 - `Balancear dano`
 
-## 8.7 ArmorForm
+## 8.8 ArmorForm
 
 Objetivo:
 
@@ -457,7 +512,7 @@ Quick actions recomendadas:
 - `Armadura pesada`
 - `Revisar balance`
 
-## 8.8 MagicItemForm
+## 8.9 MagicItemForm
 
 Objetivo:
 
@@ -480,7 +535,7 @@ Quick actions recomendadas:
 - `Generar efecto magico`
 - `Crear variantes`
 
-## 8.9 ToolForm
+## 8.10 ToolForm
 
 Objetivo:
 
@@ -499,7 +554,7 @@ Quick actions recomendadas:
 - `Instrumento musical`
 - `Set de juego`
 
-## 8.10 MountForm
+## 8.11 MountForm
 
 Objetivo:
 
@@ -520,7 +575,7 @@ Quick actions recomendadas:
 - `Vehiculo acuatico`
 - `Vehiculo aereo`
 
-## 8.11 AdventuringGearForm
+## 8.12 AdventuringGearForm
 
 Objetivo:
 
@@ -607,17 +662,18 @@ Entregables:
 - Esquema de validacion de comandos en frontend.
 - Documento de prompts base por dominio.
 
-## Fase 1. Proxy backend a Mistral
+## Fase 1. Runtime backend para Qwen
 
 Objetivo:
 
-- Hablar con Mistral sin exponer la API key.
+- Integrar Qwen en backend sin exponer secretos ni mover el runtime al frontend.
 
 Entregables:
 
 - `POST /ai/chat`
 - Modelos Pydantic de request y response.
-- Servicio Mistral con timeout, retries y logs.
+- Servicio Qwen con timeout, control de errores, logs y limites de recursos.
+- Servicio de preparacion de contexto documental y datos del dominio.
 - Configuracion en `API/config.py`.
 
 ## Fase 2. Motor de comandos en Angular
@@ -642,9 +698,10 @@ Objetivo:
 
 Orden recomendado:
 
-1. `MonsterForm`
-2. `SpellForm`
-3. `BackgroundForm`
+1. `CharacterForm`
+2. `MonsterForm`
+3. `SpellForm`
+4. `BackgroundForm`
 
 Entregables:
 
@@ -701,15 +758,16 @@ Entregables:
 ## 12. Orden de implementacion recomendado
 
 1. Base comun de contratos.
-2. Proxy Mistral backend.
+2. Runtime Qwen backend.
 3. Motor de comandos frontend.
-4. MonsterForm.
-5. SpellForm.
-6. BackgroundForm.
-7. WeaponForm.
-8. MagicItemForm.
-9. Resto de item forms.
-10. Login y Register.
+4. CharacterForm.
+5. MonsterForm.
+6. SpellForm.
+7. BackgroundForm.
+8. WeaponForm.
+9. MagicItemForm.
+10. Resto de item forms.
+11. Login y Register.
 
 Razon:
 
@@ -730,12 +788,14 @@ Razon:
 ## 13.2 Backend
 
 - Tests del schema de request/response.
-- Tests del servicio proxy a Mistral con mocks.
-- Tests de timeouts y errores del proveedor.
+- Tests del servicio Qwen con mocks o doubles del runtime.
+- Tests de timeouts, consumo y errores del runtime local.
 - Tests de sanitizacion de logs.
+- Tests de construccion de contexto desde PDFs y base de datos.
 
 ## 13.3 Casos E2E a cubrir despues
 
+- Usuario pide generar personaje base coherente.
 - Usuario pide generar monstruo completo.
 - Usuario pide balancear spell.
 - Usuario pide completar background.
@@ -749,7 +809,9 @@ Razon:
 - La calidad de IA cae si el snapshot enviado es pobre o ruidoso.
 - Sin allowlist de paths, el motor de comandos se vuelve fragil.
 - Sin diff y undo, la confianza del usuario cae muchisimo.
+- `character-form` necesita especial cuidado por su naturaleza wizard y por el estado repartido entre pasos.
 - Los forms con listas anidadas como `monster-form` y `background-form` necesitan validacion mas estricta.
+- Una sola EC2 obliga a vigilar muy de cerca memoria, concurrencia y tamaño real de la variante Qwen elegida.
 
 ## 15. Archivos que probablemente habra que crear cuando llegue `HAZLO`
 
@@ -761,6 +823,7 @@ Razon:
 - `APP/src/app/services/ai-assistant-service.ts`
 - `APP/src/app/services/ai-command-engine.ts`
 - `APP/src/app/services/ai-session-store.ts`
+- `APP/src/app/ai/adapters/character-form-ai-adapter.ts`
 - `APP/src/app/ai/adapters/monster-form-ai-adapter.ts`
 - `APP/src/app/ai/adapters/spell-form-ai-adapter.ts`
 - `APP/src/app/ai/adapters/background-form-ai-adapter.ts`
@@ -774,7 +837,8 @@ Razon:
 ### Backend
 
 - `API/routes/ai.py`
-- `API/services/mistral_service.py`
+- `API/services/qwen_service.py`
+- `API/services/document_context_service.py`
 - `API/services/ai_prompt_service.py`
 - `API/models/ai.py`
 
@@ -788,7 +852,7 @@ Este planning se considerara correctamente ejecutado cuando exista una implement
 - Los campos sensibles no viajan al modelo.
 - Existe diff visible y opcion de deshacer.
 - Existe al menos una capa comun reusable y no soluciones copiadas por form.
-- `MonsterForm`, `SpellForm` y `BackgroundForm` quedan cubiertos con utilidades de alto valor.
+- `CharacterForm`, `MonsterForm`, `SpellForm` y `BackgroundForm` quedan cubiertos con utilidades de alto valor.
 - Los item forms quedan cubiertos con un adaptador comun y extensiones por subtipo.
 
 ## 17. Siguiente paso recomendado antes de implementar
@@ -796,6 +860,6 @@ Este planning se considerara correctamente ejecutado cuando exista una implement
 Antes de tocar codigo, conviene hacer dos mini decisiones de detalle:
 
 1. Elegir si el asistente va a usar solo `commands` estructurados o `commands + texto conversacional`.
-2. Definir la allowlist inicial exacta de paths editables por `MonsterForm`, `SpellForm` y `BackgroundForm`.
+2. Definir la allowlist inicial exacta de paths editables por `CharacterForm`, `MonsterForm`, `SpellForm` y `BackgroundForm`.
 
 Con esas dos decisiones, la fase de implementacion arranca mucho mas limpia.

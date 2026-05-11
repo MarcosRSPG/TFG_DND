@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LoginService } from '../../services/login-service';
 
@@ -6,11 +6,23 @@ import { LoginService } from '../../services/login-service';
   selector: 'comp-din-header',
   imports: [RouterLink],
   templateUrl: './din-header.html',
-  styleUrls: ['./din-header.css', '../../css/boards.css']
+  styleUrls: ['./din-header.css', '../../css/boards.css'],
 })
 export class DinHeader {
-    constructor(
-      public authService: LoginService,
-    ) {}
-    
+  readonly isMobileMenuOpen = signal(false);
+
+  constructor(public authService: LoginService) {}
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+  }
+
+  logout(): void {
+    this.closeMobileMenu();
+    this.authService.logout();
+  }
 }
