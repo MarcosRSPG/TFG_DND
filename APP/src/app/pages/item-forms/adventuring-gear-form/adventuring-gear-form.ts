@@ -20,6 +20,7 @@ export class AdventuringGearForm implements OnInit {
   isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
+  private returnUrl = '/manual?section=items';
 
   formData = signal<Partial<Item>>({
     name: '',
@@ -35,6 +36,9 @@ export class AdventuringGearForm implements OnInit {
   costUnits = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
   ngOnInit(): void {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) this.returnUrl = returnUrl;
+
     const itemId = this.route.snapshot.paramMap.get('id');
     if (itemId) {
       this.isEditMode.set(true);
@@ -87,9 +91,7 @@ export class AdventuringGearForm implements OnInit {
         await this.itemsService.create(data, 'adventuringgear');
       }
 
-      this.router.navigate(['/manual'], {
-        queryParams: { section: 'items' },
-      });
+      window.location.href = this.returnUrl;
     } catch (err) {
       console.error('Error creating item:', err);
       this.error.set('Error creating item. Please try again.');
@@ -99,8 +101,6 @@ export class AdventuringGearForm implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/manual'], {
-      queryParams: { section: 'items' },
-    });
+    window.location.href = '/manual?section=items';
   }
 }

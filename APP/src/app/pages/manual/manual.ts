@@ -54,10 +54,10 @@ export class Manual implements OnInit {
   }
 
   private updateUrl(): void {
-    // Only update the 'section' param. Child components manage their own filters via URL.
+    // Replace ALL query params with just 'section' so filters from the previous
+    // section are cleared when the user switches tabs.
     this.router.navigate([], {
       queryParams: { section: this.selectedSectionId },
-      queryParamsHandling: 'merge',
     });
   }
 }

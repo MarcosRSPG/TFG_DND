@@ -26,6 +26,7 @@ export class BackgroundForm implements OnInit {
   isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
+  private returnUrl = '/manual?section=backgrounds';
 
   // Form data
   formData = signal<Partial<Background>>({
@@ -107,6 +108,9 @@ export class BackgroundForm implements OnInit {
   ngOnInit(): void {
     this.dndOptions.loadProficiencies();
     this.loadItems();
+
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) this.returnUrl = returnUrl;
 
     // Check if we're in edit mode
     const backgroundId = this.route.snapshot.paramMap.get('id');
@@ -782,10 +786,7 @@ export class BackgroundForm implements OnInit {
         await this.backgroundsService.create(data);
       }
 
-      // Navigate back to backgrounds list
-      this.router.navigate(['/manual'], {
-        queryParams: { section: 'backgrounds' },
-      });
+      window.location.href = this.returnUrl;
     } catch (err) {
       console.error('Error creating background:', err);
       this.error.set('Error creating background. Please try again.');
@@ -795,9 +796,7 @@ export class BackgroundForm implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/manual'], {
-      queryParams: { section: 'backgrounds' },
-    });
+    window.location.href = this.returnUrl;
   }
 
   getProficiencyName(index: string): string {

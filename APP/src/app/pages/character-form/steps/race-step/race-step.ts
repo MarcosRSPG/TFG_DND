@@ -61,12 +61,13 @@ export class RaceStepComponent implements OnInit {
         const subs = await this.racesService.getSubracesByRace(race.index ?? race.id);
         this.subraces.set(subs);
       } catch {
-        // no subraces loaded
+        // no subraces loaded — treat as no subraces
       } finally {
         this.loadingSubraces.set(false);
       }
     }
 
+    // Emit AFTER subraces are loaded so has_subraces reflects the actual loaded count
     if (emit) this.emitChange(race, null);
   }
 
@@ -97,12 +98,17 @@ export class RaceStepComponent implements OnInit {
       source: 'race' as const,
     })) ?? [];
 
+    // Use the actual loaded subraces count (not the reference list), so that
+    // if subraces failed to load, we don't block the user forever
+    const hasSubraces = this.subraces().length > 0;
+
     this.change.emit({
       race: { index: race.index ?? race.id, name: race.name, url: race.url },
       subrace: subrace ? { index: subrace.index, name: subrace.name, url: subrace.url } : undefined,
       race_speed: race.speed,
       racial_bonuses: racialBonuses as Partial<Record<import('../../../../interfaces/Character').StatKey, number>>,
       traits,
+      has_subraces: hasSubraces,
     });
   }
 

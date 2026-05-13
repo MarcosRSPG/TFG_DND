@@ -40,6 +40,7 @@ export class SpellForm implements OnInit {
   isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
+  private returnUrl = '/manual?section=spells';
 
   // Form data
   formData = signal<Partial<Spell>>({
@@ -236,6 +237,9 @@ export class SpellForm implements OnInit {
     this.dndOptions.loadSchools();
     this.dndOptions.loadClasses();
     this.dndOptions.loadSubclasses();
+
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) this.returnUrl = returnUrl;
 
     // Detect edit mode via route param
     const spellId = this.route.snapshot.paramMap.get('id');
@@ -605,9 +609,7 @@ export class SpellForm implements OnInit {
         }
       }
 
-      this.router.navigate(['/manual'], {
-        queryParams: { section: 'spells' },
-      });
+      window.location.href = this.returnUrl;
     } catch (err: unknown) {
       const httpErr = err as { error?: { detail?: string }; status?: number };
       const detail = httpErr?.error?.detail;
@@ -623,9 +625,7 @@ export class SpellForm implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/manual'], {
-      queryParams: { section: 'spells' },
-    });
+    window.location.href = this.returnUrl;
   }
 
   onImageSelected(event: Event): void {

@@ -20,6 +20,7 @@ export class ToolForm implements OnInit {
   isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
+  private returnUrl = '/manual?section=items';
 
   formData = signal<Partial<Item>>({
     name: '',
@@ -44,6 +45,9 @@ export class ToolForm implements OnInit {
   costUnits = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
   ngOnInit(): void {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) this.returnUrl = returnUrl;
+
     const itemId = this.route.snapshot.paramMap.get('id');
     if (itemId) {
       this.isEditMode.set(true);
@@ -97,9 +101,7 @@ export class ToolForm implements OnInit {
         await this.itemsService.create(data, 'tool');
       }
 
-      this.router.navigate(['/manual'], {
-        queryParams: { section: 'items' },
-      });
+      window.location.href = this.returnUrl;
     } catch (err) {
       console.error('Error creating tool:', err);
       this.error.set('Error creating tool. Please try again.');

@@ -12,6 +12,7 @@ import { Mount } from '../../interfaces/items/mount';
 import { ItemsService, ItemType, ItemSpecific } from '../../services/items-service';
 import { LoginService } from '../../services/login-service';
 import { FilterModalComponent } from '../filter-modal/filter-modal';
+import { Alerts, AlertVariant } from '../alerts/alerts';
 
 interface ItemFilters {
   searchName: string;
@@ -28,6 +29,7 @@ interface ItemFilters {
     CommonModule,
     FormsModule,
     FilterModalComponent,
+    Alerts,
   ],
   templateUrl: './items.html',
   styleUrl: './items.css',
@@ -44,6 +46,26 @@ export class Items implements OnInit {
   userId = signal<string | null>(null);
   userRole = signal<string | null>(null);
   permissionsLoaded = signal(false);
+
+  alertOpen = signal(false);
+  alertTitle = signal('');
+  alertMessage = signal('');
+  alertVariant = signal<AlertVariant>('error');
+
+  showAlert(title: string, message: string, variant: AlertVariant = 'error'): void {
+    this.alertTitle.set(title);
+    this.alertMessage.set(message);
+    this.alertVariant.set(variant);
+    this.alertOpen.set(true);
+  }
+
+  private getSourceLabel(item: Item): string {
+    const cb = (item as any).created_by;
+    if (!cb) return 'official';
+    if (cb === 'oficial') return 'official';
+    if (cb === this.userId()) return 'own';
+    return 'community';
+  }
 
   allItems = signal<Item[]>([]);
   filteredItems = signal<Item[]>([]);
@@ -177,7 +199,7 @@ export class Items implements OnInit {
       this.updatePaginatedItems();
     } catch (error) {
       console.error('Error deleting item:', error);
-      alert('Failed to delete item');
+      this.showAlert('Error', 'Failed to delete item');
     }
   }
 
@@ -349,8 +371,8 @@ export class Items implements OnInit {
       filtered = filtered.filter((item) => (item.cost?.quantity || 0) <= maxCost);
     }
 
-    if (filters.source === 'official') {
-      filtered = filtered.filter((item) => !item['created_by']);
+    if (filters.source !== 'all') {
+      filtered = filtered.filter((item) => this.getSourceLabel(item) === filters.source);
     }
 
     this.filteredItems.set(filtered);
@@ -367,16 +389,17 @@ export class Items implements OnInit {
 
   navigateToCreate(): void {
     if (this.selectedCreateType) {
-      this.router.navigate(['/items', this.selectedCreateType, 'new']);
+      const returnUrl = window.location.pathname + window.location.search;
+      this.router.navigate(['/items', this.selectedCreateType, 'new'], { queryParams: { returnUrl } });
     }
   }
 
   navigateToEdit(item: Item): void {
     const itemType = this.itemsService.inferType(item);
-    // Use MongoDB id first (ObjectId required by PUT/DELETE), fall back to index
     const itemId = item['id'] || item['index'] || '';
     if (itemType && itemId) {
-      this.router.navigate(['/items', itemType, 'edit', itemId]);
+      const returnUrl = window.location.pathname + window.location.search;
+      this.router.navigate(['/items', itemType, 'edit', itemId], { queryParams: { returnUrl } });
     }
   }
 }

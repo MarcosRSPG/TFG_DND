@@ -34,6 +34,7 @@ export class WeaponForm implements OnInit {
   isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
+  private returnUrl = '/manual?section=items';
 
   formData = signal<Partial<Item>>({
     name: '',
@@ -103,6 +104,9 @@ export class WeaponForm implements OnInit {
   twoHandedDamageCount = signal(1);
 
   ngOnInit(): void {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) this.returnUrl = returnUrl;
+
     const itemId = this.route.snapshot.paramMap.get('id');
     if (itemId) {
       this.isEditMode.set(true);
@@ -343,9 +347,7 @@ hasProperty(propertyIndex: string): boolean {
         }
       }
 
-      this.router.navigate(['/manual'], {
-        queryParams: { section: 'items' },
-      });
+      window.location.href = this.returnUrl;
     } catch (err) {
       console.error('Error creating weapon:', err);
       this.error.set('Error creating weapon. Please try again.');

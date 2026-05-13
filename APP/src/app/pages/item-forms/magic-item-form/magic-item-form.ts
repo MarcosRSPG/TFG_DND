@@ -21,6 +21,7 @@ export class MagicItemForm implements OnInit {
   isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
+  private returnUrl = '/manual?section=items';
 
   formData = signal<Partial<Item>>({
     name: '',
@@ -49,7 +50,9 @@ export class MagicItemForm implements OnInit {
   selectedFile: File | null = null;
 
   ngOnInit(): void {
-    // Check if we're in edit mode
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) this.returnUrl = returnUrl;
+
     const itemId = this.route.snapshot.paramMap.get('id');
     if (itemId) {
       this.isEditMode.set(true);
@@ -130,9 +133,7 @@ export class MagicItemForm implements OnInit {
         }
       }
 
-      this.router.navigate(['/manual'], {
-        queryParams: { section: 'items' },
-      });
+      window.location.href = this.returnUrl;
     } catch (err) {
       console.error('Error creating magic item:', err);
       this.error.set('Error creating magic item. Please try again.');

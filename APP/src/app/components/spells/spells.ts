@@ -7,6 +7,7 @@ import { SpellsService } from '../../services/spells-service';
 import { LoginService } from '../../services/login-service';
 import { FilterModalComponent } from '../filter-modal/filter-modal';
 import { VikingCheck } from '../viking-check/viking-check';
+import { Alerts, AlertVariant } from '../alerts/alerts';
 
 interface SpellFilters {
   searchName: string;
@@ -26,7 +27,8 @@ interface SpellFilters {
     RouterLink,
     FormsModule,
     FilterModalComponent,
-    VikingCheck
+    VikingCheck,
+    Alerts,
   ],
   templateUrl: './spells.html',
   styleUrl: './spells.css',
@@ -43,6 +45,26 @@ export class Spells implements OnInit {
   userId = signal<string | null>(null);
   userRole = signal<string | null>(null);
   permissionsLoaded = signal(false);
+
+  alertOpen = signal(false);
+  alertTitle = signal('');
+  alertMessage = signal('');
+  alertVariant = signal<AlertVariant>('error');
+
+  showAlert(title: string, message: string, variant: AlertVariant = 'error'): void {
+    this.alertTitle.set(title);
+    this.alertMessage.set(message);
+    this.alertVariant.set(variant);
+    this.alertOpen.set(true);
+  }
+
+  private getSourceLabel(spell: Spell): string {
+    const cb = spell.created_by;
+    if (!cb) return 'official';
+    if (cb === 'oficial') return 'official';
+    if (cb === this.userId()) return 'own';
+    return 'community';
+  }
 
   // 🔹 ViewChild
   @ViewChild('schoolsModal') schoolsModal!: FilterModalComponent;
@@ -140,7 +162,7 @@ export class Spells implements OnInit {
       this.updatePaginatedSpells();
     } catch (error) {
       console.error('Error deleting spell:', error);
-      alert('Failed to delete spell');
+      this.showAlert('Error', 'Failed to delete spell');
     }
   }
 
@@ -265,6 +287,10 @@ export class Spells implements OnInit {
       });
     }
 
+    if (filters.source !== 'all') {
+      filtered = filtered.filter(s => this.getSourceLabel(s) === filters.source);
+    }
+
     this.filteredSpells.set(filtered);
     this.updatePaginatedSpells();
   }
@@ -358,12 +384,13 @@ export class Spells implements OnInit {
   exportSelection(): void { const ids = Array.from(this.selectedIds()).join(','); if (!ids) return; this.router.navigate(['/manual/print'], { queryParams: { type: 'spells', ids } }); }
 
   navigateToCreate(): void {
-    this.router.navigate(['/spells/new']);
+    const returnUrl = window.location.pathname + window.location.search;
+    this.router.navigate(['/spells/new'], { queryParams: { returnUrl } });
   }
 
   navigateToEdit(spell: Spell): void {
-    // Use MongoDB id first (ObjectId required by PUT/DELETE), fall back to index
     const spellId = spell.id || spell.index || '';
-    this.router.navigate(['/spells/edit', spellId]);
+    const returnUrl = window.location.pathname + window.location.search;
+    this.router.navigate(['/spells/edit', spellId], { queryParams: { returnUrl } });
   }
 }

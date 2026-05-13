@@ -54,8 +54,12 @@ export class CharacterForm implements OnInit {
   canProceed(): boolean {
     const d = this.draft();
     switch (this.currentStep()) {
-      case 1: return !!d.race;
-      case 2: return !!d.character_class;
+      case 1:
+        // Race must be selected; if race has subraces, a subrace must be chosen too
+        return !!d.race && (!d.has_subraces || !!d.subrace);
+      case 2:
+        // Class must be selected; if it has proficiency choices, all must be filled
+        return !!d.character_class && (d.proficiency_choices_complete !== false);
       case 3: return !!d.background;
       case 4: return this.allStatsAssigned(d);
       case 5: return !!(d.name?.trim());

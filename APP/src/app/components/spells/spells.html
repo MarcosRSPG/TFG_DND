@@ -74,6 +74,8 @@
       >
         <option value="all">All</option>
         <option value="official">Official</option>
+        <option value="community">Community</option>
+        <option value="own">Own</option>
       </select>
     </div>
   </div>
@@ -147,4 +149,36 @@
       </button>
     </nav>
   }
+
+  <app-filter-modal
+    #schoolsModal
+    title="Select Schools"
+    [options]="Array.from(schools())"
+    [selectedOptions]="filters().schools"
+    (confirmed)="onSchoolsConfirmed($event)"
+  ></app-filter-modal>
+
+  <app-filter-modal
+    #rangesModal
+    title="Select Ranges"
+    [options]="Array.from(ranges())"
+    [selectedOptions]="filters().ranges"
+    (confirmed)="onRangesConfirmed($event)"
+  ></app-filter-modal>
+
+  <app-filter-modal
+    #classesModal
+    title="Select Classes"
+    [options]="Array.from(classes())"
+    [selectedOptions]="filters().classes"
+    (confirmed)="onClassesConfirmed($event)"
+  ></app-filter-modal>
 }
+
+<app-alerts
+  [isOpen]="alertOpen()"
+  [title]="alertTitle()"
+  [message]="alertMessage()"
+  [variant]="alertVariant()"
+  (closed)="alertOpen.set(false)"
+></app-alerts>

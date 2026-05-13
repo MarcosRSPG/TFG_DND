@@ -56,7 +56,7 @@
 
       @if (subraces().length) {
         <div class="subrace-section">
-          <h4>Subraces (optional)</h4>
+          <h4>Subraces <span class="required-label">(required)</span></h4>
           @if (loadingSubraces()) { <p class="loading-text">Loading subraces...</p> }
           <div class="subrace-grid">
             @for (sub of subraces(); track sub.index) {

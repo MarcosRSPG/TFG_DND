@@ -50,7 +50,7 @@
           @if (mon.proficiencies?.length) {
             <p><b>Saving Throws / Skills:</b>
               @for (pr of mon.proficiencies!; track $index) {
-                {{ pr.proficiency?.name }} +{{ pr.value }}@if(!$last){, }
+                {{ pr.proficiency.name }} +{{ pr.value }}@if(!$last){, }
               }
             </p>
           }
@@ -115,10 +115,10 @@
           <p><b>Casting Time:</b> {{ spell.casting_time }}</p>
           <p><b>Range:</b> {{ spell.range }}</p>
           <p><b>Duration:</b> {{ spell.duration }}</p>
-          <p><b>Components:</b> {{ spell.components?.join(', ') }}@if(spell.material){ ({{ spell.material }})}</p>
+          <p><b>Components:</b> {{ spell.components.join(', ') }}@if(spell.material){ ({{ spell.material }})}</p>
           @if(spell.classes?.length){ <p><b>Classes:</b> {{ spell.classes!.map(c=>c.name).join(', ') }}</p> }
         </div>
-        @if (spell.desc?.length) {
+        @if (spell.desc.length) {
           <div class="div-blue"></div>
           <div class="desc">
             @for (para of spell.desc; track $index) { <p>{{ para }}</p> }
@@ -224,10 +224,10 @@
         <div class="div-red"></div>
 
         <div class="misc">
-          @if (race.ability_bonuses?.length) {
+          @if (race.ability_bonuses.length) {
             <p><b>Ability Bonuses:</b>
               @for (bonus of race.ability_bonuses; track $index) {
-                {{ bonus.ability_score?.name }} +{{ bonus.bonus }}@if(!$last){, }
+                {{ bonus.ability_score.name }} +{{ bonus.bonus }}@if(!$last){, }
               }
             </p>
           }
@@ -238,7 +238,7 @@
         </div>
 
         <!-- Traits with full descriptions -->
-        @if (race.traits?.length) {
+        @if (race.traits.length) {
           <div class="div-red"></div>
           <div class="section-header-row">Racial Traits</div>
           @for (trait of race.traits; track $index) {
@@ -274,7 +274,7 @@
               @if ($any(sub).ability_bonuses?.length) {
                 <p class="sub-traits"><b>Ability Bonuses:</b>
                   @for (bonus of $any(sub).ability_bonuses; track $index) {
-                    {{ bonus.ability_score?.name }} +{{ bonus.bonus }}@if(!$last){, }
+                {{ bonus.ability_score.name }} +{{ bonus.bonus }}@if(!$last){, }
                   }
                 </p>
               }
@@ -307,16 +307,16 @@
 
         <!-- Basic info -->
         <div class="misc">
-          @if (cls.saving_throws?.length) {
+          @if (cls.saving_throws.length) {
             <p><b>Saving Throws:</b> {{ cls.saving_throws.map(st => st.name).join(', ') }}</p>
           }
-          @if (cls.proficiencies?.length) {
+          @if (cls.proficiencies.length) {
             <p><b>Proficiencies:</b> {{ cls.proficiencies.map(prof => prof.name).join(', ') }}</p>
           }
           @if (cls.spellcasting) {
-            <p><b>Spellcasting Ability:</b> {{ cls.spellcasting.spellcasting_ability?.name }}</p>
+            <p><b>Spellcasting Ability:</b> {{ cls.spellcasting.spellcasting_ability.name }}</p>
           }
-          @if (cls.subclasses?.length) {
+          @if (cls.subclasses.length) {
             <p><b>Subclasses:</b> {{ cls.subclasses.map(subclass => subclass.name).join(', ') }}</p>
           }
         </div>

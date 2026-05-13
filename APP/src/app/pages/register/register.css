@@ -2,8 +2,8 @@ section {
   display: flex;
   gap: 3rem;
   justify-content: center;
-  height: 70%;
-  width: 50%;
+  height: 80%;
+  width: 60%;
   max-width: calc(100vw - 2rem);
   position: absolute;
   left: 50%;
@@ -16,9 +16,9 @@ form {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.2rem;
   font-size: 2em;
-  width: 100%;
+  width: 90%;
 }
 input {
   font-size: 0.5em;

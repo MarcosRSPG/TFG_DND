@@ -56,36 +56,23 @@ async def get_class_by_id(class_id: str):
 
 @router.get("/{class_id}/levels")
 async def get_class_levels(class_id: str):
-    """Get all levels for a class"""
+    """Get all levels for a class (embedded in the class document)."""
     db = await get_db()
-    # Check if class exists
+
     class_data = None
     if ObjectId.is_valid(class_id):
         class_data = await db["classes"].find_one({"_id": ObjectId(class_id)})
     if class_data is None:
         class_data = await db["classes"].find_one({"index": class_id})
-    
+
     if class_data is None:
-        raise HTTPException(status_code=404, content={"detail": "Class not found"})
-    
-    # Get all levels for this class - stored in class_levels collection
-    try:
-        levels = await db["class_levels"].find({}).to_list(length=None)
-        # Find the class index to match levels
-        class_index = class_data.get("index")
-        class_levels = [level for level in levels if level.get("class") == class_index]
-        
-        if class_levels:
-            # Sort by level and add id to each
-            class_levels.sort(key=lambda x: x.get("level", 0))
-            return [
-                {k: v for k, v in level.items() if k != '_id'}
-                for level in class_levels
-            ]
-    except Exception:
-        pass
-    
-    return []
+        raise HTTPException(status_code=404, detail="Class not found")
+
+    levels = class_data.get("levels") or []
+    return sorted(
+        [{k: v for k, v in lvl.items() if k != "_id"} for lvl in levels],
+        key=lambda x: x.get("level", 0),
+    )
 
 
 # Subclasses routes under /classes
@@ -131,33 +118,20 @@ async def get_subclass_by_id(subclass_id: str):
 
 @router.get("/subclasses/{subclass_id}/levels")
 async def get_subclass_levels(subclass_id: str):
-    """Get all levels for a subclass"""
+    """Get all levels for a subclass (embedded in the subclass document)."""
     db = await get_db()
-    # Check if subclass exists
+
     subclass_data = None
     if ObjectId.is_valid(subclass_id):
         subclass_data = await db["subclasses"].find_one({"_id": ObjectId(subclass_id)})
     if subclass_data is None:
         subclass_data = await db["subclasses"].find_one({"index": subclass_id})
-    
+
     if subclass_data is None:
-        raise HTTPException(status_code=404, content={"detail": "Subclass not found"})
-    
-    # Get all levels for this subclass - stored in subclass_levels collection
-    try:
-        levels = await db["subclass_levels"].find({}).to_list(length=None)
-        # Find the subclass index to match levels
-        subclass_index = subclass_data.get("index")
-        subclass_levels = [level for level in levels if level.get("subclass") == subclass_index]
-        
-        if subclass_levels:
-            # Sort by level and add id to each
-            subclass_levels.sort(key=lambda x: x.get("level", 0))
-            return [
-                {k: v for k, v in level.items() if k != '_id'}
-                for level in subclass_levels
-            ]
-    except Exception:
-        pass
-    
-    return []
+        raise HTTPException(status_code=404, detail="Subclass not found")
+
+    levels = subclass_data.get("levels") or []
+    return sorted(
+        [{k: v for k, v in lvl.items() if k != "_id"} for lvl in levels],
+        key=lambda x: x.get("level", 0),
+    )

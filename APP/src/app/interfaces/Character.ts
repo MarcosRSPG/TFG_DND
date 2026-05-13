@@ -189,6 +189,9 @@ export interface CharacterDraft extends Partial<Character> {
   selected_ideals?: string[];
   selected_bonds?: string[];
   selected_flaws?: string[];
+  // Wizard validation flags
+  has_subraces?: boolean;
+  proficiency_choices_complete?: boolean;
 }
 
 export type StatKey = 'strength' | 'dexterity' | 'constitution' | 'intelligence' | 'wisdom' | 'charisma';

@@ -21,7 +21,7 @@
         <button class="btn-sheet" (click)="goToSheet()" title="Save &amp; open printable sheet">
           📄 Sheet
         </button>
-        @if ((character()!.level ?? 1) < 20) {
+        @if (character()!.level < 20) {
           <button class="btn-level-up" (click)="openLevelUpModal()"
             title="Level up your character">
             ⬆ Level Up
@@ -930,7 +930,7 @@
                         <em class="subclass-flavor">{{ sub.subclass_flavor }}</em>
                       }
                     </div>
-                    @if (levelUpSelectedSubclass()?.index === sub.index && sub.desc?.length) {
+                    @if (levelUpSelectedSubclass()?.index === sub.index && sub.desc.length) {
                       <div class="subclass-desc">
                         @for (p of sub.desc.slice(0, 2); track $index) { <p>{{ p }}</p> }
                       </div>
@@ -1015,11 +1015,11 @@
         }
 
         <!-- ── PROFICIENCY BONUS ── -->
-        @if (levelUpNewProfBonus() !== (character()!.proficiency_bonus ?? 2)) {
+        @if (levelUpNewProfBonus() !== character()!.proficiency_bonus) {
           <div class="lu-section">
             <h3 class="lu-section-title">📈 Proficiency Bonus</h3>
             <p class="lu-result">
-              +{{ character()!.proficiency_bonus ?? 2 }} →
+              +{{ character()!.proficiency_bonus }} →
               <strong>+{{ levelUpNewProfBonus() }}</strong>
             </p>
           </div>

@@ -24,6 +24,8 @@
       >
         <option value="all">All</option>
         <option value="official">Official</option>
+        <option value="community">Community</option>
+        <option value="own">Own</option>
       </select>
     </div>
   </div>
@@ -77,3 +79,11 @@
     <button class="pagination-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages">Next</button>
   </nav>
 }
+
+<app-alerts
+  [isOpen]="alertOpen()"
+  [title]="alertTitle()"
+  [message]="alertMessage()"
+  [variant]="alertVariant()"
+  (closed)="alertOpen.set(false)"
+></app-alerts>

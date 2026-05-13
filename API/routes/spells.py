@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
 from services import spells_service
-from services.auth_service import get_current_user
+from services.auth_service import get_current_user, optional_get_current_user
 from models.Spell import Spell
 from utils.image_utils import parse_form_or_json
 
@@ -23,9 +23,11 @@ async def get_spell(spell_id: str) -> dict:
 
 
 @router.post("", status_code=201)
-async def create_spell(request: Request) -> dict:
+async def create_spell(request: Request, current_user: dict = Depends(optional_get_current_user)) -> dict:
     try:
         spell_data = await parse_form_or_json(request, "spells")
+        if current_user and not spell_data.get("created_by"):
+            spell_data["created_by"] = current_user.get("user_id")
         return await spells_service.create(spell_data)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))

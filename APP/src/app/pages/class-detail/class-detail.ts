@@ -216,20 +216,49 @@ export class ClassDetail implements OnInit {
 
   private extractDisplayColumns(levels: DndClassLevel[], config: AllClassesProgressionConfig | null, className: string): DisplayColumn[] {
     const columns: DisplayColumn[] = [];
-
-    // 1. Add columns defined in JSON config
     const classConfig = config?.[className];
+    const hiddenKeys = new Set<string>(classConfig?.hiddenKeys ?? []);
+
+    // 1. Add columns defined in the DB config (JSON-driven, e.g. Rage Damage from progression array)
     if (classConfig?.progressionColumns) {
       for (const col of classConfig.progressionColumns) {
         columns.push({
           id: col.id,
           label: col.label,
-          progression: col.progression // Store progression array for rendering
+          progression: col.progression,
+          source: col.source,
+          key: col.key,
         });
       }
     }
 
-    // 2. Add Spell Slots ONLY if configured in JSON (spellSlots: true)
+    // 2. Auto-detect class_specific keys NOT already covered by a configured column
+    // A key is "covered" if any configured column already references it via col.key
+    const coveredKeys = new Set(columns.filter(c => c.key).map(c => c.key!));
+
+    const specificKeys = new Set<string>();
+    for (const level of levels) {
+      if (level.class_specific) {
+        for (const key of Object.keys(level.class_specific)) {
+          specificKeys.add(key);
+        }
+      }
+    }
+    for (const key of specificKeys) {
+      if (!coveredKeys.has(key) && !hiddenKeys.has(key)) {
+        const label = key
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, l => l.toUpperCase());
+        columns.push({
+          id: `class_specific_${key}`,
+          label,
+          source: 'class_specific',
+          key,
+        });
+      }
+    }
+
+    // 3. Add Spell Slots ONLY if configured in JSON (spellSlots: true)
     if (classConfig?.spellSlots) {
       this.addSpellSlotColumns(columns, levels);
     }

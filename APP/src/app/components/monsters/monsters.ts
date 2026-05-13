@@ -6,6 +6,7 @@ import { Monster } from '../../interfaces/monster';
 import { MonstersService } from '../../services/monsters-service';
 import { LoginService } from '../../services/login-service';
 import { FilterModalComponent } from '../filter-modal/filter-modal';
+import { Alerts, AlertVariant } from '../alerts/alerts';
 
 interface MonsterFilters {
   searchName: string;
@@ -21,7 +22,7 @@ interface MonsterFilters {
 @Component({
   selector: 'app-monsters',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, FilterModalComponent],
+  imports: [CommonModule, RouterLink, FormsModule, FilterModalComponent, Alerts],
   templateUrl: './monsters.html',
   styleUrl: './monsters.css',
 })
@@ -34,6 +35,26 @@ export class Monsters implements OnInit {
   userId = signal<string | null>(null);
   userRole = signal<string | null>(null);
   permissionsLoaded = signal(false);
+
+  alertOpen = signal(false);
+  alertTitle = signal('');
+  alertMessage = signal('');
+  alertVariant = signal<AlertVariant>('error');
+
+  showAlert(title: string, message: string, variant: AlertVariant = 'error'): void {
+    this.alertTitle.set(title);
+    this.alertMessage.set(message);
+    this.alertVariant.set(variant);
+    this.alertOpen.set(true);
+  }
+
+  private getSourceLabel(monster: Monster): string {
+    const cb = (monster as any).created_by;
+    if (!cb) return 'official';
+    if (cb === 'oficial') return 'official';
+    if (cb === this.userId()) return 'own';
+    return 'community';
+  }
 
   @ViewChild('typesModal') typesModal!: FilterModalComponent;
   @ViewChild('sizesModal') sizesModal!: FilterModalComponent;
@@ -137,7 +158,7 @@ export class Monsters implements OnInit {
       this.updatePaginatedMonsters();
     } catch (error) {
       console.error('Error deleting monster:', error);
-      alert('Failed to delete monster');
+      this.showAlert('Error', 'Failed to delete monster');
     }
   }
 
@@ -284,6 +305,10 @@ export class Monsters implements OnInit {
       filtered = filtered.filter(m => (m.hit_points || 0) <= max);
     }
 
+    if (filters.source !== 'all') {
+      filtered = filtered.filter(m => this.getSourceLabel(m) === filters.source);
+    }
+
     this.filteredMonsters.set(filtered);
     this.updatePaginatedMonsters();
   }
@@ -365,12 +390,13 @@ export class Monsters implements OnInit {
   }
 
   navigateToCreate(): void {
-    this.router.navigate(['/monsters/new']);
+    const returnUrl = window.location.pathname + window.location.search;
+    this.router.navigate(['/monsters/new'], { queryParams: { returnUrl } });
   }
 
   navigateToEdit(monster: Monster): void {
-    // Use D&D index for the route
     const monsterId = monster.index || (monster as any).id || (monster as any)['_id'] || '';
-    this.router.navigate(['/monsters/edit', monsterId]);
+    const returnUrl = window.location.pathname + window.location.search;
+    this.router.navigate(['/monsters/edit', monsterId], { queryParams: { returnUrl } });
   }
 }

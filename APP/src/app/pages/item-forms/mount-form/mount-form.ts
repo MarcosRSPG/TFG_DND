@@ -20,6 +20,7 @@ export class MountForm implements OnInit {
   isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
+  private returnUrl = '/manual?section=items';
 
   formData = signal<Partial<Item>>({
     name: '',
@@ -44,6 +45,9 @@ export class MountForm implements OnInit {
   costUnits = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
   ngOnInit(): void {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) this.returnUrl = returnUrl;
+
     const itemId = this.route.snapshot.paramMap.get('id');
     if (itemId) {
       this.isEditMode.set(true);
@@ -99,9 +103,7 @@ export class MountForm implements OnInit {
         await this.itemsService.create(data, 'mount');
       }
 
-      this.router.navigate(['/manual'], {
-        queryParams: { section: 'items' },
-      });
+      window.location.href = this.returnUrl;
     } catch (err) {
       console.error('Error creating mount/vehicle:', err);
       this.error.set('Error creating mount/vehicle. Please try again.');

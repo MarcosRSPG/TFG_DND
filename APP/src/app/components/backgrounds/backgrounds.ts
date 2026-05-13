@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Background, BackgroundEquipment } from '../../interfaces/background';
 import { BackgroundsService } from '../../services/backgrounds-service';
 import { LoginService } from '../../services/login-service';
+import { Alerts, AlertVariant } from '../alerts/alerts';
 
 interface BackgroundFilters {
   searchName: string;
@@ -14,7 +15,7 @@ interface BackgroundFilters {
 @Component({
   selector: 'app-backgrounds',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, Alerts],
   templateUrl: './backgrounds.html',
   styleUrl: './backgrounds.css',
 })
@@ -34,6 +35,26 @@ export class Backgrounds implements OnInit {
   userId = signal<string | null>(null);
   userRole = signal<string | null>(null);
   permissionsLoaded = signal(false);
+
+  alertOpen = signal(false);
+  alertTitle = signal('');
+  alertMessage = signal('');
+  alertVariant = signal<AlertVariant>('error');
+
+  showAlert(title: string, message: string, variant: AlertVariant = 'error'): void {
+    this.alertTitle.set(title);
+    this.alertMessage.set(message);
+    this.alertVariant.set(variant);
+    this.alertOpen.set(true);
+  }
+
+  private getSourceLabel(background: Background): string {
+    const cb = background.created_by;
+    if (!cb) return 'official';
+    if (cb === 'oficial') return 'official';
+    if (cb === this.userId()) return 'own';
+    return 'community';
+  }
 
   // =========================
   // STATE
@@ -109,7 +130,7 @@ export class Backgrounds implements OnInit {
       this.updatePaginatedBackgrounds();
     } catch (error) {
       console.error('Error deleting background:', error);
-      alert('Failed to delete background');
+      this.showAlert('Error', 'Failed to delete background');
     }
   }
 
@@ -181,6 +202,10 @@ export class Backgrounds implements OnInit {
     if (filters.searchName.trim()) {
       const search = filters.searchName.toLowerCase();
       filtered = filtered.filter(b => b.name.toLowerCase().includes(search));
+    }
+
+    if (filters.source !== 'all') {
+      filtered = filtered.filter(b => this.getSourceLabel(b) === filters.source);
     }
 
     this.filteredBackgrounds.set(filtered);
@@ -291,14 +316,15 @@ export class Backgrounds implements OnInit {
   exportSelection(): void { const ids = Array.from(this.selectedIds()).join(','); if (!ids) return; this.router.navigate(['/manual/print'], { queryParams: { type: 'backgrounds', ids } }); }
 
   navigateToCreate(): void {
-    this.router.navigate(['/backgrounds/new']);
+    const returnUrl = window.location.pathname + window.location.search;
+    this.router.navigate(['/backgrounds/new'], { queryParams: { returnUrl } });
   }
 
   navigateToEdit(background: Background): void {
-    // Use MongoDB id first (ObjectId required by PUT/DELETE), fall back to index
     const backgroundId = background.id || background.index || '';
     if (backgroundId) {
-      this.router.navigate(['/backgrounds/edit', backgroundId]);
+      const returnUrl = window.location.pathname + window.location.search;
+      this.router.navigate(['/backgrounds/edit', backgroundId], { queryParams: { returnUrl } });
     }
   }
 }

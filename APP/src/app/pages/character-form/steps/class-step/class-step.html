@@ -32,12 +32,12 @@
 
       @if (resolvedChoices().length) {
         <div class="choices-section">
-          <h4>Choose Proficiencies</h4>
+          <h4>Choose Proficiencies <span class="required-label">(required)</span></h4>
           @for (choice of resolvedChoices(); track choice.desc; let choiceIdx = $index) {
             <div class="choice-group">
               <p class="choice-desc">
                 {{ choice.desc }}
-                <span class="choice-count">({{ selectedByGroup()[choiceIdx]?.length ?? 0 }}/{{ choice.choose }})</span>
+                <span class="choice-count" [class.choice-count--done]="(selectedByGroup()[choiceIdx]?.length ?? 0) >= choice.choose">({{ selectedByGroup()[choiceIdx]?.length ?? 0 }}/{{ choice.choose }})</span>
               </p>
               <div class="choice-options">
                 @for (opt of choice.options; track opt.index) {

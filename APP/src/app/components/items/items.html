@@ -52,6 +52,8 @@
       >
         <option value="all">All</option>
         <option value="official">Official</option>
+        <option value="community">Community</option>
+        <option value="own">Own</option>
       </select>
     </div>
   </div>
@@ -147,3 +149,11 @@
     </nav>
   }
 }
+
+<app-alerts
+  [isOpen]="alertOpen()"
+  [title]="alertTitle()"
+  [message]="alertMessage()"
+  [variant]="alertVariant()"
+  (closed)="alertOpen.set(false)"
+></app-alerts>

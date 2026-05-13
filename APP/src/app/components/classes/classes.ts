@@ -4,6 +4,7 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DndClass } from '../../interfaces/class';
 import { ClassesService } from '../../services/classes-service';
+import { LoginService } from '../../services/login-service';
 import { VikingCheck } from '../viking-check/viking-check';
 
 interface ClassFilters {
@@ -21,8 +22,19 @@ interface ClassFilters {
 })
 export class Classes implements OnInit {
   private readonly classesService = inject(ClassesService);
+  private readonly loginService = inject(LoginService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+
+  userId = signal<string | null>(null);
+
+  private getSourceLabel(cls: DndClass): string {
+    const cb = (cls as any).created_by;
+    if (!cb) return 'official';
+    if (cb === 'oficial') return 'official';
+    if (cb === this.userId()) return 'own';
+    return 'community';
+  }
 
   allClasses = signal<DndClass[]>([]);
   filteredClasses = signal<DndClass[]>([]);
@@ -41,6 +53,7 @@ export class Classes implements OnInit {
   error = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
+    this.userId.set(await this.loginService.getUserId());
     try {
       // 1. Load filters from URL if they exist
       const params = this.route.snapshot.queryParamMap;
@@ -99,8 +112,9 @@ export class Classes implements OnInit {
       filtered = filtered.filter((c) => !!c.spellcasting === filters.isMagical);
     }
 
-    // Here you can add 'source' filtering if needed
-    // if (filters.source !== 'all') { ... }
+    if (filters.source !== 'all') {
+      filtered = filtered.filter(c => this.getSourceLabel(c) === filters.source);
+    }
 
     this.filteredClasses.set(filtered);
     this.updatePaginatedClasses();

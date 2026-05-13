@@ -25,8 +25,10 @@ import { Spell } from '../../interfaces/spell';
 import { ClassesService } from '../../services/classes-service';
 import { BackgroundsService } from '../../services/backgrounds-service';
 import { RacesService } from '../../services/races-service';
+import { ClassProgressionService } from '../../services/class-progression-service';
 import { environment } from '../../../environments/environment';
 import { FeatureDetail, DndClassLevel } from '../../interfaces/class';
+import { ClassProgressionConfig } from '../../interfaces/class-progression-config';
 import { Subclass } from '../../interfaces/subclass';
 
 type TabKey = 'basic' | 'equipment' | 'spells' | 'traits' | 'bio';
@@ -51,6 +53,7 @@ export class CharacterDetail implements OnInit {
   private readonly itemsService = inject(ItemsService);
   private readonly spellsService = inject(SpellsService);
   private readonly classesService = inject(ClassesService);
+  private readonly classProgressionService = inject(ClassProgressionService);
   private readonly backgroundsService = inject(BackgroundsService);
   private readonly racesService = inject(RacesService);
 
@@ -180,12 +183,37 @@ export class CharacterDetail implements OnInit {
 
   // ── Class progression ──────────────────────────────────────────────
   classLevelData = signal<DndClassLevel | null>(null);
+  classProgressionConfig = signal<ClassProgressionConfig | null>(null);
 
   classSpecificEntries = computed((): { key: string; label: string; value: string }[] => {
+    const charLevel = this.character()?.level ?? 1;
+    const config = this.classProgressionConfig();
+
+    // ── Path A: use progression config from DB (preferred) ──────────
+    if (config?.progressionColumns?.length) {
+      const hiddenKeys = new Set(config.hiddenKeys ?? []);
+      return config.progressionColumns
+        .filter(col => !hiddenKeys.has(col.id) && !hiddenKeys.has(col.key ?? ''))
+        .map(col => {
+          // Walk progression[] and take the last entry whose level ≤ charLevel
+          let value = '-';
+          if (col.progression?.length) {
+            for (const entry of col.progression) {
+              if (entry.level <= charLevel) value = entry.value;
+              else break;
+            }
+          }
+          return { key: col.id, label: col.label, value };
+        })
+        .filter(e => e.value !== '-'); // hide entries not yet unlocked
+    }
+
+    // ── Path B: fallback to raw class_specific from API ─────────────
     const cs = this.classLevelData()?.class_specific;
     if (!cs) return [];
+    const hiddenKeys = new Set(config?.hiddenKeys ?? []);
     return Object.entries(cs)
-      .filter(([, v]) => v !== null && v !== undefined && v !== 0 && v !== false)
+      .filter(([k, v]) => !hiddenKeys.has(k) && v !== null && v !== undefined && v !== 0 && v !== false)
       .map(([key, value]) => ({
         key,
         label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
@@ -301,9 +329,13 @@ export class CharacterDetail implements OnInit {
     const level   = c.level ?? 1;
     if (!classId) return;
     try {
-      const levels = await this.classesService.getClassLevels(classId);
-      const found  = levels.find(l => l.level === level);
+      const [levels, config] = await Promise.all([
+        this.classesService.getClassLevels(classId),
+        this.classProgressionService.getProgressionByClass(classId).catch(() => null),
+      ]);
+      const found = levels.find(l => l.level === level);
       if (found) this.classLevelData.set(found);
+      if (config) this.classProgressionConfig.set(config as ClassProgressionConfig);
     } catch { /* silencioso */ }
   }
 

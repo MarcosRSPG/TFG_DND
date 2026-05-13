@@ -138,6 +138,10 @@ export class ClassStepComponent implements OnInit {
     const classSavingThrows = cls.saving_throws?.map(st => st.name) ?? [];
     const baseProfs = cls.proficiencies?.map(p => p.name) ?? [];
 
+    const resolved = this.resolvedChoices();
+    const byGroup = this.selectedByGroup();
+    const allChoicesFilled = resolved.every((choice, idx) => (byGroup[idx]?.length ?? 0) >= choice.choose);
+
     this.change.emit({
       character_class: { index: cls.index ?? cls.id, name: cls.name, url: cls.url },
       character_class_hit_die: cls.hit_die,
@@ -145,6 +149,7 @@ export class ClassStepComponent implements OnInit {
       proficiency_names: [...baseProfs, ...chosenProfs],
       class_spell_slots: spellSlots,
       class_spellcasting_ability: spellcastingAbility,
+      proficiency_choices_complete: allChoicesFilled,
     });
   }
 

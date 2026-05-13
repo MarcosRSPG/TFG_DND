@@ -1,7 +1,7 @@
 import fastapi
 from fastapi import Request, Depends
 from services import items_service
-from services.auth_service import get_current_user
+from services.auth_service import get_current_user, optional_get_current_user
 from utils.image_utils import parse_form_or_json
 
 router = fastapi.APIRouter(prefix="/items", tags=["items"])
@@ -33,9 +33,11 @@ async def get_items_by_type(type: str = None):
 
 
 @router.post("", response_model_exclude_none=True)
-async def create_item(request: Request, type: str = None):
+async def create_item(request: Request, type: str = None, current_user: dict = Depends(optional_get_current_user)):
     image_dir = _TYPE_TO_IMAGE_DIR.get(type or "", "equipment")
     item_data = await parse_form_or_json(request, image_dir)
+    if current_user and not item_data.get("created_by"):
+        item_data["created_by"] = current_user.get("user_id")
     return await items_service.create(item_data, type)
 
 

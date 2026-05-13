@@ -46,6 +46,7 @@ export class MonsterForm implements OnInit {
   isEditMode = signal(false);
   isSubmitting = signal(false);
   error = signal<string | null>(null);
+  private returnUrl = '/manual?section=monsters';
 
   // Sizes available
   readonly sizes = ['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan'];
@@ -336,6 +337,9 @@ export class MonsterForm implements OnInit {
     this.dndOptions.loadLanguages();
     this.loadAllSpells();
     this.recalculateSpellStats();
+
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) this.returnUrl = returnUrl;
 
     // Check if we're in edit mode
     const monsterId = this.route.snapshot.paramMap.get('id');
@@ -934,9 +938,7 @@ export class MonsterForm implements OnInit {
         }
       }
 
-      this.router.navigate(['/manual'], {
-        queryParams: { section: 'monsters' },
-      });
+      window.location.href = this.returnUrl;
     } catch (err) {
       console.error('Error saving monster:', err);
       this.error.set(this.isEditMode() ? 'Error updating monster. Please try again.' : 'Error creating monster. Please try again.');
@@ -946,9 +948,7 @@ export class MonsterForm implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/manual'], {
-      queryParams: { section: 'monsters' },
-    });
+    window.location.href = this.returnUrl;
   }
 
   onImageSelected(event: Event): void {
