@@ -20,9 +20,4 @@ export class DinHeader {
   closeMobileMenu(): void {
     this.isMobileMenuOpen.set(false);
   }
-
-  logout(): void {
-    this.closeMobileMenu();
-    this.authService.logout();
-  }
 }

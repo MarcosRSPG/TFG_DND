@@ -31,7 +31,7 @@ async def get_all() -> list[UserSchema]:
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error retrieving users: {exc}") from exc
 
-async def get_by_id(user_id: str) -> UserSchema:
+async def get_by_id(user_id: str, include_password: bool = False) -> UserSchema:
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user id")
     
@@ -39,7 +39,7 @@ async def get_by_id(user_id: str) -> UserSchema:
     doc = await collection.find_one({"_id": ObjectId(user_id)})
     if not doc:
         raise HTTPException(status_code=404, detail="User not found")
-    return _to_schema(doc)
+    return _to_schema(doc, include_password=include_password)
 
 async def get_by_email(email: str, include_password: bool = False) -> UserSchema | None:
     collection = await _get_users_collection()
@@ -88,7 +88,13 @@ async def update(user_id: str, user: UserSchema) -> UserSchema:
         raise HTTPException(status_code=400, detail="Invalid user id")
     
     updates = user.model_dump(exclude_none=True, exclude={"id", "created_by", "created_at"})
-    
+
+    # Hash password if present in the update payload
+    if updates.get('password'):
+        from passlib.context import CryptContext
+        _pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+        updates['password'] = _pwd_context.hash(updates['password'])
+
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
     
     if not updates:

@@ -16,6 +16,12 @@ export const routes: Routes = [
     title: 'Register',
   },
   {
+    path: 'user',
+    loadComponent: () => import('./pages/user-profile/user-profile').then((m) => m.UserProfile),
+    canActivate: authOnly,
+    title: 'My Account',
+  },
+  {
     path: '',
     loadComponent: () => import('./pages/home/home').then((m) => m.Home),
     title: 'Home',

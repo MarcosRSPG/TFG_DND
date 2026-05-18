@@ -76,3 +76,15 @@ async def authenticate_login_form(form_data: OAuth2PasswordRequestForm) -> Login
 
 def logout_service() -> dict:
     return {"message": "Logout correcto"}
+
+
+def create_access_token(data: dict) -> str:
+    """Public wrapper — allows other modules to mint tokens without touching login internals."""
+    return _create_access_token(data)
+
+
+async def verify_password(plain_password: str, stored_password: str | None) -> bool:
+    """Public wrapper around internal bcrypt verification."""
+    if not stored_password:
+        return False
+    return await _verify_password(plain_password, stored_password)

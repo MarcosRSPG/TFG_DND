@@ -1,0 +1,121 @@
+<button
+  type="button"
+  class="dice-fab"
+  (click)="open()"
+  aria-label="Open dice roller"
+  title="Roll dice"
+>
+  <i class="fas fa-dice-d20" aria-hidden="true"></i>
+</button>
+
+@if (isOpen()) {
+  <div
+    class="dice-modal-backdrop"
+    (click)="onBackdropClick($event)"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dice-modal-title"
+  >
+    <div class="dice-modal-content">
+      <div class="dice-modal-header">
+        <h2 id="dice-modal-title">
+          <i class="fas fa-dice-d20" aria-hidden="true"></i>
+          Dice Roller
+        </h2>
+        <button
+          type="button"
+          class="close-btn"
+          (click)="close()"
+          [disabled]="isRolling()"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="dice-controls">
+        <div class="control-group">
+          <label for="dice-qty">Quantity</label>
+          <input
+            id="dice-qty"
+            type="number"
+            [min]="minQuantity"
+            [max]="maxQuantity"
+            [value]="quantity()"
+            (input)="setQuantity(+($any($event.target).value))"
+            [disabled]="isRolling()"
+            class="qty-input"
+          />
+        </div>
+
+        <div class="control-group">
+          <label>Die type</label>
+          <div class="die-type-buttons" role="radiogroup" aria-label="Die type">
+            @for (type of diceTypes; track type) {
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="dieType() === type"
+                class="die-type-btn"
+                [class.active]="dieType() === type"
+                [disabled]="isRolling()"
+                (click)="setDieType(type)"
+              >
+                {{ type }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="dice-preview">
+        @for (slot of previewSlots(); track slot; let i = $index) {
+          <div
+            [class]="'die die--' + dieType() + (isRolling() ? ' rolling' : '')"
+            [style.animation-delay.ms]="isRolling() ? i * 80 : 0"
+          >
+            <span class="die-face">
+              @if (hasResults() && !isRolling()) {
+                {{ results()[i] }}
+              } @else {
+                {{ dieType() }}
+              }
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="dice-actions">
+        <button
+          type="button"
+          class="btn-roll"
+          (click)="roll()"
+          [disabled]="isRolling()"
+        >
+          @if (isRolling()) {
+            <i class="fas fa-sync-alt fa-spin" aria-hidden="true"></i>
+            Rolling...
+          } @else {
+            <i class="fas fa-dice-d20" aria-hidden="true"></i>
+            Roll
+          }
+        </button>
+      </div>
+
+      @if (hasResults() && !isRolling()) {
+        <div class="results-section">
+          <div class="results-header">Results</div>
+          <div class="results-list">
+            @for (r of results(); track $index) {
+              <span class="result-chip">{{ r }}</span>
+            }
+          </div>
+          <div class="results-total">
+            <span class="total-label">Total</span>
+            <span class="total-value">{{ total() }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

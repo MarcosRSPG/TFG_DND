@@ -4,6 +4,21 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { TokenHashService } from './token-hash-service';
 
+export interface UpdateUserPayload {
+  username?: string;
+  email?: string;
+  password?: string;
+  current_password?: string;
+}
+
+export interface UpdateUserResponse {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  access_token: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LoginService {
   private readonly http = inject(HttpClient);
@@ -137,5 +152,47 @@ export class LoginService {
     const role = user?.isAdmin ? 'admin' : 'user';
     console.log('DEBUG getUserRole - computed role:', role);
     return role;
+  }
+
+  async updateUser(id: string, data: UpdateUserPayload): Promise<UpdateUserResponse> {
+    this._isLoading.set(true);
+    try {
+      const hashedToken = this.tokenHashService.generateHash(this.apiToken);
+      const token = localStorage.getItem('token');
+      const res = await firstValueFrom(
+        this.http.put<UpdateUserResponse>(`${this.apiUrl}/users/${id}`, data, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Token': hashedToken,
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      );
+      if (res?.access_token) {
+        localStorage.setItem('token', res.access_token);
+      }
+      return res;
+    } finally {
+      this._isLoading.set(false);
+    }
+  }
+
+  async deleteAccount(id: string): Promise<void> {
+    this._isLoading.set(true);
+    try {
+      const hashedToken = this.tokenHashService.generateHash(this.apiToken);
+      const token = localStorage.getItem('token');
+      await firstValueFrom(
+        this.http.delete(`${this.apiUrl}/users/${id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Token': hashedToken,
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      );
+    } finally {
+      this._isLoading.set(false);
+    }
   }
 }

@@ -1,0 +1,156 @@
+<section class="user-profile">
+  <h2 class="user-profile__title">{{ labels().title }}</h2>
+
+  <!-- 1. Profile -->
+  <article class="profile-section">
+    <h3 class="section-title">{{ labels().sectionProfile }}</h3>
+    <form (ngSubmit)="saveProfile()" class="profile-form">
+      <label class="form-label" for="up-username">{{ labels().labelUsername }}</label>
+      <input
+        id="up-username"
+        name="username"
+        type="text"
+        [ngModel]="username()"
+        (ngModelChange)="username.set($event)"
+        required
+      />
+      <label class="form-label" for="up-email">{{ labels().labelEmail }}</label>
+      <input
+        id="up-email"
+        name="email"
+        type="email"
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
+        required
+      />
+      <button type="submit" class="action-btn" [disabled]="isLoading()">
+        {{ labels().btnSave }}
+      </button>
+    </form>
+  </article>
+
+  <hr class="section-divider" />
+
+  <!-- 2. Password -->
+  <article class="profile-section">
+    <h3 class="section-title">{{ labels().sectionPassword }}</h3>
+    <form (ngSubmit)="changePassword()" class="profile-form">
+      <label class="form-label" for="up-currentPwd">{{ labels().labelCurrentPwd }}</label>
+      <input
+        id="up-currentPwd"
+        name="currentPassword"
+        type="password"
+        [ngModel]="currentPassword()"
+        (ngModelChange)="currentPassword.set($event)"
+        autocomplete="current-password"
+        required
+      />
+      <div class="passwords">
+        <div>
+          <label class="form-label" for="up-newPwd">{{ labels().labelNewPwd }}</label>
+          <input
+            id="up-newPwd"
+            name="newPassword"
+            type="password"
+            [ngModel]="newPassword()"
+            (ngModelChange)="newPassword.set($event)"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+        <div>
+          <label class="form-label" for="up-confirmPwd">{{ labels().labelConfirmPwd }}</label>
+          <input
+            id="up-confirmPwd"
+            name="confirmPassword"
+            type="password"
+            [ngModel]="confirmPassword()"
+            (ngModelChange)="confirmPassword.set($event)"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+      </div>
+      <button type="submit" class="action-btn" [disabled]="isLoading()">
+        {{ labels().btnUpdatePwd }}
+      </button>
+    </form>
+  </article>
+
+  <hr class="section-divider" />
+
+  <!-- 3. Language -->
+  <article class="profile-section">
+    <h3 class="section-title">{{ labels().sectionLanguage }}</h3>
+    <label class="form-label" for="up-lang">{{ labels().labelLanguage }}</label>
+    <select
+      id="up-lang"
+      name="lang"
+      class="lang-select"
+      [ngModel]="selectedLang()"
+      (ngModelChange)="onLanguageChange($event)"
+    >
+      @for (lang of translation.supportedLanguages; track lang.code) {
+        <option [value]="lang.code">{{ lang.name }}</option>
+      }
+    </select>
+    @if (translation.downloadProgress() !== null) {
+      <p class="hint">{{ labels().downloadingHint }} {{ translation.downloadProgress() }}%</p>
+    }
+    @if (!translation.isSupported()) {
+      <p class="hint">{{ labels().noTranslationHint }}</p>
+    }
+  </article>
+
+  <hr class="section-divider" />
+
+  <!-- 4. Danger zone -->
+  <article class="profile-section danger-zone">
+    <h3 class="section-title danger-title">{{ labels().sectionDanger }}</h3>
+    <p class="danger-text">{{ labels().dangerText }}</p>
+    @if (deleteState() === 'confirming') {
+      <div class="delete-confirm-actions">
+        <p class="danger-text">{{ labels().confirmText }}</p>
+        <div class="confirm-buttons">
+          <button
+            type="button"
+            class="danger-btn"
+            (click)="confirmDelete()"
+            [disabled]="isLoading()"
+          >
+            {{ labels().btnDeleteConfirm }}
+          </button>
+          <button type="button" class="action-btn" (click)="cancelDelete()">
+            {{ labels().btnCancel }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <button
+        type="button"
+        class="danger-btn"
+        (click)="requestDelete()"
+        [disabled]="isLoading()"
+      >
+        {{ labels().btnDelete }}
+      </button>
+    }
+  </article>
+
+  <hr class="section-divider" />
+
+  <!-- 5. Logout -->
+  <article class="profile-section">
+    <button type="button" class="action-btn logout-btn" (click)="logout()">
+      {{ labels().btnLogout }}
+    </button>
+  </article>
+</section>
+
+<app-alerts
+  [isOpen]="isAlertOpen"
+  [title]="alertTitle"
+  [message]="alertMessage"
+  [variant]="alertVariant"
+  (closed)="closeAlert()"
+></app-alerts>
